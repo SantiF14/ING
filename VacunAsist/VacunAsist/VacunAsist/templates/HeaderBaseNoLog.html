@@ -1,0 +1,55 @@
+ 
+<!doctype html> <!-- Cambiar a header una vez que con python se lo pueda poner en todas paginas-->
+<html lang="en">
+  
+  <head>
+    {% load static %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'Vacunasist/bootstrap/bootstrap-5.1.3-examples/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'Vacunasist/css/Estilo.css' %}">
+
+
+    <title>
+        {% block title %} {% endblock %}
+    </title>
+    <link rel="shortcut icon" href="{% static 'Vacunasist/images/Logo.png' %}"> <!-- pedirle a lucho que haga un logo chiquito para el head que sea solo el botiquin -->
+  </head>
+  
+  <body> 
+    <header>
+        <a class="logo" href="index.html">
+          <img class="img" src="{% static 'Vacunasist/images/Logo.png' %}">
+        </a>
+        <button class="buttom" type="submit">Registrar</button>  
+        <button class="buttom" style="margin-right: 10px;" type="submit">Iniciar Sesion</button>       
+      <nav>
+
+      </nav>
+    </header>
+    <div class="container-fluid">
+      <div class="row align-items-start mydiv">     
+        <div class="col-3"  onclick="location.href='Index.html';">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="col-3" onclick="location.href='Index.html';">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="col-3" onclick="location.href='Index.html';">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="col-3" onclick="location.href='Index.html';">
+          <a href="index.html">Inicio</a>
+        </div>
+      </div>
+    </div>
+
+    {% block content %}
+
+    {% endblock %}
+
+  </body>
+</html>
