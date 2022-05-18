@@ -9,12 +9,11 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -52,10 +51,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'VacunAsist.urls'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "VacunAsist", "Vacunasist", "static"),
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ["D:/Vacunasist/VacunAsist/VacunAsist/Plantillas"],
+        'DIRS': [os.path.join(BASE_DIR, "VacunAsist","VacunAsist", "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +70,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'VacunAsist.wsgi.application'
 
@@ -116,7 +121,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

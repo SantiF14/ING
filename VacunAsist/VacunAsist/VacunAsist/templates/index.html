@@ -1,4 +1,4 @@
-
+ 
 <!doctype html> <!-- Cambiar a header una vez que con python se lo pueda poner en todas paginas-->
 <html lang="en">
   
@@ -9,18 +9,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="{% static 'Vacunasist/bootstrap-5.1.3-examples/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'Vacunasist/Estilo.css' %}">
+    <link href="{% static 'Vacunasist/bootstrap/bootstrap-5.1.3-examples/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'Vacunasist/css/Estilo.css' %}">
 
 
     <title>VacunAssist</title>
-    <link rel="shortcut icon" href=" {% static 'Logo.png' %}"> <!-- pedirle a lucho que haga un logo chiquito para el head que sea solo el botiquin -->
+    <link rel="shortcut icon" href="{% static 'Vacunasist/images/Logo.png' %}"> <!-- pedirle a lucho que haga un logo chiquito para el head que sea solo el botiquin -->
   </head>
   
   <body> 
     <header>
-        <a class="logo" href="indexu.html">
-          <img class="img" src="{% static 'Vacunasist/Logo.png' %}">
+        <a class="logo" href="index.html">
+          <img class="img" src="{% static 'Vacunasist/images/Logo.png' %}">
         </a>
         <button class="buttom" type="submit">Registrar</button>  
         <button class="buttom" style="margin-right: 10px;" type="submit">Iniciar Sesion</button>       
@@ -31,16 +31,16 @@
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
         <div class="col-3"  onclick="location.href='Index.html';">
-          <a href="indexu.html">Inicio</a>
+          <a href="index.html">Inicio</a>
         </div>
         <div class="col-3" onclick="location.href='Index.html';">
-          <a href="indexu.html">Inicio</a>
+          <a href="index.html">Inicio</a>
         </div>
         <div class="col-3" onclick="location.href='Index.html';">
-          <a href="indexu.html">Inicio</a>
+          <a href="index.html">Inicio</a>
         </div>
         <div class="col-3" onclick="location.href='Index.html';">
-          <a href="indexu.html">Inicio</a>
+          <a href="index.html">Inicio</a>
         </div>
       </div>
     </div>
@@ -58,7 +58,7 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                <img class="img-campaña" src="{% static 'Vacunasist/bacteria.jpg' %}" alt="">
+                <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
                 <h2 class="titulo2">influenza</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
@@ -66,7 +66,7 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
             </div>
           <div  class="col-sm-4">
-                <img class="img-campaña" src="{% static 'Vacunasist/bacteria.jpg' %}" alt="">
+                <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
                 <h2 class="titulo2">covid</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
@@ -74,7 +74,7 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
           </div>
           <div  class="col-sm-4">
-                <img class="img-campaña" src="{% static 'Vacunasist/bacteria.jpg' %}" alt="">
+                <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
                 <h2 class="titulo2">fiebre amarilla</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in

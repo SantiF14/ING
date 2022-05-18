@@ -1,23 +1,21 @@
 
 from re import template
-from this import d
 from django.http import HttpResponse
-from django.template import Template,Context
-import os
+from django.template import Template,Context,loader
 
 
 def Index(request):
 
-    doc_externo=open(os.path.normpath(os.path.join(os.path.dirname(
-    __file__), "Plantillas", "index.html")))
+    #doc_externo=open(os.path.normpath(os.path.join(os.path.dirname(
+    #__file__), "VacunAsist", "templates", "index.html")))
 
-    plt=Template(doc_externo.read())
+    #plt=Template(doc_externo.read())
 
-    doc_externo.close()
+    #doc_externo.close()
 
-    ctx=Context()
+    doc_externo=loader.get_template("index.html")
 
-    documento=plt.render(ctx)
+    documento=doc_externo.render({})
 
     return HttpResponse(documento)
     
