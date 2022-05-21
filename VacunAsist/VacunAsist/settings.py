@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gestion_de_turnos',
     'gestion_de_usuarios',
     'gestion_de_vacunas',
 
