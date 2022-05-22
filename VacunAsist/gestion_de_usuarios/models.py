@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from datetime import date
 
@@ -9,6 +10,7 @@ class Usuario(models.Model):
     opciones_sexo = [("F","Femenino"),("M","Masculino")]
     sexo = models.CharField(max_length=1,choices=opciones_sexo)
     email = models.EmailField()
+    de_riesgo = models.BooleanField(default=False)
     es_adm = models.BooleanField(default=False)
     fecha_nacimiento = models.DateField()
     contrasenia = models.CharField(max_length=30)  #ver max_length por hashing/encriptacion
