@@ -22,10 +22,13 @@ from VacunAsist.views import inscribir_campania_gripe
 from VacunAsist.views import inscribir_campania_COVID
 from VacunAsist.views import cargar_vacuna_aplicada_con_turno
 from VacunAsist.views import resultado_carga_vacuna
+from gestion_de_usuarios.views import iniciar_sesion, Registrar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Index/', Index), 
+    path('Signup/', Registrar), 
+    path('Login/', iniciar_sesion), 
     path('visualizar_historial_vacunas_aplicadas/', visualizar_vacunas_aplicadas),
     path('buscar/', buscar),
     path('inscribir_campania_gripe/', inscribir_campania_gripe),

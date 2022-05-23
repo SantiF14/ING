@@ -7,46 +7,60 @@ Basado en:
   @author parzibyte
   Visita: parzibyte.me/blog
 -->
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1,
-            shrink-to-fit=no">
-        <meta name="description" content="Formulario de login con Bootstrap">
-        <meta name="author" content="Parzibyte">
-        <title>Formulario de login con Bootstrap</title>
-        <!-- Cargar el CSS de Boostrap-->
-        <link href="./css/bootstrap.min.css" rel="stylesheet">
-    </head>
+{% extends "HeaderBaseNoLog.html" %}
+{% load static %}
+
+{% block title %} VacunAsist
+{% endblock %}
+
+
+{% block content %}
 
     <body>
-        <main role="main" class="container my-auto">
-            <div class="row">
+        <main role="main" class="container">
+            <div class="row" style="align-content: center;">
                 <div id="login" class="col-lg-4 offset-lg-4 col-md-6 offset-md-3
                     col-12">
                     <h2 class="text-center">Bienvenido de nuevo</h2>
 
-                    <form>
+                    <form method="post" action="">
                         <div class="form-group">
-                            <label for="correo">Correo</label>
-                            <input id="correo" name="correo"
-                                class="form-control" type="email"
-                                placeholder="Correo electrónico">
+                            <label for="dni">Numero de documento</label>
+                            <input id="dni" name="dni"
+                                class="form-control" type="number"
+                                placeholder="Numero de documento" required="">
                         </div>
                         <div class="form-group">
-                            <label for="palabraSecreta">Contraseña</label>
-                            <input id="palabraSecreta" name="palabraSecreta"
+                            <label for="contrasenia">Contraseña</label>
+                            <input id="contrasenia" name="contrasenia"
                                 class="form-control" type="password"
-                                placeholder="Contraseña">
+                                placeholder="Contraseña" required="">
                         </div>
+                        <div class="form-group">
+                            <label for="clave_alfanumerica">Contraseña alfanumerica</label>
+                            <input id="clave_alfanumerica" name="clave_alfanumerica"
+                                class="form-control" type="password"
+                                placeholder="Contraseña alfanumerica" required="">
+                        </div>
+                        <br>
+                        
+                        {% for field in login_form %}
+                        <p>
+                            {% for error in field.errors %}
+                            <p style="color: red">{{ error }}</p>
+                            {% endfor %}
+                        </p>
+                        {% endfor %}
+
                         <button type="submit" class="btn btn-primary mb-2">
                             Entrar
                         </button>
                         <br>
                         <a href="#">Contraseña olvidada</a>
+                        {% csrf_token %}
                     </form>
                 </div>
             </div>
         </main>
     </body>
-
-</html>
+    {% endblock %}

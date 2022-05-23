@@ -1,5 +1,4 @@
 
-from re import template
 from django.http import HttpResponse
 from django.template import Template,Context,loader
 from django.shortcuts import render
@@ -12,7 +11,6 @@ from gestion_de_usuarios.models import *
 
 
 def Index(request):
-
     #doc_externo=open(os.path.normpath(os.path.join(os.path.dirname(
     #__file__), "VacunAsist", "templates", "index.html")))
 
