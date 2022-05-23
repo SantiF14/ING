@@ -16,8 +16,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from VacunAsist.views import Index
+from VacunAsist.views import visualizar_vacunas_aplicadas
+from VacunAsist.views import buscar
+from VacunAsist.views import inscribir_campania_gripe
+from VacunAsist.views import inscribir_campania_COVID
+from VacunAsist.views import cargar_vacuna_aplicada_con_turno
+from VacunAsist.views import resultado_carga_vacuna
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Index/', Index), 
+    path('visualizar_historial_vacunas_aplicadas/', visualizar_vacunas_aplicadas),
+    path('buscar/', buscar),
+    path('inscribir_campania_gripe/', inscribir_campania_gripe),
+    path('inscribir_campania_COVID/', inscribir_campania_COVID),
+    path('cargar_vacuna_aplicada_con_turno/', cargar_vacuna_aplicada_con_turno),
+    path('resultado_carga_vacuna/', resultado_carga_vacuna),
 ]

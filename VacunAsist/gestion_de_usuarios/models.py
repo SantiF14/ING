@@ -40,7 +40,7 @@ class Vacuna(models.Model):
     tipo = models.CharField(max_length=20)
 
 class VacunaAplicada(models.Model):
-    usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
     fecha = models.DateField(default=date.today)
     marca = models.CharField(max_length=20, blank=True, null=True)

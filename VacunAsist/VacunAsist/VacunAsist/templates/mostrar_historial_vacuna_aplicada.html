@@ -1,0 +1,21 @@
+<html>
+
+<body>
+
+<p>Esta Buscando: <strong>{{query}}</strong></p>
+
+<ul>
+
+    {% for usuarios in Usu %}
+        <li>
+            Fecha:  {{usuarios.fecha.day}}/{{usuarios.fecha.month}}/{{usuarios.fecha.year}} &nbsp; 
+            Lote:  {{usuarios.lote}} &nbsp; 
+            Marca:  {{usuarios.marca}}
+        </li>
+    {% endfor %}
+
+</ul>
+
+</body>
+
+</html>

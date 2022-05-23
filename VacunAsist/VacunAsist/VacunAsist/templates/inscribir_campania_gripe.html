@@ -1,0 +1,25 @@
+<html>
+
+<head>
+
+<title>Inscribir Gripe</title>
+
+</head>
+
+<body>
+    {% if query == "si" %}
+        <form action="/inscribir_campania_gripe/">
+
+            <input type="submit" value="Inscribir">
+        </form>
+    {%else %}
+        <p> Presione el boton cancelar para describirse a la campania del COVID</p>
+        <form action="/inscribir_campania_COVID/">
+            <input type="button" value="Cancelar">
+        </form>
+    {%endif%}
+    
+
+</body>
+
+</html>
