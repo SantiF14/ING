@@ -1,9 +1,4 @@
-.row > div{
-    background: rgba(162, 203, 131,0.5);
-    padding: 5px;
-    border: 5px solid rgba(255, 255, 255, 0.37);
-    text-align: center;
-  }
+
 
 
 
@@ -162,3 +157,10 @@ body{
 }
 
 .mydiv div:hover{background-color:#A2CB83;}
+
+.row > div{
+    background: rgba(162, 203, 131,0.5);
+    padding: 5px;
+    border: 5px solid rgba(255, 255, 255, 0.37);
+    text-align: center;
+  }

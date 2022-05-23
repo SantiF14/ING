@@ -16,11 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from VacunAsist.views import Index
-from gestion_de_usuarios.views import *
+from gestion_de_usuarios.views import iniciar_sesion, Registrar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('Index/', Index), 
-    path('Signup/', Signup), 
-    path('Login/', Login), 
+    path('Index/', Index,name = "Index"), 
+    path('Signup/', Registrar), 
+    path('Login/', iniciar_sesion), 
 ]

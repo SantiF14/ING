@@ -1,47 +1,151 @@
-from pyexpat import model
 from django.db import models
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate
 from datetime import date
+from django.db.models.fields import EmailField
+from django.http import request
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
 
 # Create your models here.
 
-class Usuario(models.Model):
-    dni = models.CharField(primary_key=True, max_length=8, editable=False)
+class MyAccountManager(BaseUserManager):
+
+    def crear_usuario(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password):
+        """Crea un usuario con el dni"""
+        values = [dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password]
+        dicci_campos = dict(zip(self.model.REQUIRED_FIELDS, values))
+        for nombre_campo, valor in dicci_campos.items():
+            if not valor: #VALOR == NULL
+                raise ValueError(f"El valor {nombre_campo} debe ser especificado")
+
+        user = self.model(
+            dni = dni,
+            email = self.normalize_email(email),
+            nombre_apellido = nombre_apellido,
+            sexo = sexo,
+            de_reisgo = de_riesgo,
+            fecha_nacimiento = fecha_nacimiento,
+            clave_alfanumerica = clave_alfanumerica,
+            vacunatorio_pref = vacunatorio_pref,
+            )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def crear_administrador(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password):
+        user = self.model(
+            dni = dni,
+            email = self.normalize_email(email),
+            nombre_apellido = nombre_apellido,
+            sexo = sexo,
+            de_reisgo = de_riesgo,
+            fecha_nacimiento = fecha_nacimiento,
+            clave_alfanumerica = clave_alfanumerica,
+            vacunatorio_pref = vacunatorio_pref,
+            )
+        user.es_administrador = True
+        user._is_superuser = True
+        user.es_vacunador = True
+
+        user.save(using=self._db)
+        return user
+
+
+class Usuario(AbstractBaseUser):
+    es_vacunador = models.BooleanField(default=False)
+    es_administrador = models.BooleanField(default=False)
+    _is_superuser = models.BooleanField(default=False)
+    dni = models.CharField(unique=True, max_length=8, primary_key=True)
     nombre_apellido = models.CharField(max_length=50)
     opciones_sexo = [("F","Femenino"),("M","Masculino")]
-    sexo = models.CharField(max_length=1,choices=opciones_sexo)
+    sexo = models.CharField(max_length=1, choices=opciones_sexo)
     email = models.EmailField()
     de_riesgo = models.BooleanField(default=False)
-    es_adm = models.BooleanField(default=False)
     fecha_nacimiento = models.DateField()
-    contrasenia = models.CharField(max_length=30)  #ver max_length por hashing/encriptacion
+    password = models.CharField(null=True, max_length=50, verbose_name='contrasenia')  #ver max_length por hashing/encriptacion
     clave_alfanumerica = models.CharField(max_length=5)
     vacunatorio_pref = models.ForeignKey("Vacunatorio", on_delete=models.SET_NULL, null=True) #deberiamos cambiar las HU en tal caso, noguta
-
-class Vacunador(models.Model):
-    usuario = models.ForeignKey("Usuario", unique=True, on_delete=models.CASCADE)
-    vacunatorio_de_trabajo = models.ForeignKey("Vacunatorio", on_delete=models.PROTECT)
-
-class Inscripcion(models.Model):
-    class ClaveUnivoca:
-        unique_together = (("usuario","vacuna"),)
-
-    usuario = models.ForeignKey("Usuario", on_delete=models.SET_NULL, null=True) #decidir
-    fecha = models.DateField(blank=True, null=True)
-    vacunatorio = models.ForeignKey("Vacunatorio", on_delete=models.PROTECT)  #decidir
-    vacuna = models.ForeignKey("Vacuna", on_delete=models.PROTECT) #decidir
+    
+    class Meta:
+        verbose_name_plural = "Usuarios"
+    
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = 'dni'
+    REQUIRED_FIELDS = ['nombre_apellido', 'sexo',"fecha_nacimiento", 'email', 'de_riesgo', 'vacunatorio_pref']
 
 
+    def __str__(self):
+        return self.dni, self.get_full_name()
 
+    def get_full_name(self):
+        return self.nombre_apellido
+    
+    def get_email(self):
+        return self.email
+
+    
+
+# Create your models here.
+class Vacuna(models.Model):
+    tipo = models.CharField(max_length=20)
+    
+    inscriptos = models.ManyToManyField(Usuario, related_name="campañas_inscriptas", 
+    through="Inscripcion",
+    through_fields= ("vacuna", "usuario"),
+    default=None,
+    blank=True,
+    null=True)
+    
+    tienen_aplicaciones = models.ManyToManyField(Usuario, related_name="vacunas_aplicadas", 
+    through="VacunaAplicada",
+    through_fields= ("vacuna","usuario"),
+    default=None,
+    blank=True,
+    null=True)
+
+
+    
 class Vacunatorio(models.Model):
     nombre = models.CharField(max_length=30)
     direccion = models.CharField(max_length=25)
     email = models.EmailField()
     numero_telefono = models.CharField(max_length=20)
+    vacunas_en_stock = models.ManyToManyField(Vacuna, related_name="vacunatorios_con_stock", 
+    through="VacunaVacunatorio",
+    through_fields= ("vacunatorio", "vacuna"),
+    default=None,
+    blank=True,
+    null=True)
 
-class Vacuna(models.Model):
-    tipo = models.CharField(max_length=20)
+class Vacunador(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    vacunatorio_de_trabajo = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name_plural = "Vacunadores"
+
+    def __str__(self):
+        return str(self.user)
+       
+
+
+class Inscripcion(models.Model):
+    class Meta:
+        unique_together = ("usuario","vacuna")
+        verbose_name_plural = "Inscripciones"
+        
+    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True) #decidir
+    fecha = models.DateField(blank=True, null=True)
+    vacunatorio = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)  #decidir
+    vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT) #decidir
+
+
+
 
 class VacunaAplicada(models.Model):
+    class Meta: 
+        verbose_name_plural = "Vacunas_aplicadas"
     usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
     fecha = models.DateField(default=date.today)
@@ -51,6 +155,8 @@ class VacunaAplicada(models.Model):
 
 
 class VacunaVacunatorio(models.Model):
-    vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT)
-    vacunatorio = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)
+    class Meta:
+        unique_together = ("vacuna", "vacunatorio")
+    vacuna = models.ForeignKey("Vacuna", on_delete=models.PROTECT)
+    vacunatorio = models.ForeignKey("Vacunatorio", on_delete=models.PROTECT)
     stock_actual = models.PositiveIntegerField()
