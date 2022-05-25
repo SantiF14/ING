@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class MyAccountManager(BaseUserManager):
 
-    def crear_usuario(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password):
+    def crear_usuario(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password=None):
         """Crea un usuario con el dni"""
         values = [dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password]
         dicci_campos = dict(zip(self.model.REQUIRED_FIELDS, values))
@@ -24,10 +24,11 @@ class MyAccountManager(BaseUserManager):
             email = self.normalize_email(email),
             nombre_apellido = nombre_apellido,
             sexo = sexo,
-            de_reisgo = de_riesgo,
+            de_riesgo = de_riesgo,
             fecha_nacimiento = fecha_nacimiento,
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
+            password=password
             )
         user.set_password(password)
         user.save(using=self._db)
@@ -39,7 +40,7 @@ class MyAccountManager(BaseUserManager):
             email = self.normalize_email(email),
             nombre_apellido = nombre_apellido,
             sexo = sexo,
-            de_reisgo = de_riesgo,
+            de_riesgo = de_riesgo,
             fecha_nacimiento = fecha_nacimiento,
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
@@ -69,10 +70,12 @@ class Usuario(AbstractBaseUser):
     
     class Meta:
         verbose_name_plural = "Usuarios"
+
+    objects = MyAccountManager()
     
     EMAIL_FIELD = "email"
     USERNAME_FIELD = 'dni'
-    REQUIRED_FIELDS = ['nombre_apellido', 'sexo',"fecha_nacimiento", 'email', 'de_riesgo', 'vacunatorio_pref']
+    REQUIRED_FIELDS = ['nombre_apellido', 'sexo','fecha_nacimiento', 'email', 'de_riesgo', 'vacunatorio_pref']
 
 
     def __str__(self):
@@ -146,7 +149,6 @@ class Inscripcion(models.Model):
 class VacunaAplicada(models.Model):
     class Meta: 
         verbose_name_plural = "Vacunas_aplicadas"
-        
     usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
     fecha = models.DateField(default=date.today)
