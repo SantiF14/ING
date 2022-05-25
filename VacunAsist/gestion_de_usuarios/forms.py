@@ -17,7 +17,7 @@ class FormularioDeRegistro (UserCreationForm):
     password1 = forms.CharField(help_text="Aqui va tu contraseña", widget=forms.PasswordInput)
     password2 = forms.CharField(help_text="Por favor repita su contraseña", widget=forms.PasswordInput)
     fecha_nacimiento  = forms.DateField()
-    vacunatorio_pref = forms.ChoiceField(choices=(("1","Polideportivo"),("2","Corralon municipal"),("3","Hospital 9 de julio")))
+    vacunatorio_pref = forms.ModelChoiceField(queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
     
 
     def __init__(self, *args, **kwargs): 
@@ -31,7 +31,7 @@ class FormularioDeRegistro (UserCreationForm):
         dni = self.cleaned_data["dni"]
         new = Usuario.objects.filter(dni = dni)  
         if new.count():  
-            raise ValidationError("Ya existe una cuenta con el DNI {dni}. Probá con otro.")  
+            raise ValidationError("Ya existe una cuenta con el DNI. Probá con otro.")  
         return dni
         
 
@@ -69,7 +69,7 @@ class FormularioDeRegistro (UserCreationForm):
         return nombre_apellido
     
     def save(self, clave_alfanumerica, commit = True):
-        user = MyAccountManager.crear_usuario(  
+        user = Usuario.objects.crear_usuario(  
             self.cleaned_data['dni'],  
             self.cleaned_data['nombre_apellido'],  
             self.cleaned_data['sexo'],

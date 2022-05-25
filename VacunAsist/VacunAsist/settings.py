@@ -120,7 +120,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
     'django.contrib.auth.hashers.CryptPasswordHasher',
 ]
-
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/

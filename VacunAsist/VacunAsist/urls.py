@@ -26,9 +26,9 @@ from gestion_de_usuarios.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('Index/', Index), 
-    path('Signup/', registrar), 
-    path('Login/', iniciar_sesion), 
+    path('Index/', Index, name = "Home"), 
+    path('Signup/', registrar, name = "Register"), 
+    path('Login/', iniciar_sesion, name = "Login"), 
     path('visualizar_historial_vacunas_aplicadas/', visualizar_vacunas_aplicadas),
     path('buscar/', buscar),
     path('inscribir_campania_gripe/', inscribir_campania_gripe),

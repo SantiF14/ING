@@ -22,11 +22,8 @@ def registrar(request):
         form = FormularioDeRegistro(request.POST)
         if form.is_valid():
             print("hola")
-            form.save("as12")
-            dni = form.cleaned_data.get('dni')
-            raw_password = form.cleaned_data.get('password1')
-            account = authenticate(dni=dni, contrasenia= raw_password)
-            login(request, account)
+            user = form.save("as12")
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect("Home")
         else:
             context['registration_form'] = form

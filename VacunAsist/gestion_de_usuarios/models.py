@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class MyAccountManager(BaseUserManager):
 
-    def crear_usuario(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password=None):
+    def crear_usuario(self, dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password):
         """Crea un usuario con el dni"""
         values = [dni, nombre_apellido, sexo, email, de_riesgo, fecha_nacimiento, clave_alfanumerica, vacunatorio_pref, password]
         dicci_campos = dict(zip(self.model.REQUIRED_FIELDS, values))
