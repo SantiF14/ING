@@ -5,7 +5,8 @@ from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime
 from dateutil.relativedelta import *
 from gestion_de_usuarios.models import *
-
+from VacunAsist.settings import EMAIL_HOST_USER
+from django.core.mail import send_mail
 
 
 
@@ -87,7 +88,7 @@ def mostrar_vacunas_aplicadas(request):
 def inscribir_campania_gripe (request):
 
  
-    usuario = Usuario.objects.filter(dni="42291299").get()
+    usuario = Usuario.objects.filter(dni="40188236").get()
 
     inscripcion=Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
 
@@ -130,6 +131,9 @@ def inscribir_campania_gripe (request):
     if (inscripto):
         inscripto.fecha=fecha_turno
         inscripto.save()
+        
+        html_message = loader.render_to_string('email_turno_gripe.html',{'fecha_turno': fecha_turno})
+        send_mail('Fecha de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     else:
         #cambiar
         vacunatorio= Vacunatorio.objects.first()
@@ -139,13 +143,15 @@ def inscribir_campania_gripe (request):
 
         ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=vacunatorio,vacuna=vacu)
         ins.save()
+        html_message = loader.render_to_string('email_turno_gripe.html',{'fecha_turno': fecha_turno})
+        send_mail('Fecha de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
     return render(request, "inscribir_campania_gripe.html",{"query":"si"})
 
 
 def inscribir_campania_COVID (request):
     
-    usuario = Usuario.objects.get(dni="40188236")
+    usuario = Usuario.objects.get(dni="42291299")
 
     inscripto = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
 
@@ -167,7 +173,7 @@ def inscribir_campania_COVID (request):
  
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, marca__exact="COVID-19", fecha__range=[antes,hoy]).order_by('-fecha').first()
     
-    #si se dio una vacuna contra la gripe en los ultimos 3 meses
+    #si se dio una vacuna contra el COVID en los ultimos 3 meses
     if (vacuna):
         if ((vacuna.fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
             fecha_turno = hoy + relativedelta(days=7)
@@ -180,12 +186,15 @@ def inscribir_campania_COVID (request):
     else:
         fecha_turno = None
 
-    inscripto=Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
+    inscripto=Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19")
     
 
     if (inscripto):
         inscripto.fecha=fecha_turno
         inscripto.save()
+        if (fecha_turno != None):
+            html_message = loader.render_to_string('email_turno_COVID-19.html',{'fecha_turno': fecha_turno})
+            send_mail('Fecha de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     else:
         #cambiar
         vacunatorio= Vacunatorio.objects.first()
@@ -195,6 +204,9 @@ def inscribir_campania_COVID (request):
 
         ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=vacunatorio,vacuna=vacu)
         ins.save()
+        if (fecha_turno != None):
+            html_message = loader.render_to_string('email_turno_COVID-19.html',{'fecha_turno': fecha_turno})
+            send_mail('Fecha de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
     return render(request, "inscribir_campania_COVID.html",{"query":"si"})
 
