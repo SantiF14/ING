@@ -5,15 +5,15 @@ from django.template import Template,Context,loader
 from gestion_de_usuarios.models import Inscripcion
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
-
-
-
-# Create your views here.
+from gestion_de_usuarios.models import Usuario
+import random, string
+from django.core.mail import send_mail
+from VacunAsist.settings import EMAIL_HOST_USER
 
 
 def registrar(request):
 
-    user = request.usuario
+    user = request.user
     if user.is_authenticated:
         return HttpResponse("Ya iniciaste sesión como " + str(user.get_full_name()))
 
@@ -21,11 +21,13 @@ def registrar(request):
     if request.POST:
         form = FormularioDeRegistro(request.POST)
         if form.is_valid():
-            form.save()
-            dni = form.cleaned_data.get('dni')
-            raw_password = form.cleaned_data.get('password1')
-            account = authenticate(dni=dni, contrasenia= raw_password)
-            login(request, account)
+            print("hola")
+            clave_alfanum = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+            mail = request.POST.get('email')
+            html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
+            send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
+            user = form.save(clave_alfanum)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect("Home")
         else:
             context['registration_form'] = form
@@ -33,7 +35,7 @@ def registrar(request):
     else:
         form = FormularioDeRegistro()
         context['registration_form'] = form
-    return render(request, 'index2.html', context)
+    return render(request, 'registro2.0.html', context)
 
 
 def cerrar_sesion(request):
@@ -49,32 +51,38 @@ def ver_turnos_del_dia(request):
     context = {"turnos": turnos}
     return render(request, "ver_turnos_hoy.html", context)
 
-def iniciar_sesion(request):
+def iniciar_sesion(request, *args, **kwargs):
     context = {}
-
     user = request.user
     if user.is_authenticated: 
-        return redirect("Index")
+        return redirect("Home")
 
     if request.POST:
         form = FormularioDeAutenticacion(request.POST)
         if form.is_valid():
-            dni = request.POST['dni']
-            contrasenia = request.POST['contrasenia']
-            clave_alfanumerica = request.POST['clave_alfanumerica']
-            user = authenticate(dni=dni, contrasenia=contrasenia, clave_alfanumerica=clave_alfanumerica)
+            dni = request.POST.get('dni')
+            user = Usuario.objects.get(dni = dni)
             if user:
-                login(request, user)
-                return redirect("entraste.html")
-        else:
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return redirect("Home")
+        else:  
             context['login_form'] = form
-    return render(request, "Login.html")
-
-def Registrar(request, *args, **kwargs):
-    user = request.user
-    if user.is_authenticated:
-        return HttpResponse("Ya iniciaste sesión como " + str(user.email))
+    else:
+        form = FormularioDeAutenticacion()
+        context['login_form'] = form
+    return render(request, "Login.html", context)
 
 
-    return render(request,"Registro.html")
+def buscar_turno(request):
 
+    if request.POST:
+        dni = request.POST["dni"]
+        if dni:
+            try:
+                turno = Inscripcion.objects.get(usuario=dni)
+            except Inscripcion.DoesNotExist:
+                return HttpResponse("El dni ingresado no tiene turno.")
+            else:
+                return HttpResponse(turno)
+    context = {}
+    return render(request, "busqueda_turno.html", context)

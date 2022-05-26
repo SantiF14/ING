@@ -7,7 +7,6 @@ from django.http import request
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
-# Create your models here.
 
 class MyAccountManager(BaseUserManager):
 
@@ -24,10 +23,11 @@ class MyAccountManager(BaseUserManager):
             email = self.normalize_email(email),
             nombre_apellido = nombre_apellido,
             sexo = sexo,
-            de_reisgo = de_riesgo,
+            de_riesgo = de_riesgo,
             fecha_nacimiento = fecha_nacimiento,
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
+            password=password
             )
         user.set_password(password)
         user.save(using=self._db)
@@ -39,7 +39,7 @@ class MyAccountManager(BaseUserManager):
             email = self.normalize_email(email),
             nombre_apellido = nombre_apellido,
             sexo = sexo,
-            de_reisgo = de_riesgo,
+            de_riesgo = de_riesgo,
             fecha_nacimiento = fecha_nacimiento,
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
@@ -69,10 +69,12 @@ class Usuario(AbstractBaseUser):
     
     class Meta:
         verbose_name_plural = "Usuarios"
+
+    objects = MyAccountManager()
     
     EMAIL_FIELD = "email"
     USERNAME_FIELD = 'dni'
-    REQUIRED_FIELDS = ['nombre_apellido', 'sexo',"fecha_nacimiento", 'email', 'de_riesgo', 'vacunatorio_pref']
+    REQUIRED_FIELDS = ['nombre_apellido', 'sexo','fecha_nacimiento', 'email', 'de_riesgo', 'vacunatorio_pref']
 
 
     def __str__(self):
@@ -83,10 +85,8 @@ class Usuario(AbstractBaseUser):
     
     def get_email(self):
         return self.email
+  
 
-    
-
-# Create your models here.
 class Vacuna(models.Model):
     tipo = models.CharField(max_length=20)
     
@@ -104,7 +104,6 @@ class Vacuna(models.Model):
     blank=True,
     null=True)
 
-
     
 class Vacunatorio(models.Model):
     nombre = models.CharField(max_length=30)
@@ -118,6 +117,10 @@ class Vacunatorio(models.Model):
     blank=True,
     null=True)
 
+    def __str__(self) -> str:
+        return self.nombre
+
+
 class Vacunador(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     vacunatorio_de_trabajo = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)
@@ -128,7 +131,6 @@ class Vacunador(models.Model):
     def __str__(self):
         return str(self.user)
        
-
 
 class Inscripcion(models.Model):
     class Meta:
@@ -141,12 +143,9 @@ class Inscripcion(models.Model):
     vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT) #decidir
 
 
-
-
 class VacunaAplicada(models.Model):
     class Meta: 
         verbose_name_plural = "Vacunas_aplicadas"
-
     usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
     fecha = models.DateField(default=date.today)

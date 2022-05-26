@@ -3,7 +3,7 @@ from django.template import Template,Context,loader
 from django.shortcuts import render
 from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import *
 from gestion_de_usuarios.models import *
 
 

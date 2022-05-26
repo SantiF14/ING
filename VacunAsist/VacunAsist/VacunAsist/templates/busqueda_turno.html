@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="Estilo.css">
+        
+        <title>VacunAssist</title>
+        <link rel="shortcut icon" href="Logo.png"> <!-- pedirle a lucho que haga un logo chiquito para el head que sea solo el botiquin -->
+    </head>
+
+    <body> 
+        <h1>
+            Ingrese un dni:
+        </h1>
+        <form method="POST" action="buscar-turno/"> {% csrf_token %}
+            <p>ingrese DNI de la persona</p>
+            <input type="text" name="dni">    
+            <input type="submit" value="Buscar turno">
+        </form>
+
+    </body>
