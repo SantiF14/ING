@@ -7,7 +7,6 @@ from django.http import request
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
-# Create your models here.
 
 class MyAccountManager(BaseUserManager):
 
@@ -86,10 +85,8 @@ class Usuario(AbstractBaseUser):
     
     def get_email(self):
         return self.email
+  
 
-    
-
-# Create your models here.
 class Vacuna(models.Model):
     tipo = models.CharField(max_length=20)
     
@@ -107,7 +104,6 @@ class Vacuna(models.Model):
     blank=True,
     null=True)
 
-
     
 class Vacunatorio(models.Model):
     nombre = models.CharField(max_length=30)
@@ -121,6 +117,10 @@ class Vacunatorio(models.Model):
     blank=True,
     null=True)
 
+    def __str__(self) -> str:
+        return self.nombre
+
+
 class Vacunador(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     vacunatorio_de_trabajo = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)
@@ -132,7 +132,6 @@ class Vacunador(models.Model):
         return str(self.user)
        
 
-
 class Inscripcion(models.Model):
     class Meta:
         unique_together = ("usuario","vacuna")
@@ -142,8 +141,6 @@ class Inscripcion(models.Model):
     fecha = models.DateField(blank=True, null=True)
     vacunatorio = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)  #decidir
     vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT) #decidir
-
-
 
 
 class VacunaAplicada(models.Model):

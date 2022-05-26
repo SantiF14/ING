@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'gestion_de_usuarios',
     'gestion_de_vacunas',
+    'localflavor',
 
 ]
 
@@ -57,6 +58,8 @@ ROOT_URLCONF = 'VacunAsist.urls'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "VacunAsist", "Vacunasist", "static"),
 ]
+LANGUAGE_CODE = "es"
+DATE_INPUT_FORMATS = ["%d/%m/%Y",]
 
 TEMPLATES = [
     {
@@ -125,9 +128,11 @@ AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
+
+USE_L10N = True
 
 USE_I18N = True
 
@@ -144,4 +149,18 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# LOGIN_REDIRECT_URL = 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = 'smtp-mail.outlook.com'
+
+EMAIL_TIMEOUT= 120
+
+EMAIL_PORT= 587
+ 
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "asistvacg2@hotmail.com"
+
+EMAIL_HOST_PASSWORD = "Hola123_"
+
+LOGIN_REDIRECT_URL = "Index/"

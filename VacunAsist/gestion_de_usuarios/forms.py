@@ -1,24 +1,25 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate
 from datetime import date
-from django.db.models.fields import EmailField
 from django.http import request
 from gestion_de_usuarios.models import *
-from django.db.models import Q
 from django.core.exceptions import ValidationError
+from VacunAsist.settings import DATE_INPUT_FORMATS
 
 class FormularioDeRegistro (UserCreationForm):
-    dni =  forms.IntegerField(help_text="Aqui va tu dni")
-    email = forms.EmailField(help_text="Aqui va tu dirección de email")
-    nombre_apellido = forms.CharField(max_length=50, help_text="Aqui va tu nombre y apellido")
-    sexo = forms.ChoiceField(choices=(("M","Masculino"),("F","Femenino")))
-    de_riesgo = forms.ChoiceField(choices=(("1","Si"),("0","No")), widget=forms.RadioSelect)
-    password1 = forms.CharField(help_text="Aqui va tu contraseña", widget=forms.PasswordInput)
-    password2 = forms.CharField(help_text="Por favor repita su contraseña", widget=forms.PasswordInput)
-    fecha_nacimiento  = forms.DateField()
-    vacunatorio_pref = forms.ModelChoiceField(queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
-    
+    dni =  forms.CharField(max_length=8, label = "DNI")
+    email = forms.EmailField(label="Email")
+    nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
+    sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
+    de_riesgo = forms.ChoiceField(label = "Sos de riesgo?",choices=(("1","Si"),("0","No")), widget=forms.RadioSelect)
+    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Repita su contraseña", widget=forms.PasswordInput)
+    fecha_nacimiento  = forms.DateField(label="Fecha de nacimiento",widget=forms.SelectDateWidget(years=range(date.today().year-110, date.today().year)), input_formats= DATE_INPUT_FORMATS)
+    vacunatorio_pref = forms.ModelChoiceField(label="Vacunatorio de preferencia",queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
+    field_order = ['dni', 'nombre_apellido', 'sexo', "fecha_nacimiento", "email", "password1", "password2", "vacunatorio_pref", "de_riesgo"]
+    def validate_dni(value):
+        raise ValidationError("This field accepts mail id of google only")
+
 
     def __init__(self, *args, **kwargs): 
         super(FormularioDeRegistro, self).__init__(*args, **kwargs) 
@@ -85,28 +86,24 @@ class FormularioDeRegistro (UserCreationForm):
     
 
 class FormularioDeAutenticacion(forms.ModelForm):
-    password = forms.CharField(label="password", widget=forms.PasswordInput)
+    
+    dni =  forms.CharField(max_length=8, label = "DNI")
+    password = forms.CharField(label = "Contraseña", widget=forms.PasswordInput)
+    clave_alfanumerica = forms.CharField(label= "Clave alfanumérica", max_length=5)
 
     class Meta:
         model = Usuario
-        fields = ("dni", "password")
+        fields = ("dni","password","clave_alfanumerica")
    
     def clean(self):
-        print("holaform1")
-        """Define el error que debe ser mostrado"""
 
         if self.is_valid():
-            print("holaform2")
             dni = self.cleaned_data['dni']
             password = self.cleaned_data['password']
-        #    clave_alfanumerica = self.cleaned_data['clave_alfanumerica']
-            print("holaform2")
+            clave_alfanumerica = self.cleaned_data['clave_alfanumerica']
             try:
-                print("holaform2")
                 user = Usuario.objects.get(dni=dni)
-                user.save()
             except Usuario.DoesNotExist:
-                pass
-            if not authenticate(dni=dni, password=password):
-                print("holaform3")
-                raise forms.ValidationError("Inicio de sesión inválido.")
+                 raise ValidationError("El DNI ingresado no se encuentra registrado en el sistema.")
+            if not(user.check_password(password) and (user.clave_alfanumerica == clave_alfanumerica)):
+                raise forms.ValidationError("DNI y/o contraseñas inválidas")

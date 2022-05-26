@@ -5,10 +5,9 @@ from django.template import Template,Context,loader
 from gestion_de_usuarios.models import Inscripcion
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
-
-
-
-# Create your views here.
+from gestion_de_usuarios.models import Usuario
+import random, string
+from django.core.mail import send_mail
 
 
 def registrar(request):
@@ -22,7 +21,10 @@ def registrar(request):
         form = FormularioDeRegistro(request.POST)
         if form.is_valid():
             print("hola")
-            user = form.save("as12")
+            clave_alfanum = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+            mail = request.POST.get('email')
+            send_mail('Clave alfanumerica',clave_alfanum,'asistvacg2@hotmail.com',[mail])
+            user = form.save(clave_alfanum)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect("Home")
         else:
@@ -49,30 +51,25 @@ def ver_turnos_del_dia(request):
 
 def iniciar_sesion(request, *args, **kwargs):
     context = {}
-
     user = request.user
     if user.is_authenticated: 
-        return redirect("Index/")
+        return redirect("Home")
 
     if request.POST:
         form = FormularioDeAutenticacion(request.POST)
-        print(request.POST)
         if form.is_valid():
-            print("hola")
             dni = request.POST.get('dni')
-            password = request.POST.get('password')
-          #  clave_alfanumerica = request.POST['clave_alfanumerica']
-            user = authenticate(dni=dni, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect("adentro")
-        else:
+            user = Usuario.objects.get(dni = dni)
+            if user:
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return redirect("Home")
+        else:  
             context['login_form'] = form
-    return render(request, "Login.html",context)
+    else:
+        form = FormularioDeAutenticacion()
+        context['login_form'] = form
+    return render(request, "Login.html", context)
 
-
-def entraste(request):
-    return render(request, 'entraste.html')
 
 def buscar_turno(request):
 
