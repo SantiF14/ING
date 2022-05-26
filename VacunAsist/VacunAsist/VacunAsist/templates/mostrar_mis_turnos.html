@@ -1,0 +1,21 @@
+<html>
+
+<body>
+
+<p>Esta Buscando: <strong>{{dni}}</strong></p>
+
+<ul>
+
+    {% for turno in turnos %}
+        <li>
+            Fecha:  {{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}} &nbsp; 
+            Vacuna:  {{turno.vacuna_id}} &nbsp; 
+            Vacunatorio:  {{turno.vacunatorio_id}}
+        </li>
+    {% endfor %}
+
+</ul>
+
+</body>
+
+</html>
