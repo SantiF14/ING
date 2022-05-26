@@ -1,3 +1,4 @@
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from datetime import date
@@ -5,9 +6,11 @@ from django.http import request
 from gestion_de_usuarios.models import *
 from django.core.exceptions import ValidationError
 from VacunAsist.settings import DATE_INPUT_FORMATS
+import requests
+
 
 class FormularioDeRegistro (UserCreationForm):
-    dni =  forms.CharField(max_length=8, label = "DNI")
+    dni =  forms.CharField(max_length=8, min_length=8, label = "DNI")
     email = forms.EmailField(label="Email")
     nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
     sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
@@ -16,9 +19,10 @@ class FormularioDeRegistro (UserCreationForm):
     password2 = forms.CharField(label="Repita su contraseña", widget=forms.PasswordInput)
     fecha_nacimiento  = forms.DateField(label="Fecha de nacimiento",widget=forms.SelectDateWidget(years=range(date.today().year-110, date.today().year)), input_formats= DATE_INPUT_FORMATS)
     vacunatorio_pref = forms.ModelChoiceField(label="Vacunatorio de preferencia",queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
-    field_order = ['dni', 'nombre_apellido', 'sexo', "fecha_nacimiento", "email", "password1", "password2", "vacunatorio_pref", "de_riesgo"]
-    def validate_dni(value):
-        raise ValidationError("This field accepts mail id of google only")
+    numero_tramite = forms.CharField(max_length=11, label="Numero de tramite", help_text="Campo necesario para validar su identidad")
+    field_order = ['dni','numero_tramite','nombre_apellido', 'sexo',"fecha_nacimiento", "email", "password1", "password2", "vacunatorio_pref", "de_riesgo"]
+    
+    
 
 
     def __init__(self, *args, **kwargs): 
@@ -55,7 +59,7 @@ class FormularioDeRegistro (UserCreationForm):
         password1 = self.cleaned_data['password1']  
         password2 = self.cleaned_data['password2'] 
         if password1 and password2 and password1 != password2:  
-            raise ValidationError("Password don't match")  
+            raise ValidationError("Las contraseñas no coinciden.")  
         return password2  
 
     def clean_riesgo(self):
@@ -68,7 +72,26 @@ class FormularioDeRegistro (UserCreationForm):
 
         nombre_apellido = self.cleaned_data['nombre_apellido']
         return nombre_apellido
-    
+
+    def clean(self):
+        
+        if self.is_valid():
+            dni = self.cleaned_data['dni']
+            numero_tramite = self.cleaned_data['numero_tramite']
+            sexo = self.cleaned_data["sexo"]
+            persona = {"dni":dni,
+                   "tramite": numero_tramite,
+                   "sexo": sexo,}
+            headers = {
+                    'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
+                    'Content-Type' : "application/json"
+                    }
+            response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
+            headers=headers, json=persona)
+            print(response.status_code)
+            if (response.status_code != 200):
+                raise ValidationError("Error de validación. Verifique que sus datos sean correctos e intente de nuevo.")
+
     def save(self, clave_alfanumerica, commit = True):
         user = Usuario.objects.crear_usuario(  
             self.cleaned_data['dni'],  
@@ -82,6 +105,9 @@ class FormularioDeRegistro (UserCreationForm):
             self.cleaned_data['password1']
         )  
         return user
+
+    
+        
 
     
 
@@ -107,3 +133,5 @@ class FormularioDeAutenticacion(forms.ModelForm):
                  raise ValidationError("El DNI ingresado no se encuentra registrado en el sistema.")
             if not(user.check_password(password) and (user.clave_alfanumerica == clave_alfanumerica)):
                 raise forms.ValidationError("DNI y/o contraseñas inválidas")
+    
+    
