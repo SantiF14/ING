@@ -8,6 +8,7 @@ from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
 import random, string
 from django.core.mail import send_mail
+from VacunAsist.settings import EMAIL_HOST_USER
 
 
 def registrar(request):
@@ -23,7 +24,8 @@ def registrar(request):
             print("hola")
             clave_alfanum = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
             mail = request.POST.get('email')
-            send_mail('Clave alfanumerica',clave_alfanum,'asistvacg2@hotmail.com',[mail])
+            html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
+            send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
             user = form.save(clave_alfanum)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect("Home")
