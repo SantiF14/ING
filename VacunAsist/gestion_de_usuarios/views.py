@@ -21,7 +21,6 @@ def registrar(request):
     if request.POST:
         form = FormularioDeRegistro(request.POST)
         if form.is_valid():
-            print("hola")
             clave_alfanum = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
             mail = request.POST.get('email')
             html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
