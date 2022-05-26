@@ -6,6 +6,7 @@ from gestion_de_usuarios.models import *
 from django.core.exceptions import ValidationError
 from VacunAsist.settings import DATE_INPUT_FORMATS
 
+
 class FormularioDeRegistro (UserCreationForm):
     dni =  forms.CharField(max_length=8, label = "DNI")
     email = forms.EmailField(label="Email")

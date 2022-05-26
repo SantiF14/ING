@@ -31,4 +31,5 @@ urlpatterns = [
     path('resultado_carga_vacuna/', resultado_carga_vacuna),
     path('visualizar_mis_turnos/', visualizar_mis_turnos),
     path('mostrar_mis_turnos/', mostrar_mis_turnos),
+    path('inscribir_campania_fiebre_amarilla/', inscribir_campania_fiebre_amarilla),
 ]

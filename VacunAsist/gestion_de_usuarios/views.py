@@ -9,7 +9,7 @@ from gestion_de_usuarios.models import Usuario
 import random, string
 from django.core.mail import send_mail
 from VacunAsist.settings import EMAIL_HOST_USER
-
+from django.contrib.auth.decorators import login_required
 
 def registrar(request):
 
@@ -72,7 +72,7 @@ def iniciar_sesion(request, *args, **kwargs):
         context['login_form'] = form
     return render(request, "Login.html", context)
 
-
+@login_required
 def buscar_turno(request):
 
     if request.POST:
