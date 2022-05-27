@@ -11,6 +11,13 @@ from django.core.mail import send_mail
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.contrib.auth.decorators import login_required
 
+def get_redirect_if_exists(request):
+    redirect = None
+    if request.GET:
+        if request.GET.get("next"):
+            redirect = str(request.GET.get("next"))
+    return redirect
+
 def registrar(request):
 
     user = request.user
@@ -22,11 +29,17 @@ def registrar(request):
         form = FormularioDeRegistro(request.POST)
         if form.is_valid():
             clave_alfanum = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+            form.save(clave_alfanum)
+            dni = form.cleaned_data["dni"]
+            password = form.cleaned_data["password1"]
             mail = request.POST.get('email')
             html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
             send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
-            user = form.save(clave_alfanum)
+            user = authenticate(dni=dni, password=password)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            destination = get_redirect_if_exists(request)
+            if destination: 
+                return redirect(destination)
             return redirect("Home")
         else:
             context['registration_form'] = form
@@ -43,11 +56,11 @@ def cerrar_sesion(request):
 
 
 def ver_turnos_del_dia(request):
-    try: 
-        turnos = Inscripcion.objects.filter(fecha=date.today())
-    except Inscripcion.DoesNotExist:
+    turnos = Inscripcion.objects.filter(fecha=date.today())
+    if not turnos:
         return HttpResponse("No hay turnos asignados para el día de hoy.")
     context = {"turnos": turnos}
+    print(turnos)
     return render(request, "ver_turnos_hoy.html", context)
 
 def iniciar_sesion(request, *args, **kwargs):
@@ -63,6 +76,9 @@ def iniciar_sesion(request, *args, **kwargs):
             user = Usuario.objects.get(dni = dni)
             if user:
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                destination = get_redirect_if_exists(request)
+                if destination:
+                    return redirect(destination)
                 return redirect("Home")
         else:  
             context['login_form'] = form
@@ -70,6 +86,8 @@ def iniciar_sesion(request, *args, **kwargs):
         form = FormularioDeAutenticacion()
         context['login_form'] = form
     return render(request, "Login.html", context)
+
+
 
 @login_required
 def buscar_turno(request):

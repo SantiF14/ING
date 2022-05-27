@@ -1,9 +1,5 @@
 from django.db import models
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate
 from datetime import date
-from django.db.models.fields import EmailField
-from django.http import request
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
@@ -46,7 +42,7 @@ class MyAccountManager(BaseUserManager):
             )
         user.es_administrador = True
         user._is_superuser = True
-        user.es_vacunador = True
+        user.es_vacunador = False
 
         user.save(using=self._db)
         return user
@@ -69,11 +65,12 @@ class Usuario(AbstractBaseUser):
     
     class Meta:
         verbose_name_plural = "Usuarios"
+        app_label = 'gestion_de_usuarios'
 
     objects = MyAccountManager()
     
-    EMAIL_FIELD = "email"
-    USERNAME_FIELD = 'dni'
+    
+    USERNAME_FIELD = "dni"
     REQUIRED_FIELDS = ['nombre_apellido', 'sexo','fecha_nacimiento', 'email', 'de_riesgo', 'vacunatorio_pref']
 
 

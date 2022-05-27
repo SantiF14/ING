@@ -85,10 +85,11 @@ WSGI_APPLICATION = 'VacunAsist.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR , 'db.sqlite3'),
     }
 }
 
@@ -123,8 +124,12 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
     'django.contrib.auth.hashers.CryptPasswordHasher',
 ]
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]
 
+AUTH_USER_MODEL = 'gestion_de_usuarios.Usuario'
+
+AUTHENTICATION_BACKENDS = (
+    ('django.contrib.auth.backends.ModelBackend'),
+)
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -162,5 +167,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "asistvacg2@hotmail.com"
 
 EMAIL_HOST_PASSWORD = "Hola123_"
+
+LOGIN_URL = "Login"
 
 LOGIN_REDIRECT_URL = "Index/"

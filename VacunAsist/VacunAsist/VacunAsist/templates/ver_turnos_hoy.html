@@ -1,0 +1,21 @@
+<html>
+
+<body>
+
+
+<ul>
+
+    {% for turno in turnos %}
+        <li>
+            dni: {{turno.usuario.dni}} &nbsp; 
+            Fecha:  {{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}} &nbsp; 
+            Vacuna:  {{turno.vacuna.tipo}} &nbsp; 
+            Vacunatorio:  {{turno.vacunatorio.nombre}}
+        </li>
+    {% endfor %}
+
+</ul>
+
+</body>
+
+</html>

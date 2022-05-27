@@ -20,9 +20,11 @@ from gestion_de_usuarios.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('Index/', Index, name = "Home"), 
+    path('Index/', index, name = "Index"), 
     path('Signup/', registrar, name = "Register"), 
     path('Login/', iniciar_sesion, name = "Login"),
+    path('Logout', cerrar_sesion, name = "Logout"),
+    path('home/',home ,name='Home'),
     path('visualizar_historial_vacunas_aplicadas/', visualizar_vacunas_aplicadas),
     path('mostrar_vacunas_aplicadas/', mostrar_vacunas_aplicadas),
     path('inscribir_campania_gripe/', inscribir_campania_gripe),
@@ -32,4 +34,5 @@ urlpatterns = [
     path('visualizar_mis_turnos/', visualizar_mis_turnos),
     path('mostrar_mis_turnos/', mostrar_mis_turnos),
     path('inscribir_campania_fiebre_amarilla/', inscribir_campania_fiebre_amarilla),
+    path('turnos_del_dia/', ver_turnos_del_dia, name="TurnosHoy")
 ]
