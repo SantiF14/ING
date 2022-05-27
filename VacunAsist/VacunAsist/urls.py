@@ -24,7 +24,7 @@ urlpatterns = [
     path('Signup/', registrar, name = "Register"), 
     path('Login/', iniciar_sesion, name = "Login"),
     path('Logout', cerrar_sesion, name = "Logout"),
-    path('home/',home ,name='Home'),
+    path('home/', home, name='Home'),
     path('visualizar_historial_vacunas_aplicadas/', visualizar_vacunas_aplicadas),
     path('mostrar_vacunas_aplicadas/', mostrar_vacunas_aplicadas),
     path('inscribir_campania_gripe/', inscribir_campania_gripe),

@@ -49,12 +49,12 @@ def registrar(request):
         context['registration_form'] = form
     return render(request, 'registro2.0.html', context)
 
-
+@login_required
 def cerrar_sesion(request):
     logout(request)
     return redirect("Index")
 
-
+@login_required
 def ver_turnos_del_dia(request):
     us = request.user
     turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = us.vacunador.vacunatorio_de_trabajo)

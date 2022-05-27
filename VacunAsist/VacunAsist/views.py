@@ -24,7 +24,7 @@ def calculate_age(born):
 
 def index(request):
     if request.user.is_authenticated:
-        return render(request,'home.html')
+        return home(request)
     return render(request, 'index.html', {})
 
 
@@ -32,19 +32,22 @@ def home(request):
 
     if request.user.is_authenticated:
         context = dict.fromkeys(["user","covid","fiebre_amarilla","gripe"], "No")
-        context["user"] = request.user
+        user = request.user
+        context["user"] = user
 
-        if request.POST:
-            inscripciones = Inscripcion.objects.filter(usuario = request.user)
-            covid = inscripciones.filter(vacuna = 2) #ARREGLAR
-            fiebre_amarilla = inscripciones.filter(vacuna = 3)
-            gripe = inscripciones.filter(vacuna = 1)
-            if (covid):
-                context["covid"] = "Si"
-            if (fiebre_amarilla):
-                context["fiebre_amarilla"] = "Si"
-            if (gripe):
-                context["gripe"] = "Si"
+        inscripciones = Inscripcion.objects.filter(usuario = user)
+        covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first()) #ARREGLAR
+        fiebre_amarilla = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
+        gripe = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Gripe").first())
+        print(covid)
+        print(fiebre_amarilla)
+        print(gripe)
+        if (covid):
+            context["covid"] = "Si"
+        if (fiebre_amarilla):
+            context["fiebre_amarilla"] = "Si"
+        if (gripe):
+            context["gripe"] = "Si"
 
     
 
