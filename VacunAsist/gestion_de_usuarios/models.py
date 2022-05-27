@@ -119,7 +119,7 @@ class Vacunatorio(models.Model):
 
 
 class Vacunador(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(Usuario, related_name="vacunador", on_delete=models.CASCADE)
     vacunatorio_de_trabajo = models.ForeignKey(Vacunatorio, on_delete=models.PROTECT)
 
     class Meta:

@@ -56,7 +56,8 @@ def cerrar_sesion(request):
 
 
 def ver_turnos_del_dia(request):
-    turnos = Inscripcion.objects.filter(fecha=date.today())
+    us = request.user
+    turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = us.vacunador.vacunatorio_de_trabajo)
     if not turnos:
         return HttpResponse("No hay turnos asignados para el día de hoy.")
     context = {"turnos": turnos}
