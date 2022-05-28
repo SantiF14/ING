@@ -10,6 +10,8 @@ import random, string
 from django.core.mail import send_mail
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 def get_redirect_if_exists(request):
     redirect = None

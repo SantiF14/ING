@@ -1,21 +1,56 @@
-<html>
-
+{% extends "base_login.html" %}
+ {% load static %}
+ {% block content %}
 <body>
 
-<p>Esta Buscando: <strong>{{dni}}</strong></p>
+{% if turnos != "No" %}
+<div class="container" style="float: left; padding-left: 5%; padding-top: 4%;">
+    <div class="col-12">
+        <table class="table table-hover" style="background-color: white;">
+            <p style="background-color: white;">Mis turnos: <strong></strong></p>
+            <thead>
+            <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Vacuna</th>
+                <th scope="col">Vacunatorio</th>
+            </tr>
+            </thead>
+            <tbody style="overflow: scroll;">
+            {% for turno in turnos %}
+            <tr>
+                <td>{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
+                <td>{{turno.vacuna.tipo}}</td>
+                <td>{{turno.vacunatorio.nombre}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Usted no tiene turnos de momento
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
 
-<ul>
-
-    {% for turno in turnos %}
-        <li>
-            Fecha:  {{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}} &nbsp; 
-            Vacuna:  {{turno.vacuna_id}} &nbsp; 
-            Vacunatorio:  {{turno.vacunatorio_id}}
-        </li>
-    {% endfor %}
-
-</ul>
-
+<script type="text/javascript" language="JavaScript">
+    let myModal = new bootstrap.Modal(document.getElementById('exampleModalCenter'), {});
+    myModal.show();
+    </script>
+{% endif %}
 </body>
 
-</html>
+{% endblock %}

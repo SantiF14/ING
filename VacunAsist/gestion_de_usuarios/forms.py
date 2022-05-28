@@ -7,6 +7,9 @@ from gestion_de_usuarios.models import *
 from django.core.exceptions import ValidationError
 from VacunAsist.settings import DATE_INPUT_FORMATS
 import requests
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from .models import Usuario
 
 
 
@@ -22,14 +25,16 @@ class FormularioDeRegistro (UserCreationForm):
     vacunatorio_pref = forms.ModelChoiceField(label="Vacunatorio de preferencia",queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
     numero_tramite = forms.CharField(max_length=11, label="Numero de tramite", help_text="Campo necesario para validar su identidad")
     field_order = ['dni','numero_tramite','nombre_apellido', 'sexo',"fecha_nacimiento", "email", "password1", "password2", "vacunatorio_pref", "de_riesgo"]
+   
+    class Meta:
+       model = Usuario
+       fields = ('dni','numero_tramite','nombre_apellido', 'sexo',"fecha_nacimiento", "email", "password1", "vacunatorio_pref", "de_riesgo")
+   
+
+
     
     
 
-
-    def __init__(self, *args, **kwargs): 
-        super(FormularioDeRegistro, self).__init__(*args, **kwargs) 
-        # remove username
-        self.fields.pop('username')
     
 
     def clean_dni(self):

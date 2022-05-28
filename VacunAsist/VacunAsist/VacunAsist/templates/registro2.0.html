@@ -39,14 +39,9 @@
                             </div>
                         {% endif %}
                     {% endfor %}
-                    {% for field in registration_form %}
                     <!--Basicamente esto dice que si hay errores, que los muestre-->
-                    <p>
-                        {% for error in field.errors %}
-                        <p style="color: darkred">{{ error }}</p>
-                        {% endfor %}
-                    </p>
-                    {% endfor %} {% if registration_form.non_field_errors %}
+    
+                    {% if registration_form.non_field_errors %}
                     <div style="color: darkred">
                         <p>{{registration_form.non_field_errors}}</p>
                     </div>

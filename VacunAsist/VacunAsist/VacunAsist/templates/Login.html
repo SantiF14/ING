@@ -24,7 +24,20 @@ Basado en:
                     <h2 class="text-center">Bienvenido de nuevo</h2>
 
                     <form method="post" action="">{% csrf_token %}
-                        {{ login_form }}
+                            {% for field in login_form %}
+                            {% if field.name != "" %}
+                                <div class="field-wrapper">
+                                    <div class="label-wrapper">
+                                        {{ field.label_tag }}
+                                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                                    </div>
+                                    <div class="value-wrapper">
+                                        {{ field }}
+                                        {{ field.errors }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %} 
                         <button type="submit" class="btn btn-primary mb-2">
                             Entrar
                         </button>
