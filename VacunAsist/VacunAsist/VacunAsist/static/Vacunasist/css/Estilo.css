@@ -27,7 +27,7 @@ html, body {
 header{
     width: 100%;
     background: lightgrey    ;
-    height: 152px;
+    height: 140px;
 }
 
 .img{
@@ -37,8 +37,8 @@ header{
 
 .logo {
     float: left;
-    margin-top: 20px;
-    margin-left: 20px;
+    margin-top: 10px;
+    margin-left: 10px;
 
 }
 
@@ -166,20 +166,22 @@ body{
   }
 
 .dropbtn {
-    background-color: #04AA6D;
+    background-color: #A2CB83;
     color: white;
-    padding: 16px;
+    min-width: 170px;
+    padding-top: 16px;
+    padding-bottom: 16px;
     font-size: 16px;
     border: none;
     cursor: pointer;
   }
-  
+
 .dropbtn:hover, .dropbtn:focus {
     background-color: #3e8e41;
   }
   
 .dropdown {
-    float:right;
+    float: right;
     position: relative;
     display: inline-block;
   }
@@ -188,7 +190,7 @@ body{
     display: none;
     position: absolute;
     background-color: #f1f1f1;
-    min-width: 130px;
+    min-width: 170px;
     overflow: auto;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     right: 0;
@@ -204,6 +206,34 @@ body{
 .dropdown a:hover {background-color: #ddd;}
   
 .show {display: block;}
+
+.button2 {
+	box-shadow:inset 0px 34px 0px -15px #9acc85;
+	background-color:#74ad5a;
+	border:1px solid #3b6e22;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:20px;
+	font-weight:bold;
+	padding:9px 23px;
+	text-decoration:none;
+	text-shadow:0px -1px 0px #92b879;
+}
+.button2:hover {
+	background-color:#68a54b;
+}
+.button2:active {
+	position:relative;
+	top:1px;
+}
+
+
+
+
+
+
 
 .cd-popup-trigger {
     display: block;
@@ -412,3 +442,4 @@ body{
 .button__link {
 	text-decoration: none;
 }
+  

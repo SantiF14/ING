@@ -36,7 +36,7 @@ def registrar(request):
             password = form.cleaned_data["password1"]
             mail = request.POST.get('email')
             html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
-            send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
+            #send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
             user = authenticate(dni=dni, password=password)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             destination = get_redirect_if_exists(request)
@@ -49,7 +49,7 @@ def registrar(request):
     else:
         form = FormularioDeRegistro()
         context['registration_form'] = form
-    return render(request, 'registro2.0.html', context)
+    return render(request, 'registro.html', context)
 
 @login_required
 def cerrar_sesion(request):

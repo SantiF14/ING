@@ -50,11 +50,11 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if gripe == "No" %}
                 <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Inscribir" style="background-color:darkseagreen;">
+                    <input type="submit" class="button2" value="Inscribir">
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
-                  <input type="submit" value="Cancelar" disabled style="background-color: darkred;">
+                  <input type="submit" class="button2" value="Cancelar" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
                 </form>
               {% endif %}
             </div>
@@ -67,11 +67,11 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if covid == "No" %}
                 <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Inscribir" style="background-color:darkseagreen;">
+                    <input type="submit" value="Inscribir" class="button2" >
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
-                  <input type="submit" value="Cancelar" disabled style="background-color: darkred;">
+                  <input type="submit" value="Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
                 </form>
               {% endif %}
           </div>
@@ -84,16 +84,16 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if vacuna_fa == "Si" %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Imprimir certificado" style="background-color:yellow;">
+                    <input type="submit" value="Imprimir certificado" class="button2" style="background-color:rgb(197, 197, 34);box-shadow:inset 0px 34px 0px -15px rgb(236, 214, 13); border:1px solid darkgoldenrod">
                   </form>
                 {% else %}
                   {% if fiebre_amarilla == "No" %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                      <input type="submit" value="Inscribir" style="background-color:darkseagreen;">
+                      <input type="submit" value="Inscribir" class="button2" >
                   </form>
                   {% else %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Cancelar" disabled style="background-color: darkred;">
+                    <input type="submit" value="Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow: inset 0px 34px 0px -15px  rgb(180, 67, 67); border:1px solid rgb(110, 8, 8)">
                   </form>
                 {% endif %}
               {% endif %}

@@ -28,22 +28,19 @@ def index(request):
     return render(request, 'index.html', {})
 
 
-def home(request, mensaje=None, titulo=None):
+def home(request):
 
     if request.user.is_authenticated:
-        context = dict.fromkeys(["user","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
+        context = dict.fromkeys(["user","covid","fiebre_amarilla","gripe"], "No")
         user = request.user
         context["user"] = user
-        context["mensaje"] = mensaje
-        context["titulo"] = titulo
-
         inscripciones = Inscripcion.objects.filter(usuario = user)
-        covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first()) #ARREGLAR
+        covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first())
         fiebre_amarilla = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
-        vacuna_fa = VacunaAplicada.objects.filter(usuario = user, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first(),con_nosotros = True)
         gripe = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Gripe").first())
-        if(vacuna_fa):
-            context["vacuna_fa"] = "Si"
+        print(covid)
+        print(fiebre_amarilla)
+        print(gripe)
         if (covid):
             context["covid"] = "Si"
         if (fiebre_amarilla):
@@ -73,11 +70,13 @@ def mostrar_mis_turnos(request):
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
 
     if (turnos):
-        
+
         return render(request, "mostrar_mis_turnos.html",{"turnos":turnos, "dni":usuario.dni})
 
+    else:
+        mensaje="Usted no tiene turnos asignados"
 
-    return render(request,"mostrar_mis_turnos.html",{"turnos":"No"})
+    return HttpResponse(mensaje)
 
 
 @login_required
@@ -112,7 +111,7 @@ def inscribir_campania_gripe (request):
 
     #si ya esta inscripto
     if (inscripcion):
-        return home(request,"Ya estas inscripto")
+        return home(request)
 
 
     hoy = datetime.today()
@@ -147,9 +146,9 @@ def inscribir_campania_gripe (request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
     html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "gripe"})
-    send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    #send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
-    return home(request,"Usted se inscribió a la campaña de vacunación de la gripe","Inscripción exitosa")
+    return home(request)
 
 @login_required
 def inscribir_campania_COVID (request):
@@ -164,7 +163,7 @@ def inscribir_campania_COVID (request):
     print(anios)
 
     if (anios < 18):
-        return home(request, "Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
+        return home(request)
 
 
     inscripto = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
@@ -198,9 +197,9 @@ def inscribir_campania_COVID (request):
 
     if (fecha_turno != None):
         html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "covid"})
-        send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        #send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
-    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19","Inscripción exitosa")
+    return home(request)
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):
@@ -213,15 +212,15 @@ def inscribir_campania_fiebre_amarilla(request):
     anios = calculate_age(usuario.fecha_nacimiento)
 
     if (anios > 60):
-        return home(request,"Usted supera el límite de edad para inscribirse a esta campaña.","Inscripción fallida")
+        return home(request)
 
 
     inscripto = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").first()
-    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
+    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, marca__exact="Fiebre_amarilla")
 
     #Provisoriamente vamos a poner el if gigante anashey evaluar si ya tiene turno, que en teoria no es necesario
     if (inscripto) or (vacuna):
-        return home(request,"Usted se encuentra inscripto o ya tiene una vacuna aplicada","Inscripción fallida")
+        return home(request)
     
     fecha_turno = None
 
@@ -230,7 +229,7 @@ def inscribir_campania_fiebre_amarilla(request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
 
-    return home(request,"Usted se inscribió a la campaña de vacunación de la fiebre amarilla","Inscripción exitosa") 
+    return home(request)
 
 @login_required
 def cargar_vacuna_aplicada_con_turno(request):
