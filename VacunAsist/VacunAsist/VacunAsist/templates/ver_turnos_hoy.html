@@ -20,67 +20,64 @@
             <tbody style="overflow: scroll;">
             {% for turno in turnos %}
             <tr>
-                <td class="row_a">{{turno.usuario.dni}}</td>
+                <td class="dni_t">{{turno.usuario.dni}}</td>
                 <td class="row_b">{{turno.usuario.nombre_apellido}}</td>
                 <td class="row_c">{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
-                <td class="row_d">{{turno.vacuna.tipo}}</td>
-                <td><button class="edit_row" href="" data-toggle="modal" data-target="#modalLoginForm" onclick=myFunction4()>Cargar</button></td>
+                <td class="tipo_t">{{turno.vacuna.tipo}}</td>
+                <td class="edit_row"><button >Cargar</button></td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-<div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">Cargar vacuna</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true"></span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div class="md-form mb-4">
-          <i class="fas fa-envelope prefix grey-text"></i>
-          <label data-error="wrong" data-success="right" for="defaultForm-email">Fecha</label>
-          <input type="text" name="e_dni" id="e_dni" /><br/>
+<form action="/cargar_vacuna_aplicada_con_turno/" method="POST" id="edit_form">{% csrf_token %}
+  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h4 class="modal-title w-100 font-weight-bold">Cargar vacuna</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"></span>
+          </button>
         </div>
+        <div class="modal-body mx-3">
 
-        <div class="md-form mb-4">
-          <i class="fas fa-lock prefix grey-text"></i>
-          <label data-error="wrong" data-success="right" for="defaultForm-pass">DNI</label>
-          <input id="defaultForm-pass" class="form-control validate" id="CAMPO_DNI">
-        </div>
-    
-          <div class="md-form mb-4">
-            <i class="fas fa-envelope prefix grey-text"></i>
-            <label data-error="wrong" data-success="right" for="defaultForm-email">Tipo</label>
-            <input  id="defaultForm-email" class="form-control validate">
-            
-          </div>
-          <div class="md-form mb-4">
-            <i class="fas fa-envelope prefix grey-text"></i>
-            <label data-error="wrong" data-success="right" for="defaultForm-email">Marca</label>
-            <input  id="defaultForm-email" class="form-control validate">
-            
-          </div>
-  
           <div class="md-form mb-4">
             <i class="fas fa-lock prefix grey-text"></i>
-            <label data-error="wrong" data-success="right" for="defaultForm-pass">Lote</label>
-            <input type="" id="defaultForm-pass" class="form-control validate">
-            
+            <label data-error="wrong" data-success="right" for="defaultForm-pass">DNI</label>
+            <input id="dni" name="Dni" class="form-control validate">
           </div>
+      
+            <div class="md-form mb-4">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <label data-error="wrong" data-success="right" for="defaultForm-email">Tipo</label>
+              <input  id="tipo" name="Tipo" class="form-control validate">
+              
+            </div>
+            <div class="md-form mb-4">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <label data-error="wrong" data-success="right" for="defaultForm-email">Marca</label>
+              <input  id="marca" name="Marca" class="form-control validate">
+              
+            </div>
+    
+            <div class="md-form mb-4">
+              <i class="fas fa-lock prefix grey-text"></i>
+              <label data-error="wrong" data-success="right" for="defaultForm-pass">Lote</label>
+              <input id="lote" name="Lote" class="form-control validate">
+              
+            </div>
 
-      </div>
-      <div class="modal-footer d-flex justify-content-center">
-        <button class="btn btn-default">Cargar vacuna</button>
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="submit" class="btn btn-default">Cargar vacuna</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</form>
 
 
 
@@ -108,24 +105,22 @@
 </script>
 {% endif %}
 <script>
-  
-  function myFunction4() {
-    var edit_row = document.querySelectorAll('#t_id .edit_row');
+
+    var edit_row = document.querySelectorAll('#myTable .edit_row');
     for(var i=0; i<edit_row.length; i++) {
       edit_row[i].addEventListener('click', function(e){
         // get parent row, add data from its cells in form fields
         var tr_parent = this.parentNode;
-        document.getElementById('e_dni').value = tr_parent.querySelector('.row_a').innerHTML;
-        document.getElementById('e_title').value = tr_parent.querySelector('.row_t').innerHTML;
-        document.getElementById('e_desc').value = tr_parent.querySelector('.row_d').innerHTML;
+        document.getElementById('dni').value = tr_parent.querySelector('.dni_t').innerHTML;
+        document.getElementById('tipo').value = tr_parent.querySelector('.tipo_t').innerHTML;
 
         // display the form, and focus on a form field
-        document.getElementById('edit_form').style.display = 'block';
-        document.getElementById('e_site').focus();
+        $("#modalLoginForm").modal()
+        document.getElementById('dni').focus();
       }, false);
 
     }
-  }
+  
 </script>
 <script>
 

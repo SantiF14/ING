@@ -220,7 +220,7 @@ def cargar_vacuna_aplicada_con_turno(request):
     return render(request, "cargar_vacuna_aplicada_con_turno.html")
 
 @login_required
-def resultado_carga_vacuna(request):
+def cargar_vacuna_con_turno(request):
 
     dni = request.POST.get("Dni")
     tipo = request.POST.get("Tipo")
@@ -244,18 +244,19 @@ def resultado_carga_vacuna(request):
 
     usuario = Usuario.objects.get(dni=dni)
 
-   
-    if (tipo != "Fiebre_Amarilla"):
-            inscripto = Inscripcion.objects.get(usuario_id=usuario.dni)
+    inscripto = Inscripcion.objects.get(usuario_id=usuario.dni,vacuna_id__tipo=tipo)
+    if (tipo != "Fiebre_amarilla"):
             if (inscripto):
                 inscripto.fecha=fecha_turno
                 inscripto.save()
             else:
-
                 inscripto = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio,vacuna=vacu)
                 inscripto.save()
+    else:
+        inscripto.delete()
+        
 
-    vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=fecha_turno,marca=marca,lote=lote,con_nosotros=True)
+    vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True)
     vacuna.save()
 
-    return render(request, "resultado_carga_vacuna.html")
+    return render(request, "ver_turnos_hoy.html")

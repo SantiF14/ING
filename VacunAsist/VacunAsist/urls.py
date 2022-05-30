@@ -28,8 +28,7 @@ urlpatterns = [
     path('inscribir_campania_gripe/', inscribir_campania_gripe),
     path('inscribir_campania_COVID/', inscribir_campania_COVID),
     path('inscribir_campania_fiebre_amarilla/', inscribir_campania_fiebre_amarilla),
-    path('cargar_vacuna_aplicada_con_turno/', cargar_vacuna_aplicada_con_turno),
-    path('resultado_carga_vacuna/', resultado_carga_vacuna),
+    path('cargar_vacuna_aplicada_con_turno/', cargar_vacuna_con_turno),
     path('mostrar_mis_turnos/', mostrar_mis_turnos, name="MisTurnos"),
     path('mostrar_vacunas_aplicadas/', mostrar_vacunas_aplicadas, name = 'MisVacunas'),
     path('turnos_del_dia/', ver_turnos_del_dia, name="TurnosHoy")
