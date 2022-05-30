@@ -57,50 +57,33 @@ def home(request, mensaje=None, titulo=None):
 
     return render(request, 'index.html', {})    
 
-@login_required
-def visualizar_mis_turnos(request):
-    
-    return render(request,"visualizar_mis_turnos.html")
 
 @login_required
 def mostrar_mis_turnos(request):
 
     usuario = request.user
-
-    #para probar cositas
-    #usuario =  Usuario.objects.filter(dni="42291299").first()
-
+    context=dict.fromkeys(["turnos","mensaje"],"")
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
+    context["vacunas"]=turnos
 
-    if (turnos):
+    if not turnos:
+        context["mensaje"]="Usted no tiene turnos asignados."
         
-        return render(request, "mostrar_mis_turnos.html",{"turnos":turnos, "dni":usuario.dni})
+    return render(request, "mostrar_mis_turnos.html",context)
 
-
-    return render(request,"mostrar_mis_turnos.html",{"turnos":"No"})
-
-
-@login_required
-def visualizar_vacunas_aplicadas(request):
-    
-    return render(request,"visualizar_historial_vacunas_aplicadas.html")
 
 @login_required
 def mostrar_vacunas_aplicadas(request):
 
 
     usuario = request.user
-
+    context=dict.fromkeys(["vacunas","mensaje"],"")
     vacunas = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni)
+    context["vacunas"]=vacunas     
+    if not vacunas:
+        context["mensaje"]="Usted no tiene vacunas cargadas en el sistema"
         
-    if (vacunas):
-
-        return render(request, "mostrar_historial_vacuna_aplicada.html",{"vacunas":vacunas, "dni":usuario.dni})
-
-    else:
-        mensaje="Usted no tiene vacunas cargadas en el sistema"
-
-    return HttpResponse(mensaje)
+    return render(request, "mostrar_historial_vacuna_aplicada.html",context)
 
 @login_required
 def inscribir_campania_gripe (request):
@@ -149,7 +132,7 @@ def inscribir_campania_gripe (request):
     html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "gripe"})
     send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
-    return home(request,"Usted se inscribió a la campaña de vacunación de la gripe","Inscripción exitosa")
+    return home(request,f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
 
 @login_required
 def inscribir_campania_COVID (request):
@@ -200,7 +183,7 @@ def inscribir_campania_COVID (request):
         html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "covid"})
         send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
-    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19","Inscripción exitosa")
+    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):
@@ -239,12 +222,10 @@ def cargar_vacuna_aplicada_con_turno(request):
 @login_required
 def resultado_carga_vacuna(request):
 
-    datos = request
-
-    dni = request.POST.get("DNI")
-    tipo = request.POST.get("tipo")
-    marca = request.POST.get("marca")
-    lote = request.GET.get("lote")
+    dni = request.POST.get("Dni")
+    tipo = request.POST.get("Tipo")
+    marca = request.POST.get("Marca")
+    lote = request.POST.get("Lote")
 
     hoy = datetime.today()
     

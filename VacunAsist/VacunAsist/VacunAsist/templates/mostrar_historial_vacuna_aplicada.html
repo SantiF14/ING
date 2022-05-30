@@ -1,21 +1,59 @@
-<html>
+{% extends "base_login.html" %}
+ {% load static %}
+ {% block content %}
+<body class="user">
 
-<body>
+<div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%;">
+    <div class="col-12">
+        <table class="table table-hover" style="background-color: white; height:100%;">
+            <p style="background-color: white;"><strong>Mis vacunas:</strong></p>
+            <thead class="table-secondary">
+            <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Marca</th>
+                <th scope="col">Lote</th>
+            </tr>
+            </thead>
+            <tbody style="overflow: scroll;">
+            {% for vacuna in vacunas %}
+            <tr>
+                <td>{{vacuna.fecha.day}}/{{vacuna.fecha.month}}/{{vacuna.fecha.year}}</td>
+                <td>{{vacuna.vacuna.tipo}}</td>
+                <td>{{vacuna.marca}}</td>
+                <td>{{vacuna.lote}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-<p>Esta Buscando: <strong>{{dni}}</strong></p>
-
-<ul>
-
-    {% for vacuna in vacunas %}
-        <li>
-            Fecha:  {{vacuna.fecha.day}}/{{vacuna.fecha.month}}/{{vacuna.fecha.year}} &nbsp; 
-            Lote:  {{vacuna.lote}} &nbsp; 
-            Marca:  {{vacuna.marca}}
-        </li>
-    {% endfor %}
-
-</ul>
-
+{% if mensaje != "" %}
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {{ mensaje }}
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+<script type="text/javascript" language="JavaScript">
+    let myModal = new bootstrap.Modal(document.getElementById('exampleModalCenter'), {});
+    myModal.show();
+    </script>
+{% endif %}
 </body>
 
-</html>
+{% endblock %}
+
+

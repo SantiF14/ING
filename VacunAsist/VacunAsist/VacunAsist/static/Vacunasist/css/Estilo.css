@@ -141,11 +141,17 @@ header{
     margin: 15px;
 }
 
-body{
+.no_user{
     height: 100%;
     background-repeat: no-repeat;
     background: url('../images/medicos.jpg') no-repeat center center fixed;
     background-size: 100% 100%;
+    
+}
+
+.user{
+  background-color: rgba(255, 255, 255, 0.5);
+  background-size: 100% 100%;
 }
 
 .layer{
@@ -443,3 +449,10 @@ body{
 	text-decoration: none;
 }
   
+#myInput {
+  width: 100%; /* Full-width */
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+}

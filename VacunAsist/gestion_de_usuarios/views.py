@@ -24,7 +24,7 @@ def registrar(request):
 
     user = request.user
     if user.is_authenticated:
-        return HttpResponse("Ya iniciaste sesión como " + str(user.get_full_name()))
+        return redirect("Home")
 
     context = {}
     if request.POST:
@@ -58,12 +58,12 @@ def cerrar_sesion(request):
 
 @login_required
 def ver_turnos_del_dia(request):
-    us = request.user
-    turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = us.vacunador.vacunatorio_de_trabajo)
+    user = request.user
+    context = dict.fromkeys(["turnos","mensaje"], "")
+    turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = user.vacunador.vacunatorio_de_trabajo)
     if not turnos:
-        return HttpResponse("No hay turnos asignados para el día de hoy.")
-    context = {"turnos": turnos}
-    print(turnos)
+        context["mensaje"]="No existen turnos asignados para el día de hoy."
+    context["turnos"]=turnos
     return render(request, "ver_turnos_hoy.html", context)
 
 def iniciar_sesion(request, *args, **kwargs):

@@ -1,13 +1,12 @@
 {% extends "base_login.html" %}
  {% load static %}
  {% block content %}
-<body>
+<body class="user">
 
-{% if turnos != "No" %}
 <div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%;">
-    <div class="col-12">
-        <table class="table table-hover" style="background-color: white;">
-            <p style="background-color: white;">Mis turnos: <strong></strong></p>
+    <div class="col-12" style="height: 100%; background-color: #fff;">
+        <table class="table table-hover" style="background-color: white; ">
+            <p style="background-color: white;"><strong>Mis turnos:</strong></p>
             <thead class="table-secondary">
             <tr>
                 <th scope="col">Fecha</th>
@@ -27,7 +26,8 @@
         </table>
     </div>
 </div>
-{% else %}
+
+{% if mensaje != "" %}
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -38,14 +38,13 @@
           </button>
         </div>
         <div class="modal-body">
-          Usted no tiene turnos de momento
+          {{ mensaje }}
         </div>
         <div class="modal-footer">
         </div>
       </div>
     </div>
   </div>
-
 <script type="text/javascript" language="JavaScript">
     let myModal = new bootstrap.Modal(document.getElementById('exampleModalCenter'), {});
     myModal.show();

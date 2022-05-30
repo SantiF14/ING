@@ -30,31 +30,30 @@
       <div class="dropdown" style="margin: 40px;">
         <button onclick="myFunction()" class="dropbtn">{{ request.user.nombre_apellido }}</button>
         <div id="myDropdown" class="dropdown-content">
-          <a href="#home">Home</a>
-          <a href="{% url 'mis_turnos' %}">Mis turnos</a>
+          <a href="#home">Mi perfil</a>
+          <a href="{% url 'MisTurnos' %}">Mis turnos</a>
+          <a href="{% url 'MisVacunas' %}">Mis vacunas</a>
           <a href="{% url 'Logout' %}">Cerrar sesión</a>
         {% if user.es_vacunador %}
         <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Physics</a>
-          <a class="dropdown-item" href=""></a>
-          <a class="dropdown-item" href="{% url 'TurnosHoy' %}">Visualizar turnos del dia</a>
+          <a class="dropdown-item" href="{% url 'TurnosHoy' %}">Ver turnos del dia</a>
           {% endif %}
         </div>
       </div>       
     </header>
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
-        <div class="col-3"  onclick="location.href='Index.html';">
-          <a href="index.html">Inicio</a>
+        <div class="col-3"  onclick="location.href='';" style="cursor: pointer;">
+          Home
         </div>
-        <div class="col-3" onclick="location.href='Index.html';">
-          <a href="index.html">Inicio</a>
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+          Nosotros
         </div>
-        <div class="col-3" onclick="location.href='Index.html';">
-          <a href="index.html">Inicio</a>
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+          Ayuda
         </div>
-        <div class="col-3" onclick="location.href='Index.html';">
-          <a href="index.html">Inicio</a>
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+          Contacto
         </div>
       </div>
     </div>
