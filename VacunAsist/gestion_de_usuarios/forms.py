@@ -9,16 +9,24 @@ from VacunAsist.settings import DATE_INPUT_FORMATS
 import requests
 from django.contrib.auth import get_user_model
 User = get_user_model()
+import re
 from .models import Usuario
 
 
 
 class FormularioDeRegistro (UserCreationForm):
+    mensaje_riesgo="""¿Posee una o más de las siguientes condiciones?
+    - Paciente oncológico
+    - Persona trasplantada
+    - Diabetes
+    - Enfermedad Renal Crónica
+    - Enfermedades Cardiovasculares
+    - Enfermedades Respiratorias Crónicas"""
     dni =  forms.CharField(max_length=8, min_length=8, label = "DNI")
     email = forms.EmailField(label="Email")
     nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
     sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
-    de_riesgo = forms.ChoiceField(label = "Sos de riesgo?",choices=(("1","Si"),("0","No")), widget=forms.RadioSelect)
+    de_riesgo = forms.ChoiceField(label = "De riesgo", choices=(("1","Si"),("0","No")), widget=forms.RadioSelect(attrs={'class' : 'form-check-inline'}), help_text=mensaje_riesgo)
     password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
     password2 = forms.CharField(label="Repita su contraseña", widget=forms.PasswordInput)
     fecha_nacimiento  = forms.DateField(label="Fecha de nacimiento",widget=forms.SelectDateWidget(years=range(date.today().year-110, date.today().year)), input_formats= DATE_INPUT_FORMATS)
@@ -64,6 +72,10 @@ class FormularioDeRegistro (UserCreationForm):
 
         password1 = self.cleaned_data['password1']  
         password2 = self.cleaned_data['password2'] 
+        if not bool(re.search(r'\d', password1)):
+            raise ValidationError("La contraseña debe contener por lo menos un dígito.")
+        if not bool(re.search('[a-zA-Z]', password1)):
+            raise ValidationError("La contraseña debe contener por lo menos una letra.")
         if password1 and password2 and password1 != password2:  
             raise ValidationError("Las contraseñas no coinciden.")  
         return password2  

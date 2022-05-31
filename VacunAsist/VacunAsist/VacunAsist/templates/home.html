@@ -7,7 +7,7 @@
 
  {% block content %}
 <body class="no_user">
-  <main class="fondo" >
+  <main class="fondo " >
     
       <!-- Button trigger modal -->
       {% if mensaje != None %}
@@ -53,7 +53,7 @@
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
-                  <input type="submit" class="button2" value="Cancelar" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
+                  <input type="submit" class="button2" value="Proximamente Cancelar" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
                 </form>
               {% endif %}
             </div>
@@ -70,7 +70,7 @@
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
-                  <input type="submit" value="Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
+                  <input type="submit" value="Proximamente Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
                 </form>
               {% endif %}
           </div>
@@ -83,7 +83,7 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if vacuna_fa == "Si" %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Imprimir certificado" class="button2" style="background-color:rgb(197, 197, 34);box-shadow:inset 0px 34px 0px -15px rgb(236, 214, 13); border:1px solid darkgoldenrod">
+                    <input type="submit" value="Proximamente Imprimir certificado" class="button2" style="background-color:rgb(146, 146, 58);box-shadow:inset 0px 34px 0px -15px rgb(185, 174, 73); border:1px solid rgb(218, 184, 100)">
                   </form>
                 {% else %}
                   {% if fiebre_amarilla == "No" %}
@@ -92,7 +92,7 @@
                   </form>
                   {% else %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow: inset 0px 34px 0px -15px  rgb(180, 67, 67); border:1px solid rgb(110, 8, 8)">
+                    <input type="submit" value="Proximamente Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow: inset 0px 34px 0px -15px  rgb(180, 67, 67); border:1px solid rgb(110, 8, 8)">
                   </form>
                 {% endif %}
               {% endif %}

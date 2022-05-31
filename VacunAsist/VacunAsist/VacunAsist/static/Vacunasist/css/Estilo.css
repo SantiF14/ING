@@ -114,6 +114,10 @@ header{
     margin-top: 3%;
   }
 
+.buttom:hover{
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.1);
+}
+
   .pie {
     height:27px;
     width: 100%;
@@ -144,7 +148,7 @@ header{
 .no_user{
     height: 100%;
     background-repeat: no-repeat;
-    background: url('../images/medicos.jpg') no-repeat center center fixed;
+    background: url('../images/medicos.jpg') repeat-y center center fixed;
     background-size: 100% 100%;
     
 }
@@ -162,10 +166,10 @@ header{
     height: 100%;
 }
 
-.mydiv div:hover{background-color:#A2CB83;}
+.mydiv div:hover{background-color:#78a854e1;}
 
 .row > div{
-    background: rgba(162, 203, 131,0.5);
+    background: #a2cb83d8;
     padding: 5px;
     border: 5px solid rgba(255, 255, 255, 0.37);
     text-align: center;
@@ -456,3 +460,19 @@ header{
   border: 1px solid #ddd; /* Add a grey border */
   margin-bottom: 12px; /* Add some space below the input */
 }
+
+.field-wrapper{
+  padding:4%;
+}
+
+.label-wrapper{
+  float: left;
+  width: 50%;
+  text-align: left;
+}
+.value-wrapper{
+  float: left;
+  width: 50%;
+
+}  
+

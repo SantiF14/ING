@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
+    <script src="https://kit.fontawesome.com/61ff68e988.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{% static 'Vacunasist/css/Estilo.css' %}">
     <link href="{% static 'Vacunasist/bootstrap/bootstrap-5.1.3-examples/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet">
 
@@ -24,21 +25,21 @@
         <a class="logo" href="{% url 'Index' %}">
           <img class="img" src="{% static 'Vacunasist/images/Logo.png' %}">
         </a>
-        <a class="buttom" href="{% url 'Register' %}">Registrar</a>        
-        <a class="buttom"  style="margin-right: 10px;" href="{% url 'Login' %}">Iniciar Sesion</a>       
+        <a class="buttom" href="{% url 'Register' %}" style ="color:white; font-weight:600;">Registrar</a>        
+        <a class="buttom"  style="margin-right: 10px; color:white; font-weight:600;" href="{% url 'Login' %}">Iniciar Sesion</a>       
     </header>
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
-        <div class="col-3"  onclick="location.href='{% url 'Home' %}';" style="cursor: pointer;">
+        <div class="col-3"  onclick="location.href='{% url 'Home' %}';" style="cursor: pointer; color:white; font-weight:600;">
           Home
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Nosotros
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Ayuda
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Contacto
         </div>
       </div>

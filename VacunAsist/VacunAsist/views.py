@@ -1,15 +1,14 @@
 
 from django.http import HttpResponse
 from django.template import Template,Context,loader
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from gestion_de_usuarios.models import VacunaAplicada
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from dateutil.relativedelta import *
 from gestion_de_usuarios.models import *
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-
 
 def calcular_edad(fecha_nacimiento):
     hoy = datetime.today()
@@ -24,7 +23,7 @@ def calculate_age(born):
 
 def index(request):
     if request.user.is_authenticated:
-        return home(request)
+        return redirect(home)
     return render(request, 'index.html', {})
 
 
@@ -64,7 +63,7 @@ def mostrar_mis_turnos(request):
     usuario = request.user
     context=dict.fromkeys(["turnos","mensaje"],"")
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
-    context["vacunas"]=turnos
+    context["turnos"]=turnos
 
     if not turnos:
         context["mensaje"]="Usted no tiene turnos asignados."
@@ -100,11 +99,14 @@ def inscribir_campania_gripe (request):
 
     hoy = datetime.today()
     antes = hoy + relativedelta(years=-1)
+    #antes = hoy + relativedelta(years=-1)  
+    print(usuario.dni)
 
     #filtro las vacunas aplicadas de la gripe de ese usuario y me fijo que sea en el ultimo anio, despues las ordeno en orden desendente y me quedo con el primero (sin que sea desendente es sin el -)
-    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").filter(fecha__range=[antes,hoy]).order_by('-fecha').first()
-    
+    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").order_by('-fecha').first()
+    #vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, vacuna_id__tipo__exact="Gripe")
     #si se dio una vacuna contra la gripe en el ultimo anio
+    #vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, marca__exact="Gripe", fecha__range=[antes,hoy]).order_by('-fecha').first()
     if (vacuna):
         if ((vacuna.fecha + relativedelta(years=1)) < (hoy.date() + relativedelta(days=7))):
             fecha_turno = hoy + relativedelta(days=7)
@@ -112,6 +114,7 @@ def inscribir_campania_gripe (request):
             fecha_turno = vacuna.fecha + relativedelta(years=1)
     else:
         #calculo la edad del usuario
+        print ()
         anios = calculate_age(usuario.fecha_nacimiento)
         if (anios < 60):
             fecha_turno = hoy + relativedelta(months=6)
@@ -129,8 +132,8 @@ def inscribir_campania_gripe (request):
 
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
-    html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "gripe"})
-    send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    #html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "gripe"})
+    #send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
     return home(request,f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
 
@@ -156,7 +159,7 @@ def inscribir_campania_COVID (request):
     if (inscripto):
         return home(request)
 
-    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, marca__exact="COVID-19", fecha__range=[antes,hoy]).order_by('-fecha').first()
+    vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").order_by('-fecha').first()
     
     #si se dio una vacuna contra el COVID en los ultimos 3 meses
     if (vacuna):
@@ -166,6 +169,7 @@ def inscribir_campania_COVID (request):
             fecha_turno = vacuna.fecha + relativedelta(months=3)
 
     elif (anios > 60) or (usuario.de_riesgo): 
+        print("hola")
         fecha_turno = hoy + relativedelta(days=7)
         fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
     else:
@@ -179,9 +183,9 @@ def inscribir_campania_COVID (request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
 
-    if (fecha_turno != None):
-        html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "covid"})
-        send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    #if (fecha_turno != None):
+    #    html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "covid"})
+    #    send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
     return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
 
@@ -259,4 +263,4 @@ def cargar_vacuna_con_turno(request):
     vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True)
     vacuna.save()
 
-    return render(request, "ver_turnos_hoy.html")
+    return redirect("TurnosHoy")

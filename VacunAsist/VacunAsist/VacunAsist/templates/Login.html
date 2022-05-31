@@ -16,20 +16,28 @@ Basado en:
 
 {% block content %}
 
-    <body class="no_user">
+    <body class="no_user "> 
+        <div class="layer">
+        <div class="" style="height: 15%; "></div>
         <main role="main" class="container">
-            <div class="row" style="align-content: center;">
-                <div id="login" class="col-lg-4 offset-lg-4 col-md-6 offset-md-3
-                    col-12">
-                    <h2 class="text-center">Bienvenido de nuevo</h2>
+            <div class="row" style="align-content: center; background-color: transparent;">
+                <div id="login" class="col-lg-5 offset-lg-3 col-md-7 offset-md-3
+                    col-10" style="background-color: rgba(255, 255, 255, 0.80);">    
+                    <div class="card-header card card-outline-secondary" style="background: #A2CB83;">
+                        <h3 class="mb-0" style="text-align: center;">Bienvenido de nuevo</h3>
+                </div>
 
-                    <form method="post" action="">{% csrf_token %}
+                    <form method="post"  action="">{% csrf_token %}
                             {% for field in login_form %}
                             {% if field.name != "" %}
-                                <div class="field-wrapper">
-                                    <div class="label-wrapper">
-                                        {{ field.label_tag }}
+                                <div class="field-wrapper"><br>
+                                    <div class="label-wrapper" style="width: 47%;"> 
+                                        {{ field.label_tag }} 
+
                                         {% if field.field.required %}<span class="required">*</span>{% endif %}
+                                        {% if field.help_text != "" %}
+                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}" style="t;"></i>
+                                        {% endif %}
                                     </div>
                                     <div class="value-wrapper">
                                         {{ field }}
@@ -38,14 +46,18 @@ Basado en:
                                 </div>
                             {% endif %}
                         {% endfor %} 
-                        <button type="submit" class="btn btn-primary mb-2">
+                        <br></br>
+
+                        <a href="#" style="float:left; margin-inline-start: 3%;"><span>¿Olvidaste tu contraseña?</span></a> 
+                        <br><br>
+                        <button type="submit"  style="background-color: #A2CB83;color:white; font-weight:600; min-width:90%; border-color: #3b6e22;" class="btn btn-primary mb-2">
                             Entrar
                         </button>
-                        <br>
-                        <a href="#">¿Olvidaste tu contraseña?</a> 
+                        
                     </form>
                 </div>
             </div>
         </main>
+    </div>
     </body>
     {% endblock %}

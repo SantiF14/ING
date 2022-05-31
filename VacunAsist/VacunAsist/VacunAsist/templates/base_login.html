@@ -30,7 +30,7 @@
       <div class="dropdown" style="margin: 40px;">
         <button onclick="myFunction()" class="dropbtn">{{ request.user.nombre_apellido }}</button>
         <div id="myDropdown" class="dropdown-content">
-          <a href="#home">Mi perfil</a>
+          <a href="#home">Mi perfil Proximamente..</a>
           <a href="{% url 'MisTurnos' %}">Mis turnos</a>
           <a href="{% url 'MisVacunas' %}">Mis vacunas</a>
           <a href="{% url 'Logout' %}">Cerrar sesión</a>
@@ -43,16 +43,16 @@
     </header>
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
-        <div class="col-3"  onclick="location.href='{% url 'Home' %}';" style="cursor: pointer;">
+        <div class="col-3"  onclick="location.href='{% url 'Home' %}';" style="cursor: pointer; color:white; font-weight:600;">
           Home
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Nosotros
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Ayuda
         </div>
-        <div class="col-3" onclick="location.href='';" style="cursor: pointer;">
+        <div class="col-3" onclick="location.href='';" style="cursor: pointer; color:white; font-weight:600;">
           Contacto
         </div>
       </div>
