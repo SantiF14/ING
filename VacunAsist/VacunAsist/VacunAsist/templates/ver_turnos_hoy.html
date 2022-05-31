@@ -2,12 +2,15 @@
  {% load static %}
  {% block content %}
 <body class="user">
-<input type="text" id="myInput" placeholder="Ingrese un DNI">
-<button type="button" onclick="myFunction3()">Buscar turno</button>
-<div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%; width: 60%;">
-    <div class="col-12" style="height: 100%; background-color: #fff;">
-        <table class="table table-hover" id="myTable">
-            <p style="background-color: white;"><strong>Turnos del día:</strong></p>
+<div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%; ">
+    <div class="" style="height: 100%; background-color: #fff;">
+      <div class="container " style = "float: left;">
+        <div class="col-6"><p  style="background-color: white; float: left;"><strong>Turnos del día:</strong></p></div>
+        <div class="col-2"style="float:right"><button class="button2" style="border-color: transparent;" type="button" onclick="myFunction3()">Buscar turno</button></div>
+        <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" id="myInput" placeholder="Ingrese un DNI"></div>
+        
+      </div>
+        <table class="table table-hover" id="myTable" style="border: 1px solid black;">
             <thead class="table-secondary">
             <tr>
                 <th scope="col">DNI</th>
@@ -24,7 +27,7 @@
                 <td class="row_b">{{turno.usuario.nombre_apellido}}</td>
                 <td class="row_c">{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
                 <td class="tipo_t">{{turno.vacuna.tipo}}</td>
-                <td class="edit_row"><button >Cargar</button></td>
+                <td class="edit_row"><button class="button2" style="font-size: small; padding: 4px 8px;">Cargar</button></td>
             </tr>
             {% endfor %}
             </tbody>

@@ -183,11 +183,11 @@ def inscribir_campania_COVID (request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
 
-    #if (fecha_turno != None):
-    #    html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "covid"})
-    #    send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    if (fecha_turno != None):
+       html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "COVID-19"})
+       send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
 
-    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
+    return home(request,f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):
