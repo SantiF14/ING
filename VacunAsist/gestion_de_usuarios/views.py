@@ -57,12 +57,13 @@ def cerrar_sesion(request):
     return redirect("Index")
 
 @login_required
-def ver_turnos_del_dia(request):
+def ver_turnos_del_dia(request, mensaje = ""):
     user = request.user
     context = dict.fromkeys(["turnos","mensaje"], "")
+    context["mensaje"] = mensaje
     turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = user.vacunador.vacunatorio_de_trabajo)
-    if not turnos:
-        context["mensaje"]="No existen turnos asignados para el día de hoy."
+    if (not turnos) and (mensaje == ""):
+        context["mensaje"]= "No existen turnos asignados para el día de hoy."
     context["turnos"]=turnos
     return render(request, "ver_turnos_hoy.html", context)
 

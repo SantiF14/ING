@@ -1,14 +1,14 @@
 
-from django.http import HttpResponse
-from django.template import Template,Context,loader
+from django.template import loader
 from django.shortcuts import render, redirect
 from gestion_de_usuarios.models import VacunaAplicada
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from dateutil.relativedelta import *
 from gestion_de_usuarios.models import *
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
+from gestion_de_usuarios.views import ver_turnos_del_dia
 
 def calcular_edad(fecha_nacimiento):
     hoy = datetime.today()
@@ -263,4 +263,4 @@ def cargar_vacuna_con_turno(request):
     vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True)
     vacuna.save()
 
-    return redirect("TurnosHoy")
+    return ver_turnos_del_dia(request, "La vacuna se cargó de forma exitosa.")

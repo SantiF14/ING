@@ -98,12 +98,12 @@ class FormularioDeRegistro (UserCreationForm):
             numero_tramite = self.cleaned_data['numero_tramite']
             sexo = self.cleaned_data["sexo"]
             persona = {"dni":dni,
-                   "tramite": numero_tramite,
-                   "sexo": sexo,}
+                "tramite": numero_tramite,
+                "sexo": sexo,}
             headers = {
-                    'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
-                    'Content-Type' : "application/json"
-                    }
+                'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
+                'Content-Type' : "application/json"
+                }
             response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
             headers=headers, json=persona)
             print(response.status_code)
@@ -148,7 +148,7 @@ class FormularioDeAutenticacion(forms.ModelForm):
             try:
                 user = Usuario.objects.get(dni=dni)
             except Usuario.DoesNotExist:
-                 raise ValidationError("El DNI ingresado no se encuentra registrado en el sistema.")
+                raise ValidationError("El DNI ingresado no se encuentra registrado en el sistema.")
             if not(user.check_password(password) and (user.clave_alfanumerica == clave_alfanumerica)):
                 raise forms.ValidationError("DNI y/o contraseñas inválidas")
     

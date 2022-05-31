@@ -6,7 +6,8 @@
     <div class="" style="height: 100%; background-color: #fff;">
       <div class="container " style = "float: left;">
         <div class="col-6"><p  style="background-color: white; float: left;"><strong>Turnos del día:</strong></p></div>
-        <div class="col-2"style="float:right"><button class="button2" style="border-color: transparent;" type="button" onclick="myFunction3()">Buscar turno</button></div>
+        <div class="col-2"style="float:right"><button class="button2" id="limpiar" style="border-color: transparent;" type="button" onclick="myFunction3(this)">Limpiar</button></div>
+        <div class="col-2"style="float:right"><button class="button2" id="buscar" style="border-color: transparent;" type="button" onclick="myFunction3(this)">Buscar turno</button></div>
         <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" id="myInput" placeholder="Ingrese un DNI"></div>
         
       </div>
@@ -39,7 +40,7 @@
     aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header text-center">
+        <div class="modal-header text-center" style="background: #a2cb83d8;">
           <h4 class="modal-title w-100 font-weight-bold">Cargar vacuna</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true"></span>
@@ -62,20 +63,20 @@
             <div class="md-form mb-4">
               <i class="fas fa-envelope prefix grey-text"></i>
               <label data-error="wrong" data-success="right" for="defaultForm-email">Marca</label>
-              <input  id="marca" name="Marca" class="form-control validate">
+              <input  id="marca" name="Marca" class="form-control validate" required>
               
             </div>
     
             <div class="md-form mb-4">
               <i class="fas fa-lock prefix grey-text"></i>
               <label data-error="wrong" data-success="right" for="defaultForm-pass">Lote</label>
-              <input id="lote" name="Lote" class="form-control validate">
+              <input id="lote" name="Lote" class="form-control validate" required>
               
             </div>
 
         </div>
         <div class="modal-footer d-flex justify-content-center">
-          <button type="submit" class="btn btn-default">Cargar vacuna</button>
+          <button type="submit" class="button2 btn-default" style="min-width: 100%;">Cargar</button>
         </div>
       </div>
     </div>
@@ -127,14 +128,18 @@
 </script>
 <script>
 
-  function myFunction3() {
+  function myFunction3(eve) {
     // Declare variables
-    var input, filter, table, tr, td, i, txtValue;
+    var input, filter, table, tr, td, i, txtValue, id;
     input = document.getElementById("myInput");
     filter = input.value.toUpperCase();
     table = document.getElementById("myTable");
     tr = table.getElementsByTagName("tr");
-  
+    id = eve.id
+    if (id == "limpiar") {
+        filter = "";
+        input.value = "";
+    }
     // Loop through all table rows, and hide those who don't match the search query
     for (i = 0; i < tr.length; i++) {
       td = tr[i].getElementsByTagName("td")[0];
