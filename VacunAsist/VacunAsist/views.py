@@ -98,9 +98,10 @@ def inscribir_campania_gripe (request):
 
 
     hoy = datetime.today()
+
     antes = hoy + relativedelta(years=-1)
     #antes = hoy + relativedelta(years=-1)  
-    print(usuario.dni)
+  
 
     #filtro las vacunas aplicadas de la gripe de ese usuario y me fijo que sea en el ultimo anio, despues las ordeno en orden desendente y me quedo con el primero (sin que sea desendente es sin el -)
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").order_by('-fecha').first()
@@ -114,7 +115,6 @@ def inscribir_campania_gripe (request):
             fecha_turno = vacuna.fecha + relativedelta(years=1)
     else:
         #calculo la edad del usuario
-        print ()
         anios = calculate_age(usuario.fecha_nacimiento)
         if (anios < 60):
             fecha_turno = hoy + relativedelta(months=6)
@@ -147,7 +147,6 @@ def inscribir_campania_COVID (request):
 
     #calculo la edad del usuario
     anios = calculate_age(usuario.fecha_nacimiento)
-    print(anios)
 
     if (anios < 18):
         return home(request, "Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
@@ -169,7 +168,7 @@ def inscribir_campania_COVID (request):
             fecha_turno = vacuna.fecha + relativedelta(months=3)
 
     elif (anios > 60) or (usuario.de_riesgo): 
-        print("hola")
+
         fecha_turno = hoy + relativedelta(days=7)
         fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
     else:
@@ -184,10 +183,10 @@ def inscribir_campania_COVID (request):
     ins.save()
 
     if (fecha_turno != None):
-       html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "COVID-19"})
-       send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-
-    return home(request,f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
+        #html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "vacuna": "COVID-19"})
+        #send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        return home(request,f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
+    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19.","Inscripción exitosa")
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):

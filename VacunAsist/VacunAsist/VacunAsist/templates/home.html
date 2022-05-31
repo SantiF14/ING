@@ -49,7 +49,7 @@
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if gripe == "No" %}
                 <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
-                    <input type="submit" class="button2" value="Inscribir">
+                    <input type="submit" class="button2" value="Inscribir campaña Gripe">
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
@@ -59,14 +59,14 @@
             </div>
           <div  class="col-sm-4">
                 <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
-                <h2 class="titulo2">covid</h2>
+                <h2 class="titulo2">COVID-19</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
                 faucibus orci luctus et ultrices posuere cubilia curae; Fusce 
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if covid == "No" %}
                 <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Inscribir" class="button2" >
+                    <input type="submit" value="Inscribir campaña COVID-19" class="button2" >
                 </form>
                 {% else %}
                 <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
@@ -88,7 +88,7 @@
                 {% else %}
                   {% if fiebre_amarilla == "No" %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                      <input type="submit" value="Inscribir" class="button2" >
+                      <input type="submit" value="Inscribir campaña Fiebre amarilla" class="button2" >
                   </form>
                   {% else %}
                   <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
