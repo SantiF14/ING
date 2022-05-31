@@ -36,7 +36,7 @@ Basado en:
 
                                         {% if field.field.required %}<span class="required">*</span>{% endif %}
                                         {% if field.help_text != "" %}
-                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}" style="t;"></i>
+                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}" style=""></i>
                                         {% endif %}
                                     </div>
                                     <div class="value-wrapper">
@@ -46,7 +46,14 @@ Basado en:
                                 </div>
                             {% endif %}
                         {% endfor %} 
-                        <br></br>
+                        <!--Basicamente esto dice que si hay errores, que los muestre-->
+        
+                        {% if login_form.non_field_errors %}
+                        <div style="color: rgb(105, 0, 0); text-align:left; list-style-type:none;">
+                            <p>{{ login_form.non_field_errors }}</p>
+                        </div>
+
+                        {% endif %}
 
                         <a href="#" style="float:left; margin-inline-start: 3%;"><span>¿Olvidaste tu contraseña? (Proximamente...)</span></a> 
                         <br><br>
