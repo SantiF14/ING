@@ -22,7 +22,7 @@ class FormularioDeRegistro (UserCreationForm):
     - Enfermedad Renal Crónica
     - Enfermedades Cardiovasculares
     - Enfermedades Respiratorias Crónicas"""
-    dni =  forms.CharField(max_length=8, min_length=8, label = "DNI")
+    dni =  forms.CharField(max_length=8, min_length=7, label = "DNI")
     email = forms.EmailField(label="Email")
     nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
     sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
