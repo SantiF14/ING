@@ -27,7 +27,7 @@ class FormularioDeRegistro (UserCreationForm):
     nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
     sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
     de_riesgo = forms.ChoiceField(label = "De riesgo", choices=(("1","Si"),("0","No")), widget=forms.RadioSelect(attrs={'class' : 'form-check-inline'}), help_text=mensaje_riesgo)
-    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput, label_suffix="contraseña")
     password2 = forms.CharField(label="Repita su contraseña", widget=forms.PasswordInput)
     fecha_nacimiento  = forms.DateField(label="Fecha de nacimiento",widget=forms.SelectDateWidget(years=range(date.today().year-110, date.today().year)), input_formats= DATE_INPUT_FORMATS)
     vacunatorio_pref = forms.ModelChoiceField(label="Vacunatorio de preferencia",queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
@@ -137,7 +137,7 @@ class FormularioDeRegistro (UserCreationForm):
 class FormularioDeAutenticacion(forms.ModelForm):
     
     dni =  forms.CharField(max_length=8, label = "DNI")
-    password = forms.CharField(label = "Contraseña", widget=forms.PasswordInput)
+    password = forms.CharField(label = "Contraseña", widget=forms.PasswordInput, label_suffix="contraseña")
     clave_alfanumerica = forms.CharField(label= "Clave alfanumérica", max_length=5)
 
     class Meta:

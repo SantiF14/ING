@@ -23,17 +23,24 @@
                             {% if field.name != "" %}
                                 <div class="field-wrapper">
                                     <div class="label-wrapper"> 
-                                        {{ field.label_tag }}
+                                        {{ field.label }}
                                         {% if field.field.required %}<span class="required">*</span>{% endif %}
                                         {% if field.help_text != "" %}
-                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}" style="t;"></i>
+                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}"></i>
                                         {% endif %}
                                     </div>
                                     <div class="value-wrapper">
                                         {{ field }}
                                         {{ field.errors }}
                                     </div>
+                                    {% if field.field.label_suffix == "contraseña" %}
+                                        <div class="pass-icon">
+                                            <i class="bi bi-eye-slash-fill" style="cursor:pointer;" id="toggle{{ field.name }}"></i>
+                                        </div>
+                                    {% endif %}
+
                                 </div>
+                                <p></p>
                             {% endif %}
                         {% endfor %}
                         <!--Basicamente esto dice que si hay errores, que los muestre-->
@@ -44,7 +51,10 @@
                         </div>
 
                         {% endif %}
-                        <br><br>
+                        <br>
+                        <p>
+                            Se enviará su clave alfanumérica vía mail. Esta es necesaria para iniciar sesión.
+                        </p>
                         <button type="submit" style=" min-width:100%; color:white; font-weight:600; background: #A2CB83; border-color: #3b6e22; float:right;" class="btn btn-primary btn-lg float-right">Registrarse</button>
                     </div>
                 </form>
@@ -52,6 +62,21 @@
         </div></div>
     </div>
 </div>
+<script>
+    const togglePassword = document.querySelector("#togglepassword1");
+    const password1 = document.querySelector("#id_password1");
+    const password2 = document.querySelector("#id_password2");
+
+    togglePassword.addEventListener("click", function () {
+        // toggle the type attribute
+        const type = password1.getAttribute("type") === "password" ? "text" : "password";
+        password1.setAttribute("type", type);
+        password2.setAttribute("type", type);
+        
+        // toggle the icon
+        this.classList.toggle("bi-eye")
+    });
+</script>
 </main>
 
 {% endblock %}
