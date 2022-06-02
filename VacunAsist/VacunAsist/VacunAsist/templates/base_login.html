@@ -30,7 +30,7 @@
         </a>
       </div>
       <div class="dropdown" style="margin: 40px;">
-        <button onclick="myFunction()" class="dropbtn"><i class="fa-solid fa-user" style="margin-right: 5%"></i> {{ request.user.nombre_apellido }}<i class="fa-solid fa-sort-down" style="margin-left: 5%;"></i></button>
+        <button onclick="myFunction()" class="dropbtn"><i class="fa-solid fa-user" style="margin-right: 3%"></i> {{ request.user.nombre_apellido }}<i class="fa-solid fa-sort-down" style="margin-left: 3%;"></i></button>
         <div id="myDropdown" class="dropdown-content">
           <a href="#home"><i class="fa-solid fa-pen-to-square" style="margin-right: 5%"></i>Mi perfil Proximamente..</a>
           <a href="{% url 'MisTurnos' %}"><i class="fa-solid fa-calendar-check" style="margin-right: 5%"></i>Mis turnos</a>
