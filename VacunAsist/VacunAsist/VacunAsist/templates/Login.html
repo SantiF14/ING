@@ -10,7 +10,7 @@ Basado en:
 {% extends "HeaderBaseNoLog.html" %}
 {% load static %}
 
-{% block title %} VacunAsist
+{% block title %} VacunAssist
 {% endblock %}
 
 
@@ -32,17 +32,24 @@ Basado en:
                             {% if field.name != "" %}
                                 <div class="field-wrapper"><br>
                                     <div class="label-wrapper" style="width: 47%;"> 
-                                        {{ field.label_tag }} 
+                                        {{ field.label }} 
 
                                         {% if field.field.required %}<span class="required">*</span>{% endif %}
                                         {% if field.help_text != "" %}
-                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}" style=""></i>
+                                            <i class="fa-solid fa-circle-info" title="{{ field.help_text }}"></i>
                                         {% endif %}
                                     </div>
                                     <div class="value-wrapper">
-                                        {{ field }}
+                                        {{ field }}                                        
                                         {{ field.errors }}
+                                        
                                     </div>
+                                    {% if field.field.label_suffix == "contraseña" %}
+                                        <div class="pass-icon">
+                                            <i class="bi bi-eye-slash-fill" style="cursor: pointer;" id="togglePassword"></i>
+                                        </div>
+                                    {% endif %}
+
                                 </div>
                             {% endif %}
                         {% endfor %} 
@@ -52,9 +59,8 @@ Basado en:
                         <div style="color: rgb(105, 0, 0); text-align:left; list-style-type:none;">
                             <p>{{ login_form.non_field_errors }}</p>
                         </div>
-
                         {% endif %}
-
+                        
                         <a href="#" style="float:left; margin-inline-start: 3%;"><span>¿Olvidaste tu contraseña? (Proximamente...)</span></a> 
                         <br><br>
                         <button type="submit"  style="background-color: #A2CB83;color:white; font-weight:600; min-width:90%; border-color: #3b6e22;" class="btn btn-primary mb-2">
@@ -66,5 +72,19 @@ Basado en:
             </div>
         </main>
     </div>
+    <script>
+        const togglePassword = document.querySelector("#togglePassword");
+        const password = document.querySelector("#id_password");
+
+        togglePassword.addEventListener("click", function () {
+            // toggle the type attribute
+            const type = password.getAttribute("type") === "password" ? "text" : "password";
+            password.setAttribute("type", type);
+            
+            // toggle the icon
+            this.classList.toggle("bi-eye")
+        });
+
+    </script>
     </body>
     {% endblock %}

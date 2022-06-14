@@ -1,7 +1,7 @@
  {% extends "HeaderBaseNoLog.html" %}
  {% load static %}
 
- {% block title %} VacunAsist
+ {% block title %} VacunAssist
  {% endblock %}
 
 
@@ -21,31 +21,15 @@
         <div class="row">
             <div class="col-sm-4">
                 <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
-                <h2 class="titulo2">influenza</h2>
+                <h2 class="titulo2">Gripe</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
                 faucibus orci luctus et ultrices posuere cubilia curae; Fusce
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
             </div>
-            {% if user.is_authenticated %}
-              {% if query == "si" %}
-              <p> Presione el boton inscribir para inscribirse a la campania de la Fiebre amarilla</p>
-              <form action="/inscribir_campania_fiebre_amarilla/">
-                  <input type="submit" value="Inscribir">
-              </form>
-            {%elif query == "no" %}
-              <p> Presione el boton cancelar para describirse a la campania de la Fiebre amarilla</p>
-              <form action="/inscribir_campania_fiebre_amarilla/">
-                <input type="button" value="Cancelar">
-              </form>
-              {% else %}
-              <p> Usted tiene mas de 60 anios, no se puede inscribir a la campania</p>
-            {% endif %}
-
-            {% endif %}
           <div  class="col-sm-4">
                 <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
-                <h2 class="titulo2">covid</h2>
+                <h2 class="titulo2">COVID-19</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
                 faucibus orci luctus et ultrices posuere cubilia curae; Fusce 
@@ -53,7 +37,7 @@
           </div>
           <div  class="col-sm-4">
                 <img class="img-campaña" src="{% static 'Vacunasist/images/bacteria.jpg' %}" alt="">
-                <h2 class="titulo2">fiebre amarilla</h2>
+                <h2 class="titulo2">Fiebre amarilla</h2>
                 <p class="fuenteCampañas">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Vestibulum in varius orci. Vestibulum ante ipsum primis in
                 faucibus orci luctus et ultrices posuere cubilia curae; Fusce 

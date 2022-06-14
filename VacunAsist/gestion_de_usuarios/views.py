@@ -36,7 +36,10 @@ def registrar(request):
             password = form.cleaned_data["password1"]
             mail = request.POST.get('email')
             html_message = loader.render_to_string('email_clave.html',{'clave': clave_alfanum})
-            #send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
+            try:
+                send_mail('Clave alfanumerica Vacunassist',"",EMAIL_HOST_USER,[mail], html_message=html_message)
+            except:
+                pass
             user = authenticate(dni=dni, password=password)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             destination = get_redirect_if_exists(request)

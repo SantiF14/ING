@@ -22,12 +22,12 @@ class FormularioDeRegistro (UserCreationForm):
     - Enfermedad Renal Crónica
     - Enfermedades Cardiovasculares
     - Enfermedades Respiratorias Crónicas"""
-    dni =  forms.CharField(max_length=8, min_length=8, label = "DNI")
+    dni =  forms.CharField(max_length=8, min_length=7, label = "DNI")
     email = forms.EmailField(label="Email")
     nombre_apellido = forms.CharField(max_length=50, label="Nombre y apellido")
     sexo = forms.ChoiceField(label="Sexo (Como figura en el DNI)", choices=(("M","Masculino"),("F","Femenino")))
     de_riesgo = forms.ChoiceField(label = "De riesgo", choices=(("1","Si"),("0","No")), widget=forms.RadioSelect(attrs={'class' : 'form-check-inline'}), help_text=mensaje_riesgo)
-    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput, label_suffix="contraseña")
     password2 = forms.CharField(label="Repita su contraseña", widget=forms.PasswordInput)
     fecha_nacimiento  = forms.DateField(label="Fecha de nacimiento",widget=forms.SelectDateWidget(years=range(date.today().year-110, date.today().year)), input_formats= DATE_INPUT_FORMATS)
     vacunatorio_pref = forms.ModelChoiceField(label="Vacunatorio de preferencia",queryset=Vacunatorio.objects.all(), widget=forms.Select, empty_label=None)
@@ -104,11 +104,16 @@ class FormularioDeRegistro (UserCreationForm):
                 'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
                 'Content-Type' : "application/json"
                 }
-            response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
-            headers=headers, json=persona)
-            print(response.status_code)
-            if (response.status_code != 200):
-                raise ValidationError("Error de validación. Verifique que sus datos sean correctos e intente de nuevo.")
+            try:
+                response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
+                headers=headers, json=persona)
+            except:
+                raise ValidationError("Hubo un fallo en la conexión con el servidor. Vuelva a intentarlo más tarde.")
+            else:
+                if (response.status_code == 403):
+                    raise ValidationError("Hubo un fallo en la conexión con el servidor. Vuelva a intentarlo más tarde.")
+                if (response.status_code != 200):
+                    raise ValidationError("Error de validación. Verifique que sus datos sean correctos e intente de nuevo.")
 
     def save(self, clave_alfanumerica, commit = True):
         user = Usuario.objects.crear_usuario(  
@@ -132,7 +137,7 @@ class FormularioDeRegistro (UserCreationForm):
 class FormularioDeAutenticacion(forms.ModelForm):
     
     dni =  forms.CharField(max_length=8, label = "DNI")
-    password = forms.CharField(label = "Contraseña", widget=forms.PasswordInput)
+    password = forms.CharField(label = "Contraseña", widget=forms.PasswordInput, label_suffix="contraseña")
     clave_alfanumerica = forms.CharField(label= "Clave alfanumérica", max_length=5)
 
     class Meta:
