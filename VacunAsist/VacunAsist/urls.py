@@ -31,5 +31,6 @@ urlpatterns = [
     path('cargar_vacuna_aplicada_con_turno/', cargar_vacuna_con_turno),
     path('mostrar_mis_turnos/', mostrar_mis_turnos, name="MisTurnos"),
     path('mostrar_vacunas_aplicadas/', mostrar_vacunas_aplicadas, name = 'MisVacunas'),
-    path('turnos_del_dia/', ver_turnos_del_dia, name="TurnosHoy")
+    path('turnos_del_dia/', ver_turnos_del_dia, name="TurnosHoy"),
+    path("imprimir_certificado/", descargar_certificado_fiebre_amarilla),
 ]

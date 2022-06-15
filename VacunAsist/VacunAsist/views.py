@@ -10,13 +10,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from gestion_de_usuarios.views import ver_turnos_del_dia
 
-def calcular_edad(fecha_nacimiento):
-    hoy = datetime.today()
-    anios = hoy + relativedelta(days=-fecha_nacimiento.day)
-    anios = anios + relativedelta(months=-fecha_nacimiento.month)
-    anios = anios + relativedelta(years=-fecha_nacimiento.year)
-    return anios
-
 def calculate_age(born):
     today = date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
@@ -25,7 +18,6 @@ def index(request):
     if request.user.is_authenticated:
         return redirect(home)
     return render(request, 'index.html', {})
-
 
 def home(request, mensaje=None, titulo=None):
 
@@ -56,7 +48,6 @@ def home(request, mensaje=None, titulo=None):
 
     return render(request, 'index.html', {})    
 
-
 @login_required
 def mostrar_mis_turnos(request):
 
@@ -69,7 +60,6 @@ def mostrar_mis_turnos(request):
         context["mensaje"]="Usted no tiene turnos asignados."
         
     return render(request, "mostrar_mis_turnos.html",context)
-
 
 @login_required
 def mostrar_vacunas_aplicadas(request):
@@ -90,11 +80,11 @@ def inscribir_campania_gripe (request):
  
     usuario = request.user
 
-    inscripcion=Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
+    inscripcion = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
 
-    #si ya esta inscripto
+    #si ya esta inscripcion
     if (inscripcion):
-        return home(request,"Ya estas inscripto")
+        return home(request,"Ya estas inscripcion")
 
 
     hoy = datetime.today()
@@ -154,10 +144,10 @@ def inscribir_campania_COVID (request):
         return home(request, "Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
 
 
-    inscripto = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
+    inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
 
-    #si ya esta inscripto
-    if (inscripto):
+    #si ya esta inscripcion
+    if (inscripcion):
         return home(request)
 
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").order_by('-fecha').first()
@@ -204,12 +194,12 @@ def inscribir_campania_fiebre_amarilla(request):
         return home(request,"Usted supera el límite de edad para inscribirse a esta campaña.","Inscripción fallida")
 
 
-    inscripto = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").first()
+    inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").first()
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
 
     #Provisoriamente vamos a poner el if gigante anashey evaluar si ya tiene turno, que en teoria no es necesario
-    if (inscripto) or (vacuna):
-        return home(request,"Usted se encuentra inscripto o ya tiene una vacuna aplicada","Inscripción fallida")
+    if (inscripcion) or (vacuna):
+        return home(request,"Usted se encuentra inscripcion o ya tiene una vacuna aplicada","Inscripción fallida")
     
     fecha_turno = None
 
@@ -219,10 +209,6 @@ def inscribir_campania_fiebre_amarilla(request):
     ins.save()
 
     return home(request,"Usted se inscribió a la campaña de vacunación de la fiebre amarilla","Inscripción exitosa") 
-
-@login_required
-def cargar_vacuna_aplicada_con_turno(request):
-    return render(request, "cargar_vacuna_aplicada_con_turno.html")
 
 @login_required
 def cargar_vacuna_con_turno(request):
@@ -245,21 +231,22 @@ def cargar_vacuna_con_turno(request):
         fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
     
 
-    vacu= Vacuna.objects.filter(tipo__exact=tipo).first()
+    vacu = Vacuna.objects.filter(tipo__exact=tipo).first()
 
     usuario = Usuario.objects.get(dni=dni)
 
-    inscripto = Inscripcion.objects.get(usuario_id=usuario.dni,vacuna_id__tipo=tipo)
+    inscripcion = Inscripcion.objects.get(usuario_id=usuario.dni,vacuna_id__tipo=tipo)
     if (tipo != "Fiebre_amarilla"):
-            if (inscripto):
-                inscripto.fecha=fecha_turno
-                inscripto.save()
+            if (inscripcion): #REVISAR : Innecesario, si entra a esta funcion la inscripcion existe
+                inscripcion.fecha=fecha_turno
+                inscripcion.save()
             else:
-                inscripto = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio,vacuna=vacu)
-                inscripto.save()
+                inscripcion = inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio,vacuna=vacu)
+                inscripcion.save()
     else:
-        inscripto.delete()
+        inscripcion.delete()
         
+    #REVISAR : Deberia restar uno a vacunas en stock? Depende de como lo terminemos modelando.
 
     vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True)
     vacuna.save()
@@ -270,25 +257,25 @@ def cargar_vacuna_con_turno(request):
 
 @login_required
 def cargar_vacuna_stock(request):
-    cant = request.POST.get("Cantidad")
+    cant = int(request.POST.get("Cantidad"))
     tipo = request.POST.get("Tipo")
 
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return nose(request, 'No se puede ingresar una cantidad negativa por favor ingrese un valor positivo.')
+        return nose(request, 'No se puede ingresar una cantidad negativa. Ingrese un valor positivo.')
 
     user = request.user
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
 
-    if (vacvacunatorio):
-        vacvacunatorio.stock_actual = vacvacunatorio.stock_actual + cant
+    if (vacuna_vacunatorio):
+        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + cant
     else:
-        vacvacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=cant)
+        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=cant)
 
-    vacvacunatorio.save()
+    vacuna_vacunatorio.save()
 
     #fijarse donde lo va a retornar
     return nose(request, 'Las vacunas se cargaron de forma exitosa en el sistema.')
@@ -300,31 +287,30 @@ def eliminar_vacuna_stock(request):
 
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return nose(request, 'Debe ingresarse un numero positivo de vacunas a eliminar.')
+        return visualizar_stock_vacunador(request, 'Debe ingresarse un numero positivo de vacunas a eliminar.')
 
     user = request.user
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
-
-    if (vacvacunatorio):
-        if (vacvacunatorio.stock_actual < cant):
-            mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacvacunatorio.stock_actual}).'
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    # REVISAR : Sacar el primer if-else, nunca entraria al else por como lo pensamos.
+    if (vacuna_vacunatorio):
+        if (vacuna_vacunatorio.stock_actual < cant):
+            mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacuna_vacunatorio.stock_actual}).'
         else:
-            vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - cant
-            vacvacunatorio.save()
-            mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de la gripe en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
+            vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - cant
+            vacuna_vacunatorio.save()
+            mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de la gripe en el vacunatorio {vacuna_vacunatorio.vacunatorio.nombre} es de: {vacuna_vacunatorio.stock_actual}.'
     else:
         #checkear esto
-        vacvacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=0)
-        vacvacunatorio.save()
-        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacvacunatorio.stock_actual}).'
+        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=0)
+        vacuna_vacunatorio.save()
+        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacuna_vacunatorio.stock_actual}).'
 
 
     #fijarse donde lo va a retornar
-    return nose(request, mensaje)
-
+    return visualizar_stock_vacunador(request, mensaje)
 
 @login_required
 def agregar_vacuna_gripe_historial(request):
@@ -336,26 +322,24 @@ def agregar_vacuna_gripe_historial(request):
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    inscripto = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first()
     fecha_turno = None
-
-    #chequear si el not inscripto funciona como creo
-    if (inscripto.fecha < (fecha + relativedelta(years=1))):
-        if ((fecha + relativedelta(years=1)) < (hoy.date() + relativedelta(days=7))):
-            fecha_turno = hoy + relativedelta(days=7)
-        else:
-            fecha_turno = fecha + relativedelta(years=1)
-        fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
-        inscripto.fecha = fecha_turno
-        inscripto.save()
+    if not inscripcion:
+        if (inscripcion.fecha < (fecha + relativedelta(years=1))):
+            if ((fecha + relativedelta(years=1)) < (hoy.date() + relativedelta(days=7))):
+                fecha_turno = hoy + relativedelta(days=7)
+            else:
+                fecha_turno = fecha + relativedelta(years=1)
+            fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
+            inscripcion.fecha = fecha_turno
+            inscripcion.save()
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
     vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,con_nosotros=False)
     vacunaaplicada.save()
 
-    #cambiar return
-    return nose(request, 'La vacuna ha sido cargada exitosamente.')
+    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
 def agregar_vacuna_COVID_historial(request):
@@ -367,19 +351,20 @@ def agregar_vacuna_COVID_historial(request):
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    inscripto = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first()
     fecha_turno = None
 
-    #ver si no existe el inscripto tira error, en caso de que si, cambiar a esto y probar if (inscripto) and (inscripto.fecha < (fecha + relativedelta(years=3))):
+    #ver si no existe la inscripcion tira error, en caso de que si, cambiar a esto y probar if (inscripcion) and (inscripcion.fecha < (fecha + relativedelta(years=3))):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
-    if (inscripto.fecha < (fecha + relativedelta(years=3))):
-        if ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
-            fecha_turno = hoy + relativedelta(days=7)
-        else:
-            fecha_turno = fecha + relativedelta(months=3)
-        fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
-        inscripto.fecha = fecha_turno
-        inscripto.save()
+    if not inscripcion:
+        if (inscripcion.fecha < (fecha + relativedelta(months=3))):
+            if ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
+                fecha_turno = hoy + relativedelta(days=7)
+            else:
+                fecha_turno = fecha + relativedelta(months=3)
+            fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
+            inscripcion.fecha = fecha_turno
+            inscripcion.save()
 
 
     fecha = date(fecha.year, fecha.month, fecha.day)
@@ -388,7 +373,7 @@ def agregar_vacuna_COVID_historial(request):
     vacunaaplicada.save()
 
     #cambiar return
-    return nose(request, 'La vacuna ha sido cargada exitosamente.')
+    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
 def agregar_vacuna_fiebre_amarilla_historial(request):
@@ -399,10 +384,10 @@ def agregar_vacuna_fiebre_amarilla_historial(request):
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    inscripto = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first
 
-    if (inscripto):
-        inscripto.delete()
+    if (inscripcion):
+        inscripcion.delete()
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
@@ -411,40 +396,41 @@ def agregar_vacuna_fiebre_amarilla_historial(request):
 
 
     #cambiar return y acordarse de actualizar boton
-    return nose(request, 'La vacuna ha sido cargada exitosamente.')
+    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
-def visualizar_stock_vacunador(request):
-    #ver si al apretar un boton devuelve un tipo, no me acuerdo
-    tipo = request.POST.get("Tipo")
+def visualizar_stock_vacunador(request, mensaje):
+    
     user = request.user
 
-    vacuna = Vacuna.objects.get(tipo=tipo)
+    context = dict.fromkeys(["vacunas","mensaje"],"")
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo)
+
+    context["vacunas"] = vacuna_vacunatorio
+    context["mensaje"] = mensaje
 
     #ver si contemplar esto
-    if (not vacvacunatorio):
-        vacvacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna,stock_actual=0)
-        vacvacunatorio.save()
+    #if (not vacuna_vacunatorio):
+    #    vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna,stock_actual=0)
+    #    vacuna_vacunatorio.save()
 
-    #cambiar return
-    return nose(request, f'Hay {vacvacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {vacvacunatorio.vacunatorio.nombre}.')
+    return render(request, mensaje)
 
-
+#REVISAR
 @login_required
 def visualizar_stock_administrador(request):
-    nomvacunatorio = request.POST.get("Vacunatorio")
+    vacunatorio = request.POST.get("Vacunatorio")
     tipo = request.POST.get("Tipo")
     user = request.user
-
+ 
     vacuna = Vacuna.objects.filter(tipo=tipo).first()
 
 
     if (vacuna):
-        vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=nomvacunatorio, vacuna=vacuna).first()
+        vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=vacunatorio, vacuna=vacuna).first()
         #cambiar return
-        return nose(request, f'Hay {vacvacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {nomvacunatorio}.')
+        return nose(request, f'Hay {vacuna_vacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {nomvacunatorio}.')
 
     #ver si esto funciona como deberia o si hay que poner .get() o como carajo es
     listavacunatorios = VacunaVacunatorio.objects.all()
@@ -453,15 +439,15 @@ def visualizar_stock_administrador(request):
         stocktotal = stocktotal + vacunatorio.stock_actual
 
     #cambiar return
-    return nose(request, f'Hay {stocktotal} vacunas en stock de tipo {tipo} en {nomvacunatorio} los vacunatorios.')
+    return nose(request, f'Hay {stocktotal} vacunas en stock de tipo {tipo} en {vacunatorio} los vacunatorios.')
 
 @login_required
-def Boton_gripe(request):
+def boton_gripe(request):
     
     #asignar el sobrante cuando este echo en la base de datos
     sobrante = 10
 
-    if (sobrante == 0 ):
+    if (sobrante == 0):
         #cambiar return
         return nose(request, 'No hay sobrante de vacunas en este momento.')
 
@@ -469,12 +455,12 @@ def Boton_gripe(request):
     vacunaaplicada = VacunaAplicada.objects.filter(usuario_id__dni__exact=dni).filter(vacuna_id__tipo__exact="Gripe").order_by('-fecha').first()
     hoy = datetime.today()
 
-    if (vacunaaplicada) and ((hoy + relativedelta(years=-1)) > vacunaaplicada.fecha):
+    if (vacunaaplicada) and ((hoy + relativedelta(years=-1)) < vacunaaplicada.fecha):
         #cambiar return
         return nose(request, 'Esta persona tiene una vacuna aplicada en el ultimo año, no puede aplicarse la vacuna')
     
     #cambiar return en este caso todo esta ok xD
-        return nose(request, 'ok')
+    return nose(request, 'ok')
 
 @login_required
 def Cargar_vacuna_gripe_sin_turno(request):
@@ -486,38 +472,38 @@ def Cargar_vacuna_gripe_sin_turno(request):
     dni = request.POST.get("DNI")
     marca = request.POST.get("Marca")
     lote = request.POST.get("Lote")
-    
-
+    usuario = Usuario.objects.filter(dni=dni).first()
     vacuna = Vacuna.objects.filter(tipo='Gripe').first()
 
-    inscripto = Inscripcion.objects.filter(usuario_id=dni,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario=usuario,vacuna=vacuna).first()
 
     hoy = datetime.today()
 
     hoy = date(hoy.year, hoy.month, hoy.day)
 
-    vacunaaplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
-    vacunaaplicada.save()
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
+    vacuna_aplicada.save()
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=nomvacunatorio, vacuna=vacuna).first()
-    vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - 1
-    vacvacunatorio.save()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+    vacuna_vacunatorio.save()
 
-    if (inscripto):
-        inscripto.fecha = hoy + relativedelta(years=1)
-        inscripto.save()
+    if (inscripcion):
+        inscripcion.fecha = hoy + relativedelta(years=1)
+        inscripcion.save()
         #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
         #send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     
-    usuario = Usuario.objects.filter(dni=dni).first()
-    if ( not usuario):
-        #crear nuevo mail a enviar para invitarlo a usar la pag
-        print ('crear nuevo mail a enviar para invitarlo a usar la pag')
+    if (not usuario):
+        email =request.POST.get("Email")
+        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "gripe"})
+        #send_mail('Vacunacion contra la gripe',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        
 
     return nose(request, 'La vacuna se cargo de forma exitosa.')
 
 @login_required
-def Boton_COVID(request):
+def boton_COVID(request):
     
     #asignar el sobrante cuando este echo en la base de datos
     sobrante = 9
@@ -527,15 +513,20 @@ def Boton_COVID(request):
         return nose(request, 'No hay sobrante de vacunas en este momento.')
 
     dni = request.POST.get("DNI")
-
-
-    usuario = Usuario.objects.filter(dni=dni).first()
-
-    if (usuario):
-        #calculo la edad del usuario
-        anios = calculate_age(usuario.fecha_nacimiento)
-
-        if (anios < 18):
+    fecha_nacimiento = request.POST.get("Fecha_nacimiento")
+ #   usuario = Usuario.objects.filter(dni=dni).first()
+#
+ #   if (usuario):
+ #       #calculo la edad del usuario
+ #       anios = calculate_age(usuario.fecha_nacimiento)
+#
+ #       if (anios < 18):
+ #           #cambiar return
+ #           return nose(request, "La persona es menor de 18 años no puede aplicarse la vacuna")
+     
+    anios = calculate_age(fecha_nacimiento)
+    
+    if (anios < 18):
             #cambiar return
             return nose(request, "La persona es menor de 18 años no puede aplicarse la vacuna")
 
@@ -544,15 +535,15 @@ def Boton_COVID(request):
     #-----------------------------------------------------------------#
 
 
-    vacunaaplicada = VacunaAplicada.objects.filter(usuario_id__dni__exact=dni).filter(vacuna_id__tipo__exact="COVID-19").order_by('-fecha').first()
+    vacuna_aplicada = VacunaAplicada.objects.filter(usuario_id__dni__exact=dni).filter(vacuna_id__tipo__exact="COVID-19").order_by('-fecha').first()
     hoy = datetime.today()
 
-    if (vacunaaplicada) and ((hoy + relativedelta(months=-3)) > vacunaaplicada.fecha): #chequear que este mayor este bien puesto y no sea menor
+    if (vacuna_aplicada) and ((hoy + relativedelta(months=-3)) < vacuna_aplicada.fecha): #chequear que este mayor este bien puesto y no sea menor
         #cambiar return
         return nose(request, 'Esta persona tiene una vacuna aplicada en los ultimos tres meses, no puede aplicarse la vacuna')
     
     #cambiar return en este caso todo esta ok xD
-        return nose(request, 'ok')
+    return nose(request, 'ok')
 
 @login_required
 def Cargar_vacuna_COVID_sin_turno(request):
@@ -564,57 +555,51 @@ def Cargar_vacuna_COVID_sin_turno(request):
     dni = request.POST.get("DNI")
     marca = request.POST.get("Marca")
     lote = request.POST.get("Lote")
-    
+    usuario = Usuario.objects.filter(dni=dni).first()
 
     vacuna = Vacuna.objects.filter(tipo='COVID-19').first()
-
-    inscripto = Inscripcion.objects.filter(usuario_id=dni,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario_id=usuario,vacuna=vacuna).first()
 
     hoy = datetime.today()
-
     hoy = date(hoy.year, hoy.month, hoy.day)
 
     #en teoria deberia ser distinto el cargar la vacuna aplicada si esta registrado o no, pero si esto es legal, deberia funcionar para ambos
-    vacunaaplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
-    vacunaaplicada.save()
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
+    vacuna_aplicada.save()
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=nomvacunatorio, vacuna=vacuna).first()
-    vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - 1
-    vacvacunatorio.save()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+    vacuna_vacunatorio.save()
 
-    if (inscripto):
-        inscripto.fecha = hoy + relativedelta(months=3)
-        inscripto.save()
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
-        #send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    if (inscripcion):
+        inscripcion.fecha = hoy + relativedelta(months=3)
+        inscripcion.save()
+        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(months=3), "vacuna": "COVID-19"})
+        #send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     
-    usuario = Usuario.objects.filter(dni=dni).first()
-    if ( not usuario):
-        #crear nuevo mail a enviar para invitarlo a usar la pag
-        print ('crear nuevo mail a enviar para invitarlo a usar la pag')
+    
+    if (not usuario):
+        email =request.POST.get("Email")
+        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "COVID-19"})
+        #send_mail('Vacunacion contra el COVID-19',"",EMAIL_HOST_USER,[email], html_message=html_message)
         
     return nose(request, 'La vacuna se cargo de forma exitosa.')
     
 @login_required
-def Boton_fiebre_amarilla(request):
+def boton_fiebre_amarilla(request):
     
     #asignar el sobrante cuando este echo en la base de datos
     sobrante = 9
 
-    if (sobrante == 0 ):
+    if (sobrante == 0):
         #cambiar return
         return nose(request, 'No hay sobrante de vacunas en este momento.')
 
     dni = request.POST.get("DNI")
 
-
-    usuario = Usuario.objects.filter(dni=dni).first()
-
-    if (usuario):
-        #calculo la edad del usuario
-        anios = calculate_age(usuario.fecha_nacimiento)
-
-        if (anios > 60):
+    fecha_nacimiento = request.POST.get("Fecha_nacimiento")
+    anios = calculate_age(fecha_nacimiento)
+    if (anios < 18):
             #cambiar return
             return nose(request, "El usuario es mayor de 60 años, no puede aplicarse la vacuna")
 
@@ -628,10 +613,10 @@ def Boton_fiebre_amarilla(request):
 
     if (vacunaaplicada):
         #cambiar return
-        return nose(request, 'Esta persona ya tiene aplicada la vacuna contra Fiebre amarilla no se la puede volver a aplicar')
+        return nose(request, 'Esta persona ya tiene aplicada la vacuna contra fiebre amarilla, no se la puede volver a aplicar')
     
     #cambiar return en este caso todo esta ok xD
-        return nose(request, 'ok')
+    return nose(request, 'ok')
 
 @login_required
 def Cargar_vacuna_fiebre_amarilla_sin_turno(request):
@@ -647,28 +632,31 @@ def Cargar_vacuna_fiebre_amarilla_sin_turno(request):
 
     vacuna = Vacuna.objects.filter(tipo='Fiebre_amarilla').first()
 
-    inscripto = Inscripcion.objects.filter(usuario_id=dni,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna=vacuna).first
 
     hoy = datetime.today()
 
     hoy = date(hoy.year, hoy.month, hoy.day)
 
     #en teoria deberia ser distinto el cargar la vacuna aplicada si esta registrado o no, pero si esto es legal, deberia funcionar para ambos
-    vacunaaplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
-    vacunaaplicada.save()
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
+    vacuna_aplicada.save()
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=nomvacunatorio, vacuna=vacuna).first()
-    vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - 1
-    vacvacunatorio.save()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+    vacuna_vacunatorio.save()
 
-    if (inscripto):
-        inscripto.delete()
+    if (inscripcion):
+        inscripcion.delete()
     
     usuario = Usuario.objects.filter(dni=dni).first()
     if (usuario):
-        print ('crear nuevo mail a enviar para avisarle que imprima el certificado en su cuenta')
+        pass
+        #html_message = loader.render_to_string('email_aviso_certificado.html',{'fecha': hoy})
+        #send_mail('Certificado de vacunacion de fiebre amarilla',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     else: 
-        #crear nuevo mail a enviar para invitarlo a usar la pag
-        print ('crear nuevo mail a enviar para invitarlo a usar la pag')
+        email =request.POST.get("Email")
+        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "Fiebre amarilla"})
+        #send_mail('Vacunacion contra la fiebre amarilla',"",EMAIL_HOST_USER,[email], html_message=html_message)
         
     return nose(request, 'La vacuna se cargo de forma exitosa.')

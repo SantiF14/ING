@@ -1,8 +1,8 @@
 from datetime import date
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.template import Template,Context,loader
-from gestion_de_usuarios.models import Inscripcion
+from django.shortcuts import render, redirect, HttpResponse
+from django.template import loader
+from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
@@ -11,6 +11,11 @@ from django.core.mail import send_mail
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+import pdfkit
+import mimetypes
+import os
+from pathlib import Path
+
 User = get_user_model()
 
 def get_redirect_if_exists(request):
@@ -110,3 +115,42 @@ def buscar_turno(request):
                 return HttpResponse(turno)
     context = {}
     return render(request, "busqueda_turno.html", context)
+
+@login_required
+def descargar_certificado_fiebre_amarilla(request):
+    options = {
+        'dpi': 360,
+        'page-size': 'A4',
+        'margin-top': '0.0in',
+        'margin-right': '0.0in',
+        'margin-bottom': '0.0in',
+        'margin-left': '0.0in',
+        'encoding': "UTF-8",
+        'custom-header': [
+           ('Accept-Encoding', 'gzip')
+        ],
+        'no-outline': None,
+    }
+    config = pdfkit.configuration(wkhtmltopdf='C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')
+    context = dict.fromkeys("user","vacuna")
+    usuario = request.user
+    context["user"] = usuario
+    vacuna = VacunaAplicada.objects.filter(usuario=usuario,vacuna=Vacuna.objects.get(tipo="Fiebre_amarilla")).first()
+    context["vacuna"] = vacuna
+    filename = "certificado.pdf"
+    path_certificado = os.path.normpath(os.path.join(Path(__file__), os.pardir, os.pardir, "Vacunasist", "Vacunasist", "templates", "CERTIFICADO-RENDER.html"))
+    #certificado = loader.render_to_string("CERTIFICADO.html", context) #REVISAR
+    f = open(path_certificado, "w")
+    
+   
+
+    f = open(path_certificado, "w")
+    html = loader.get_template("CERTIFICADO.html")
+    html_content = html.render(context)
+    f.write(html_content)
+    f.close()
+
+    certificado = pdfkit.from_file(path_certificado, output_path=None, configuration=config, options=options)
+    response = HttpResponse(certificado, content_type=mimetypes.guess_type)
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    return response
