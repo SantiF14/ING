@@ -82,7 +82,7 @@
                 faucibus orci luctus et ultrices posuere cubilia curae; Fusce 
                 vulputate mi orci, a tincidunt quam mattis vitae.</p>
                 {% if vacuna_fa == "Si" %}
-                  <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
+                  <form action="/imprimir_certificado/" method="POST">{% csrf_token %}
                     <input type="submit" value="Proximamente Imprimir certificado" class="button2" style="background-color:rgb(146, 146, 58);box-shadow:inset 0px 34px 0px -15px rgb(185, 174, 73); border:1px solid rgb(218, 184, 100)">
                   </form>
                 {% else %}
