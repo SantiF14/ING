@@ -270,12 +270,13 @@ def cargar_vacuna_con_turno(request):
 
 @login_required
 def cargar_vacuna_stock(request):
+    
     cant = request.POST.get("Cantidad")
     tipo = request.POST.get("Tipo")
-
+    cant = int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return nose(request, 'No se puede ingresar una cantidad negativa por favor ingrese un valor positivo.')
+        return visualizar_stock_vacunador(request, "No se puede ingresar una cantidad negativa por favor ingrese un valor positivo")
 
     user = request.user
 
@@ -291,39 +292,33 @@ def cargar_vacuna_stock(request):
     vacvacunatorio.save()
 
     #fijarse donde lo va a retornar
-    return nose(request, 'Las vacunas se cargaron de forma exitosa en el sistema.')
+    return visualizar_stock_vacunador(request, 'Las vacunas se cargaron de forma exitosa en el sistema')
 
 @login_required
 def eliminar_vacuna_stock(request):
     cant = request.POST.get("Cantidad")
     tipo = request.POST.get("Tipo")
-
+    cant =int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return nose(request, 'Debe ingresarse un numero positivo de vacunas a eliminar.')
+        return visualizar_stock_vacunador(request, "Debe ingresarse un numero positivo de vacunas a eliminar")
 
     user = request.user
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna).first()
 
-    if (vacvacunatorio):
-        if (vacvacunatorio.stock_actual < cant):
-            mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacvacunatorio.stock_actual}).'
-        else:
-            vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - cant
-            vacvacunatorio.save()
-            mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de la gripe en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
+    if (vacvacunatorio.stock_actual < cant):
+        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock ({vacvacunatorio.stock_actual}).'
     else:
-        #checkear esto
-        vacvacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=0)
+        vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - cant
         vacvacunatorio.save()
-        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock({vacvacunatorio.stock_actual}).'
-
+        mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de la gripe en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
+    
 
     #fijarse donde lo va a retornar
-    return nose(request, mensaje)
+    return visualizar_stock_vacunador(request, mensaje)
 
 
 @login_required
@@ -414,46 +409,34 @@ def agregar_vacuna_fiebre_amarilla_historial(request):
     return nose(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
-def visualizar_stock_vacunador(request):
+def visualizar_stock_vacunador(request, mensaje = ""):
     #ver si al apretar un boton devuelve un tipo, no me acuerdo
-    tipo = request.POST.get("Tipo")
+    context = dict.fromkeys(["vacunas","mensaje"], "")
+    context["mensaje"]=mensaje
+
     user = request.user
-
-    vacuna = Vacuna.objects.get(tipo=tipo)
-
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
-
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo)
+    context["vacunas"]=vacuna_vacunatorio
     #ver si contemplar esto
-    if (not vacvacunatorio):
-        vacvacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna,stock_actual=0)
-        vacvacunatorio.save()
 
     #cambiar return
-    return nose(request, f'Hay {vacvacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {vacvacunatorio.vacunatorio.nombre}.')
+    return render(request, 'vacunas.html', context)
 
 
 @login_required
 def visualizar_stock_administrador(request):
-    nomvacunatorio = request.POST.get("Vacunatorio")
-    tipo = request.POST.get("Tipo")
-    user = request.user
-
-    vacuna = Vacuna.objects.filter(tipo=tipo).first()
 
 
-    if (vacuna):
-        vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=nomvacunatorio, vacuna=vacuna).first()
-        #cambiar return
-        return nose(request, f'Hay {vacvacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {nomvacunatorio}.')
+    context = dict.fromkeys(["vacunas"], "")
 
-    #ver si esto funciona como deberia o si hay que poner .get() o como carajo es
-    listavacunatorios = VacunaVacunatorio.objects.all()
-    stocktotal = 0
-    for vacunatorio in listavacunatorios:
-        stocktotal = stocktotal + vacunatorio.stock_actual
+    vacuna_vacunatorio = VacunaVacunatorio
+    context["vacunas"]=vacuna_vacunatorio.objects.filter()
+    #ver si contemplar esto
 
     #cambiar return
-    return nose(request, f'Hay {stocktotal} vacunas en stock de tipo {tipo} en {nomvacunatorio} los vacunatorios.')
+    return render(request, 'vacunas_adm.html', context)
+
+
 
 @login_required
 def Boton_gripe(request):

@@ -38,7 +38,9 @@
           <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>
         {% if user.es_vacunador %}
         <div class="dropdown-divider"></div>
+          <p style="text-align: center; margin-top: 19px;" >Vacunador</p>
           <a class="dropdown-item" href="{% url 'TurnosHoy' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver turnos del día</a>
+          <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas</a>
           {% endif %}
         </div>
       </div>       
