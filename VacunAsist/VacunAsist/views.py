@@ -1,4 +1,5 @@
 
+from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
 from gestion_de_usuarios.models import VacunaAplicada
@@ -9,6 +10,8 @@ from VacunAsist.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from gestion_de_usuarios.views import ver_turnos_del_dia
+from django.urls import reverse
+from urllib.parse import urlencode
 
 def calculate_age(born):
     today = date.today()
@@ -62,21 +65,22 @@ def mostrar_mis_turnos(request):
     return render(request, "mostrar_mis_turnos.html",context)
 
 @login_required
-def mostrar_vacunas_aplicadas(request):
-
+def mostrar_vacunas_aplicadas(request, mensaje = ""):
 
     usuario = request.user
-    context=dict.fromkeys(["vacunas","mensaje"],"")
+    context=dict.fromkeys(["vacunas","tipos","mensaje","today"],"")
     vacunas = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni)
-    context["vacunas"]=vacunas     
+    context["vacunas"]= vacunas
+    context["tipos"]=Vacuna.objects.all()
+    context["today"]=str(date.today())
     if not vacunas:
         context["mensaje"]="Usted no tiene vacunas cargadas en el sistema"
-        
+    
+    context["mensaje"] = request.GET.get("mensaje")
     return render(request, "mostrar_historial_vacuna_aplicada.html",context)
 
 @login_required
 def inscribir_campania_gripe (request):
-
  
     usuario = request.user
 
@@ -127,7 +131,7 @@ def inscribir_campania_gripe (request):
         send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     except:
         pass
-    return home(request,f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
+    return redirect("Home",mensaje=f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",titulo="Inscripción exitosa")
 
 @login_required
 def inscribir_campania_COVID (request):
@@ -141,14 +145,14 @@ def inscribir_campania_COVID (request):
     anios = calculate_age(usuario.fecha_nacimiento)
 
     if (anios < 18):
-        return home(request, "Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
+        return redirect(home,"Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
 
 
     inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
 
     #si ya esta inscripcion
     if (inscripcion):
-        return home(request)
+        return redirect(home)
 
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").order_by('-fecha').first()
     
@@ -177,8 +181,8 @@ def inscribir_campania_COVID (request):
             send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
         except:
             pass
-        return home(request,f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.","Inscripción exitosa")
-    return home(request,"Usted se inscribió a la campaña de vacunación del COVID-19.","Inscripción exitosa")
+        return redirect("Home",mensaje=f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",titulo="Inscripción exitosa")
+    return redirect("Home",mensaje="Usted se inscribió a la campaña de vacunación del COVID-19.",titulo="Inscripción exitosa")
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):
@@ -191,15 +195,15 @@ def inscribir_campania_fiebre_amarilla(request):
     anios = calculate_age(usuario.fecha_nacimiento)
 
     if (anios > 60):
-        return home(request,"Usted supera el límite de edad para inscribirse a esta campaña.","Inscripción fallida")
+        return redirect("Home",mensaje= "Usted supera el límite de edad para inscribirse a esta campaña.", titulo="Inscripción fallida")
 
 
     inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").first()
     vacuna = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
 
     #Provisoriamente vamos a poner el if gigante anashey evaluar si ya tiene turno, que en teoria no es necesario
-    if (inscripcion) or (vacuna):
-        return home(request,"Usted se encuentra inscripcion o ya tiene una vacuna aplicada","Inscripción fallida")
+    if (vacuna):
+        return redirect("Home",mensaje= "Usted ya tiene una vacuna aplicada",titulo= "Inscripción fallida")
     
     fecha_turno = None
 
@@ -208,7 +212,7 @@ def inscribir_campania_fiebre_amarilla(request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
 
-    return home(request,"Usted se inscribió a la campaña de vacunación de la fiebre amarilla","Inscripción exitosa") 
+    return redirect("Home",mensaje="Usted se inscribió a la campaña de vacunación de la fiebre amarilla",titulo= "Inscripción exitosa") 
 
 @login_required
 def cargar_vacuna_con_turno(request):
@@ -253,7 +257,7 @@ def cargar_vacuna_con_turno(request):
 
 
 
-    return ver_turnos_del_dia(request, "La vacuna se cargó de forma exitosa.")
+    return redirect("TurnosHoy", mensaje="La vacuna se cargó de forma exitosa.")
 
 @login_required
 def cargar_vacuna_stock(request):
@@ -262,7 +266,7 @@ def cargar_vacuna_stock(request):
     cant = int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return visualizar_stock_vacunador(request, "No se puede ingresar una cantidad negativa. Ingrese un valor positivo.")
+        return redirect("VacunasStock", mensaje= "No se puede ingresar una cantidad negativa. Ingrese un valor positivo.")
 
     user = request.user
 
@@ -278,7 +282,7 @@ def cargar_vacuna_stock(request):
     vacuna_vacunatorio.save()
 
     #fijarse donde lo va a retornar
-    return visualizar_stock_vacunador(request, 'Las vacunas se cargaron de forma exitosa en el sistema')
+    return redirect("VacunasStock",mensaje='Las vacunas se cargaron de forma exitosa en el sistema')
 
 @login_required
 def eliminar_vacuna_stock(request):
@@ -287,7 +291,7 @@ def eliminar_vacuna_stock(request):
     cant =int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return visualizar_stock_vacunador(request, 'Debe ingresarse un numero positivo de vacunas a eliminar.')
+        return redirect("VacunasStock", mensaje='Debe ingresarse un numero positivo de vacunas a eliminar.')
 
     user = request.user
 
@@ -304,14 +308,15 @@ def eliminar_vacuna_stock(request):
     
 
     #fijarse donde lo va a retornar
-    return visualizar_stock_vacunador(request, mensaje)
+    return redirect("VacunasStock",mensaje=mensaje)
 
 
 @login_required
 def agregar_vacuna_gripe_historial(request):
     marca = request.POST.get("Marca")
     tipo = request.POST.get("Tipo")
-    fecha = request.POST.get("Fecha")
+    fecha = datetime.strptime(request.POST.get("Fecha"), '%Y-%m-%d').date()
+    lote = request.POST.get("Lote")
     user = request.user
     hoy = datetime.today()
 
@@ -319,7 +324,7 @@ def agregar_vacuna_gripe_historial(request):
 
     inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first()
     fecha_turno = None
-    if not inscripcion:
+    if inscripcion:
         if (inscripcion.fecha < (fecha + relativedelta(years=1))):
             if ((fecha + relativedelta(years=1)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
@@ -328,19 +333,25 @@ def agregar_vacuna_gripe_historial(request):
             fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
             inscripcion.fecha = fecha_turno
             inscripcion.save()
+            #envia el mail
+            html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "Gripe"})
+            try:    
+                send_mail('Notificación de actualizacion de turno de vacuna contra la gripe',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
+            except:
+                pass
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
     vacunaaplicada.save()
 
-    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
 def agregar_vacuna_COVID_historial(request):
     marca = request.POST.get("Marca")
     tipo = request.POST.get("Tipo")
-    fecha = request.POST.get("Fecha")
+    fecha = datetime.strptime(request.POST.get("Fecha"), '%Y-%m-%d').date()
+    lote = request.POST.get("Lote")
     user = request.user
     hoy = datetime.today()
 
@@ -351,7 +362,7 @@ def agregar_vacuna_COVID_historial(request):
 
     #ver si no existe la inscripcion tira error, en caso de que si, cambiar a esto y probar if (inscripcion) and (inscripcion.fecha < (fecha + relativedelta(years=3))):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
-    if not inscripcion:
+    if inscripcion:
         if (inscripcion.fecha < (fecha + relativedelta(months=3))):
             if ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
@@ -360,38 +371,58 @@ def agregar_vacuna_COVID_historial(request):
             fecha_turno = date(fecha_turno.year, fecha_turno.month, fecha_turno.day)
             inscripcion.fecha = fecha_turno
             inscripcion.save()
-
+            #envia el mail
+            html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "COVID-19"})
+            try:    
+                send_mail('Notificación de actualizacion de turno de vacuna contra el COVID-19',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
+            except:
+                pass
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
     vacunaaplicada.save()
 
-    #cambiar return
-    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
 
 @login_required
 def agregar_vacuna_fiebre_amarilla_historial(request):
     marca = request.POST.get("Marca")
     tipo = request.POST.get("Tipo")
-    fecha = request.POST.get("Fecha")
+    fecha = datetime.strptime(request.POST.get("Fecha"), '%Y-%m-%d').date()
+    lote = request.POST.get("Lote")
     user = request.user
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first
+    inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first()
 
     if (inscripcion):
         inscripcion.delete()
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
     vacunaaplicada.save()
 
+@login_required
+def agregar_vacuna_al_historial(request):
+    
+    tipo = request.POST.get("Tipo")
+    if (tipo == "Gripe"):
+        agregar_vacuna_gripe_historial(request)
+    elif (tipo == "COVID-19"):
+        agregar_vacuna_COVID_historial(request)
+    else:
+        agregar_vacuna_fiebre_amarilla_historial(request)
 
-    #cambiar return y acordarse de actualizar boton
-    return mostrar_vacunas_aplicadas(request, 'La vacuna ha sido cargada exitosamente.')
+    base_url = reverse('MisVacunas')  
+    query_string =  urlencode({'mensaje': "La vacuna ha sido cargada exitosamente"}) 
+    url = '{}?{}'.format(base_url, query_string) 
+    return redirect(url)    
+    #return redirect('/mostrar_vacunas_aplicadas/',mensaje="La vacuna ha sido cargada exitosamente.")
+
+
+
 
 @login_required
 def visualizar_stock_vacunador(request, mensaje = ""):
@@ -456,7 +487,7 @@ def boton_gripe(request):
     return nose(request, 'ok')
 
 @login_required
-def Cargar_vacuna_gripe_sin_turno(request):
+def cargar_vacuna_gripe_sin_turno(request):
 
     #asignar el sobrante cuando este echo en la base de datos
     sobrante = 10
@@ -484,13 +515,20 @@ def Cargar_vacuna_gripe_sin_turno(request):
     if (inscripcion):
         inscripcion.fecha = hoy + relativedelta(years=1)
         inscripcion.save()
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
-        #send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
+        try:    
+            send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
+        
     
     if (not usuario):
         email =request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "gripe"})
-        #send_mail('Vacunacion contra la gripe',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "gripe"})
+        try:    
+            send_mail('Vacunacion contra la gripe',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
 
     return nose(request, 'La vacuna se cargo de forma exitosa.')
@@ -539,7 +577,7 @@ def boton_COVID(request):
     return nose(request, 'ok')
 
 @login_required
-def Cargar_vacuna_COVID_sin_turno(request):
+def cargar_vacuna_COVID_sin_turno(request):
 
     #asignar el sobrante cuando este echo en la base de datos
     sobrante = 9
@@ -567,14 +605,20 @@ def Cargar_vacuna_COVID_sin_turno(request):
     if (inscripcion):
         inscripcion.fecha = hoy + relativedelta(months=3)
         inscripcion.save()
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(months=3), "vacuna": "COVID-19"})
-        #send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(months=3), "vacuna": "COVID-19"})
+        try:    
+            send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
     
     
     if (not usuario):
         email =request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "COVID-19"})
-        #send_mail('Vacunacion contra el COVID-19',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "COVID-19"})
+        try:    
+            send_mail('Vacunacion contra el COVID-19',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
     return nose(request, 'La vacuna se cargo de forma exitosa.')
     
@@ -645,11 +689,17 @@ def Cargar_vacuna_fiebre_amarilla_sin_turno(request):
     usuario = Usuario.objects.filter(dni=dni).first()
     if (usuario):
         pass
-        #html_message = loader.render_to_string('email_aviso_certificado.html',{'fecha': hoy})
-        #send_mail('Certificado de vacunacion de fiebre amarilla',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        html_message = loader.render_to_string('email_aviso_certificado2.html',{'fecha': hoy})
+        try:    
+            send_mail('Certificado de vacunacion de fiebre amarilla',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
     else: 
         email =request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "Fiebre amarilla"})
-        #send_mail('Vacunacion contra la fiebre amarilla',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "Fiebre amarilla"})
+        try:    
+            send_mail('Vacunacion contra la fiebre amarilla',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
     return nose(request, 'La vacuna se cargo de forma exitosa.')

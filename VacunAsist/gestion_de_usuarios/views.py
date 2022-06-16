@@ -139,11 +139,6 @@ def descargar_certificado_fiebre_amarilla(request):
     context["vacuna"] = vacuna
     filename = "certificado.pdf"
     path_certificado = os.path.normpath(os.path.join(Path(__file__), os.pardir, os.pardir, "Vacunasist", "Vacunasist", "templates", "CERTIFICADO-RENDER.html"))
-    #certificado = loader.render_to_string("CERTIFICADO.html", context) #REVISAR
-    f = open(path_certificado, "w")
-    
-   
-
     f = open(path_certificado, "w")
     html = loader.get_template("CERTIFICADO.html")
     html_content = html.render(context)
