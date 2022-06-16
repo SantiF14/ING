@@ -22,14 +22,16 @@ def index(request):
         return redirect(home)
     return render(request, 'index.html', {})
 
-def home(request, mensaje=None, titulo=None):
+def home(request):
 
     if request.user.is_authenticated:
         context = dict.fromkeys(["user","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
         user = request.user
         context["user"] = user
-        context["mensaje"] = mensaje
-        context["titulo"] = titulo
+        context["mensaje"] = request.session.get('mensaje', "")
+        context["titulo"] = request.session.get('titulo', "")
+        request.session["mensaje"] = ""
+        request.session["titulo"] = ""
 
         inscripciones = Inscripcion.objects.filter(usuario = user)
         covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first()) #ARREGLAR
@@ -65,7 +67,7 @@ def mostrar_mis_turnos(request):
     return render(request, "mostrar_mis_turnos.html",context)
 
 @login_required
-def mostrar_vacunas_aplicadas(request, mensaje = ""):
+def mostrar_vacunas_aplicadas(request):
 
     usuario = request.user
     context=dict.fromkeys(["vacunas","tipos","mensaje","today"],"")
@@ -74,9 +76,10 @@ def mostrar_vacunas_aplicadas(request, mensaje = ""):
     context["tipos"]=Vacuna.objects.all()
     context["today"]=str(date.today())
     if not vacunas:
-        context["mensaje"]="Usted no tiene vacunas cargadas en el sistema"
+        context["mensaje"]= "Usted no tiene vacunas cargadas en el sistema"
     
-    context["mensaje"] = request.GET.get("mensaje")
+    context["mensaje"] = request.session.get('mensaje', "")
+    request.session["mensaje"] = ""
     return render(request, "mostrar_historial_vacuna_aplicada.html",context)
 
 @login_required
@@ -88,7 +91,8 @@ def inscribir_campania_gripe (request):
 
     #si ya esta inscripcion
     if (inscripcion):
-        return home(request,"Ya estas inscripcion")
+        request.session["mensaje"] = "Ya estas inscripto"
+        return home(request)
 
 
     hoy = datetime.today()
@@ -131,7 +135,9 @@ def inscribir_campania_gripe (request):
         send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
     except:
         pass
-    return redirect("Home",mensaje=f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",titulo="Inscripción exitosa")
+    request.session["mensaje"]= f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",
+    request.session["titulo"]="Inscripción exitosa"
+    return redirect(home)
 
 @login_required
 def inscribir_campania_COVID (request):
@@ -145,12 +151,14 @@ def inscribir_campania_COVID (request):
     anios = calculate_age(usuario.fecha_nacimiento)
 
     if (anios < 18):
-        return redirect(home,"Debe ser mayor de edad para poder inscribirse.","Inscripción fallida")
+        request.session["mensaje"] = "Debe ser mayor de edad para poder inscribirse."
+        request.session["titulo"] = "Inscripción fallida"
+        return redirect(home)
 
 
     inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="COVID-19").first()
 
-    #si ya esta inscripcion
+    #si ya esta inscripto
     if (inscripcion):
         return redirect(home)
 
@@ -181,8 +189,13 @@ def inscribir_campania_COVID (request):
             send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
         except:
             pass
-        return redirect("Home",mensaje=f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",titulo="Inscripción exitosa")
-    return redirect("Home",mensaje="Usted se inscribió a la campaña de vacunación del COVID-19.",titulo="Inscripción exitosa")
+        request.session["mensaje"]= f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado."
+        request.session["titulo"]="Inscripción exitosa"
+        return redirect(home)
+
+    request.session["mensaje"]="Usted se inscribió a la campaña de vacunación del COVID-19."
+    request.session["titulo"]= "Inscripción exitosa"
+    return redirect(home)
 
 @login_required
 def inscribir_campania_fiebre_amarilla(request):
@@ -195,7 +208,9 @@ def inscribir_campania_fiebre_amarilla(request):
     anios = calculate_age(usuario.fecha_nacimiento)
 
     if (anios > 60):
-        return redirect("Home",mensaje= "Usted supera el límite de edad para inscribirse a esta campaña.", titulo="Inscripción fallida")
+        request.session["mensaje"] = "Usted supera el límite de edad para inscribirse a esta campaña."
+        request.session["titulo"] = "Inscripción fallida"
+        return redirect(home)
 
 
     inscripcion = Inscripcion.objects.filter(usuario_id=usuario.dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").first()
@@ -203,7 +218,9 @@ def inscribir_campania_fiebre_amarilla(request):
 
     #Provisoriamente vamos a poner el if gigante anashey evaluar si ya tiene turno, que en teoria no es necesario
     if (vacuna):
-        return redirect("Home",mensaje= "Usted ya tiene una vacuna aplicada",titulo= "Inscripción fallida")
+        request.session["mensaje"] = "Usted ya tiene una vacuna aplicada"
+        request.session["titulo"] = "Inscripción fallida"
+        return redirect(home)
     
     fecha_turno = None
 
@@ -212,7 +229,10 @@ def inscribir_campania_fiebre_amarilla(request):
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
 
-    return redirect("Home",mensaje="Usted se inscribió a la campaña de vacunación de la fiebre amarilla",titulo= "Inscripción exitosa") 
+    request.session["mensaje"] = "Usted se inscribió a la campaña de vacunación de la fiebre amarilla"
+    request.session["titulo"] = "Inscripción exitosa"
+
+    return redirect(home) 
 
 @login_required
 def cargar_vacuna_con_turno(request):
@@ -256,8 +276,8 @@ def cargar_vacuna_con_turno(request):
     vacuna.save()
 
 
-
-    return redirect("TurnosHoy", mensaje="La vacuna se cargó de forma exitosa.")
+    request.session["mensaje"]="La vacuna se cargó de forma exitosa."
+    return redirect(mostrar_mis_turnos)
 
 @login_required
 def cargar_vacuna_stock(request):
@@ -266,7 +286,8 @@ def cargar_vacuna_stock(request):
     cant = int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return redirect("VacunasStock", mensaje= "No se puede ingresar una cantidad negativa. Ingrese un valor positivo.")
+        request.session["mensaje"] = "No se puede ingresar una cantidad negativa. Ingrese un valor positivo."
+        return redirect(visualizar_stock_administrador)
 
     user = request.user
 
@@ -282,7 +303,8 @@ def cargar_vacuna_stock(request):
     vacuna_vacunatorio.save()
 
     #fijarse donde lo va a retornar
-    return redirect("VacunasStock",mensaje='Las vacunas se cargaron de forma exitosa en el sistema')
+    request.session["mensaje"] = 'Las vacunas se cargaron de forma exitosa en el sistema'
+    return redirect(visualizar_stock_administrador)
 
 @login_required
 def eliminar_vacuna_stock(request):
@@ -291,7 +313,8 @@ def eliminar_vacuna_stock(request):
     cant =int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
-        return redirect("VacunasStock", mensaje='Debe ingresarse un numero positivo de vacunas a eliminar.')
+        request.session["mensaje"] = 'Debe ingresarse un numero positivo de vacunas a eliminar.'
+        return redirect(visualizar_stock_administrador)
 
     user = request.user
 
@@ -308,7 +331,8 @@ def eliminar_vacuna_stock(request):
     
 
     #fijarse donde lo va a retornar
-    return redirect("VacunasStock",mensaje=mensaje)
+    request.session["mensaje"] = mensaje
+    return redirect(visualizar_stock_administrador)
 
 
 @login_required
@@ -415,20 +439,22 @@ def agregar_vacuna_al_historial(request):
     else:
         agregar_vacuna_fiebre_amarilla_historial(request)
 
-    base_url = reverse('MisVacunas')  
-    query_string =  urlencode({'mensaje': "La vacuna ha sido cargada exitosamente"}) 
-    url = '{}?{}'.format(base_url, query_string) 
-    return redirect(url)    
+    #base_url = reverse('MisVacunas')  
+    #query_string =  urlencode({'mensaje': "La vacuna ha sido cargada exitosamente"}) 
+    #url = '{}?{}'.format(base_url, query_string) 
+    #return redirect(url) 
+    request.session["mensaje"] = "La vacuna ha sido cargada exitosamente."
+    return redirect(mostrar_vacunas_aplicadas)
     #return redirect('/mostrar_vacunas_aplicadas/',mensaje="La vacuna ha sido cargada exitosamente.")
 
 
 
 
 @login_required
-def visualizar_stock_vacunador(request, mensaje = ""):
+def visualizar_stock_vacunador(request):
     #ver si al apretar un boton devuelve un tipo, no me acuerdo
-    context = dict.fromkeys(["vacunas","mensaje"], "")
-    context["mensaje"]=mensaje
+    context = dict.fromkeys(["vacunas"], "")
+    #context["mensaje"]=mensaje
 
     user = request.user
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo)
@@ -443,7 +469,7 @@ def visualizar_stock_vacunador(request, mensaje = ""):
 def visualizar_stock_administrador(request):
 
 
-    context = dict.fromkeys(["vacunas"], "")
+    context = dict.fromkeys(["vacunas","mensaje"], "")
     vacunatorio = request.POST.get("Vacunatorio")
     tipo = request.POST.get("Tipo")
     user = request.user
@@ -458,6 +484,8 @@ def visualizar_stock_administrador(request):
 
     vacuna_vacunatorio = VacunaVacunatorio
     context["vacunas"]=vacuna_vacunatorio.objects.filter()
+    context["mensaje"]= request.session.get('mensaje', "")
+    request.session["mensaje"] = ""
     #ver si contemplar esto
 
     #cambiar return
