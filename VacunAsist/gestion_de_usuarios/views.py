@@ -15,8 +15,13 @@ import pdfkit
 import mimetypes
 import os
 from pathlib import Path
+import requests
+import json
+from datetime import date, datetime
 
 User = get_user_model()
+
+
 
 def get_redirect_if_exists(request):
     redirect = None
@@ -65,14 +70,29 @@ def cerrar_sesion(request):
     return redirect("Index")
 
 @login_required
-def ver_turnos_del_dia(request, mensaje = ""):
+def ver_turnos_del_dia(request):
     user = request.user
-    context = dict.fromkeys(["turnos","mensaje"], "")
-    context["mensaje"] = mensaje
+    context = request.session.get("context",{})
+    
     turnos = Inscripcion.objects.filter(fecha=date.today()).filter(vacunatorio_id = user.vacunador.vacunatorio_de_trabajo)
-    if (not turnos) and (mensaje == ""):
-        context["mensaje"]= "No existen turnos asignados para el día de hoy."
-    context["turnos"]=turnos
+    hoy = str(date.today())
+    tipos = Vacuna.objects.all()
+    
+    if (context == {}):
+        if (not turnos):
+            context["mensaje"]= "No existen turnos asignados para el día de hoy."
+        else:
+            context["mensaje"]=""
+
+    if "registrado" not in context.keys():
+        context["registrado"]=""
+    if "tipo_a_cargar" not in context.keys():
+        context["tipo_a_cargar"]=""
+
+    request.session["context"] = {}
+    context["turnos"] = turnos
+    context["tipos"] = tipos
+    context["today"] = hoy
     return render(request, "ver_turnos_hoy.html", context)
 
 def iniciar_sesion(request, *args, **kwargs):
@@ -139,11 +159,6 @@ def descargar_certificado_fiebre_amarilla(request):
     context["vacuna"] = vacuna
     filename = "certificado.pdf"
     path_certificado = os.path.normpath(os.path.join(Path(__file__), os.pardir, os.pardir, "Vacunasist", "Vacunasist", "templates", "CERTIFICADO-RENDER.html"))
-    #certificado = loader.render_to_string("CERTIFICADO.html", context) #REVISAR
-    f = open(path_certificado, "w")
-    
-   
-
     f = open(path_certificado, "w")
     html = loader.get_template("CERTIFICADO.html")
     html_content = html.render(context)
@@ -154,3 +169,47 @@ def descargar_certificado_fiebre_amarilla(request):
     response = HttpResponse(certificado, content_type=mimetypes.guess_type)
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
+
+@login_required
+def buscar_dni(request): 
+
+    context = dict.fromkeys(["dni","nombre_apellido","fecha_nacimiento","registrado","mensaje"],"")
+    dni = request.POST.get("Dni")
+    usuario_registrado = Usuario.objects.filter(dni=dni).first()
+    
+    if (usuario_registrado):
+        context["dni"] = dni
+        context["nombre_apellido"] = usuario_registrado.nombre_apellido
+        context["fecha_nacimiento"] = str(usuario_registrado.fecha_nacimiento)
+        context["email"] = usuario_registrado.email
+        context["registrado"] = "si"
+        request.session["context"] = context
+        return redirect(ver_turnos_del_dia)
+    
+    persona = {"dni":dni}
+    headers = {
+            'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
+            'Content-Type' : "application/json"
+            }
+    try:
+        response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/lookup", 
+        headers=headers, json=persona)
+    except:
+        context["mensaje"] = "Hubo un fallo en la conexión con el servidor. Vuelva a intentarlo más tarde."
+    else:
+        if (response.status_code  == 403):
+            context["mensaje"] = "Hubo un fallo en la conexión con el servidor. Vuelva a intentarlo más tarde."
+        if (response.status_code != 200):
+            context["mensaje"] = "El DNI no esta asociado a un documento valido de la República Argentina."
+        else:
+            persona = response.content
+            persona = json.loads(persona)
+            context["dni"] = dni
+            context["nombre_apellido"] = persona["apellido"]
+            context["fecha_nacimiento"] = str(datetime.strptime(persona["fechaNacimiento"][:10],"%Y-%m-%d").date())
+            context["registrado"] = "no"
+    request.session["context"] = context
+    return redirect(ver_turnos_del_dia)
+
+
+    
