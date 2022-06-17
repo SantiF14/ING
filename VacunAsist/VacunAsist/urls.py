@@ -38,4 +38,12 @@ urlpatterns = [
     path('turnos_del_dia/', ver_turnos_del_dia, name="TurnosHoy"),
     path("imprimir_certificado/", descargar_certificado_fiebre_amarilla),
     path("agregar_vacuna_al_historial/", agregar_vacuna_al_historial),
+    path('buscar_dni/', buscar_dni, name = "BuscarDNI"),
+    path('validacion_covid/', boton_COVID, name="COVID"),
+    path('validacion_gripe/', boton_gripe, name="Gripe"),
+    path('validacion_fiebre_amarilla/', boton_fiebre_amarilla, name="FiebreAmarilla"),
+    path('cargar_vacuna_sin_turno_gripe', cargar_vacuna_gripe_sin_turno, name="CargarSinTurnoGripe"),
+    path('cargar_vacuna_sin_turno_covid', cargar_vacuna_COVID_sin_turno, name="CargarSinTurnoCOVID"),
+    path('cargar_vacuna_sin_turno_fiebre', cargar_vacuna_fiebre_amarilla_sin_turno, name="CargarSinTurnoFiebreA"),
+
 ]

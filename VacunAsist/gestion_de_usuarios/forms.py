@@ -9,7 +9,6 @@ from VacunAsist.settings import DATE_INPUT_FORMATS
 import requests
 from django.contrib.auth import get_user_model
 User = get_user_model()
-import re
 from .models import Usuario
 
 
