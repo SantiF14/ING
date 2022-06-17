@@ -143,7 +143,7 @@ class Inscripcion(models.Model):
 class VacunaAplicada(models.Model):
     class Meta: 
         verbose_name_plural = "Vacunas_aplicadas"
-    usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING, db_constraint=False)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
     fecha = models.DateField(default=date.today)
     marca = models.CharField(max_length=20, blank=True, null=True)
