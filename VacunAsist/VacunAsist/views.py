@@ -309,6 +309,7 @@ def eliminar_vacuna_stock(request):
 
 @login_required
 def agregar_vacuna_gripe_historial(request):
+
     marca = request.POST.get("Marca")
     tipo = request.POST.get("Tipo")
     fecha = request.POST.get("Fecha")
@@ -319,7 +320,7 @@ def agregar_vacuna_gripe_historial(request):
 
     inscripcion = Inscripcion.objects.filter(usuario=user,vacuna=vacuna).first()
     fecha_turno = None
-    if not inscripcion:
+    if inscripcion:
         if (inscripcion.fecha < (fecha + relativedelta(years=1))):
             if ((fecha + relativedelta(years=1)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
@@ -351,7 +352,7 @@ def agregar_vacuna_COVID_historial(request):
 
     #ver si no existe la inscripcion tira error, en caso de que si, cambiar a esto y probar if (inscripcion) and (inscripcion.fecha < (fecha + relativedelta(years=3))):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
-    if not inscripcion:
+    if inscripcion:
         if (inscripcion.fecha < (fecha + relativedelta(months=3))):
             if ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
@@ -411,23 +412,13 @@ def visualizar_stock_vacunador(request, mensaje = ""):
 @login_required
 def visualizar_stock_administrador(request):
 
-
     context = dict.fromkeys(["vacunas"], "")
     vacunatorio = request.POST.get("Vacunatorio")
     tipo = request.POST.get("Tipo")
     user = request.user
- 
-    vacuna = Vacuna.objects.filter(tipo=tipo).first()
 
-
-    if (vacuna):
-        vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=vacunatorio, vacuna=vacuna).first()
-        #cambiar return
-        return nose(request, f'Hay {vacuna_vacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {nomvacunatorio}.')
-
-    vacuna_vacunatorio = VacunaVacunatorio
-    context["vacunas"]=vacuna_vacunatorio.objects.filter()
-    #ver si contemplar esto
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter()
+    context["vacunas"]=vacuna_vacunatorio
 
     #cambiar return
     return render(request, 'vacunas_adm.html', context)

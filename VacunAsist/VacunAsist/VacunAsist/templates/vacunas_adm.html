@@ -2,19 +2,47 @@
 {% extends "base_login.html" %}
 {% load static %}
 {% block content %}
-<body class="user">
+<body class="user" onload="sumargripe()">
 
-<div style="height: 20%;"></div>
-
+<div style="height: 15%;"></div>
+<label></label>
+<select class="event-type-select">
+    <option value="all">Todas las opciones</option>
+    <option value="Polideportivo">Polideportivo</option>
+    <option value="Corralón Municipal">Corralón Municipal</option>
+    <option value="Hospital 9 de julio">Hospital 9 de julio</option>
+</select>
 <div class="container">
  <div class="row">
    {% for vacuna in vacunas %}
-   <div class="col-3">
-     <p>{{vacuna.vacuna.tipo}}</p>
-     <p>{{vacuna.stock_actual}}</p>
+   <div class="col-3" style="margin-bottom: 5%;" data-eventtype="{{vacuna.vacunatorio.nombre}}">
+    <p>lugar: {{vacuna.vacunatorio.nombre}}</p>
+     <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
+     <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_actual}}">
+     <p>stock actual: <p></p>{{vacuna.stock_actual}}</p>
    </div>
-   <div class="col-1" style="background-color: transparent;"></div>
+   <div class="col-1" style="background-color: transparent;" id="{{vacuna.vacunatorio.nombre}}"></div>
    {% endfor %}
+    <div class="col-3">
+        <p>Total de vacunas</p>
+       <p>Tipo de vacuna: gripe</p>
+       
+       <p>Stock total: <p id="gripeTodos"> </p> </p>
+    </div>
+    <div class="col-1" style="background-color: transparent;"></div>
+    <div class="col-3">
+        <p>Total de vacunas</p>
+        <p>Tipo de vacuna: Covid-19</p>
+        <p>Stock total: <p id="CovidTodos"></p></p>
+    </div>
+    <div class="col-1" style="background-color: transparent;"></div>
+    <div class="col-3">
+        <p>Total de vacunas</p>
+       <p>Tipo de vacuna: Fiebre_amarilla</p>
+        <p>Stock total: <p id="FATodos"></p></p>
+    </div>
+    <div class="col-1" style="background-color: transparent;"></div>
+ </div>
 </div>
 
 <form action="/eliminar_vacuna_stock/" method="POST" id="edit_form">{% csrf_token %}
@@ -93,54 +121,36 @@
 
 
 <script>  
-$(function() {
-   $("#COVID-192").on("click", function() {
-       var firstValue = $("#COVID-19").val();
-       console.log(firstValue);
-       $("#TipoE").val(firstValue);
-   });
-});
 
-$(function() {
-   $("#Fiebre_amarilla2").on("click", function() {
-       var firstValue = $("#Fiebre_amarilla").val();
-       console.log(firstValue);
-       $("#TipoE").val(firstValue);
-   });
-});
+    $(".event-type-select").change(function() {
+        var selectedEventType = this.options[this.selectedIndex].value;
+        if (selectedEventType == "all") {
+            $('.container div').removeClass('hidden');
+        } else {
+            $('.container div').addClass('hidden');
+            $('.container div[data-eventtype="' + selectedEventType + '"]').removeClass('hidden');
+        }
+    });
+    // si la respuesta que se espera es sumar
+    function sumargripe(){
+        var numerog1 = parseInt(document.getElementById('GripeCorralón Municipal').value);
+        var numerog2 = parseInt(document.getElementById('GripePolideportivo').value);
+        var numerog3 = parseInt(document.getElementById('GripeHospital 9 de julio').value);
+        var suma1 = numerog1+numerog2+numerog3;
+        $('#gripeTodos').text(suma1);
 
-$(function() {
-   $("#Gripe2").on("click", function() {
-       var firstValue = $("#Gripe").val();
-       console.log(firstValue);
-       $("#TipoE").val(firstValue);
-   });
-});
-
-$(function() {
-   $("#COVID-191").on("click", function() {
-       var firstValue = $("#COVID-19").val();
-       console.log(firstValue);
-       $("#Tipo").val(firstValue);
-   });
-});
-
-$(function() {
-   $("#Fiebre_amarilla1").on("click", function() {
-       var firstValue = $("#Fiebre_amarilla").val();
-       console.log(firstValue);
-       $("#Tipo").val(firstValue);
-   });
-});
-
-$(function() {
-   $("#Gripe1").on("click", function() {
-       var firstValue = $("#Gripe").val();
-       console.log(firstValue);
-       $("#Tipo").val(firstValue);
-   });
-});
-
+        var numeroc1 = document.getElementById('COVID-19Corralón Municipal').value;
+        var numeroc2 = document.getElementById('COVID-19Polideportivo').value;
+        var numeroc3 = document.getElementById('COVID-19Hospital 9 de julio').value;
+        var suma2 = parseInt(numeroc1)+parseInt(numeroc2)+parseInt(numeroc3);
+        $('#CovidTodos').text(suma2);
+        
+        var numerof1 = document.getElementById('Fiebre_amarillaCorralón Municipal').value;
+        var numerof2 = document.getElementById('Fiebre_amarillaPolideportivo').value;
+        var numerof3 = document.getElementById('Fiebre_amarillaHospital 9 de julio').value;
+        var suma3 = parseInt(numerof1)+parseInt(numerof2)+parseInt(numerof3);
+        $('#FATodos').text(suma3);
+        }
  
 </script>
 

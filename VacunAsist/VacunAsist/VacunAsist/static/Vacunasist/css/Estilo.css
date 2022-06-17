@@ -480,3 +480,7 @@ header{
   align-self: right;
   position:relative;
 }
+
+.hidden{
+  display: none;
+}
