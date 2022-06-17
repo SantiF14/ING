@@ -493,12 +493,14 @@ def visualizar_stock_administrador(request):
 def boton_gripe(request):
     
     context = dict.fromkeys(["mensaje", "dni_a_cargar", "email_a_cargar","tipo_a_cargar"], "")
-    #asignar el sobrante cuando este hecho en la base de datos
-    sobrante = 10
 
-    if (sobrante == 0):
+    user = request.user
+    vacunador = Vacunador.objects.get(usuario_id=user.dni)
+    sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="Gripe")
+    
+    if (sobrante.stock_actual == 0):
         #cambiar return
-        context["mensaje"] = 'No hay sobrante de vacunas en este momento.'
+        context["mensaje"] = 'No hay sobrante de vacunas de Gripe en este momento.'
         request.session["context"] = context
         return redirect(ver_turnos_del_dia)
 
@@ -524,8 +526,6 @@ def boton_gripe(request):
 def cargar_vacuna_gripe_sin_turno(request):
 
     context = {"mensaje":""}
-    #asignar el sobrante cuando este echo en la base de datos
-    sobrante = 10
 
 
     dni = request.POST.get("Dni")
@@ -573,12 +573,14 @@ def cargar_vacuna_gripe_sin_turno(request):
 def boton_COVID(request):
     
     context = dict.fromkeys(["mensaje", "dni_a_cargar", "email_a_cargar","tipo_a_cargar"], "")
-    #asignar el sobrante cuando este echo en la base de datos
-    sobrante = 9
 
-    if (sobrante == 0 ):
+    user = request.user
+    vacunador = Vacunador.objects.get(usuario_id=user.dni)
+    sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="COVID-19")
+    
+    if (sobrante.stock_actual == 0 ):
         #cambiar return
-        context["mensaje"] = 'No hay sobrante de vacunas en este momento.'
+        context["mensaje"] = 'No hay sobrante de vacunas de COVID-19 en este momento.'
         request.session["context"] = context
         return redirect(ver_turnos_del_dia)
 
@@ -629,8 +631,6 @@ def boton_COVID(request):
 def cargar_vacuna_COVID_sin_turno(request):
 
     context = {"mensaje":""}
-    #asignar el sobrante cuando este echo en la base de datos
-    sobrante = 9
 
 
     dni = request.POST.get("Dni")
@@ -679,12 +679,14 @@ def cargar_vacuna_COVID_sin_turno(request):
 def boton_fiebre_amarilla(request):
     
     context = dict.fromkeys(["mensaje", "dni_a_cargar", "email_a_cargar","tipo_a_cargar"], "")
-    #asignar el sobrante cuando este echo en la base de datos
-    sobrante = 9
+    
+    user = request.user
+    vacunador = Vacunador.objects.get(usuario_id=user.dni)
+    sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="Fiebre_amarilla")
 
-    if (sobrante == 0):
-        #cambiar return
-        context["mensaje"] = 'No hay sobrante de vacunas en este momento.'
+    if (sobrante.stock_actual == 0):
+        
+        context["mensaje"] = 'No hay sobrante de vacunas de Fiebre amarilla en este momento.'
         request.session["context"] = context
         return redirect(ver_turnos_del_dia)
 
@@ -695,21 +697,17 @@ def boton_fiebre_amarilla(request):
     anios = calculate_age(fecha_nacimiento)
     print(anios)
     if (anios > 60):
-            #cambiar return
+            
             context["mensaje"] = "El usuario es mayor de 60 años, no puede aplicarse la vacuna"
             request.session["context"] = context
             return redirect(ver_turnos_del_dia)
-
-    #-------------------------IMPORTANTE-----------------------------#
-    #falta chequear lo de los 60 anios para el que no esta registrado, nose como vamos a obtener la fecha de nacimiento
-    #-----------------------------------------------------------------#
 
 
     vacunaaplicada = VacunaAplicada.objects.filter(usuario_id__dni__exact=dni).filter(vacuna_id__tipo__exact="Fiebre_amarilla").order_by('-fecha').first()
     hoy = datetime.today()
 
     if (vacunaaplicada):
-        #cambiar return
+        
         context["mensaje"] = "Esta persona ya tiene aplicada la vacuna contra fiebre amarilla, no se la puede volver a aplicar"
         request.session["context"] = context
         return redirect(ver_turnos_del_dia)
