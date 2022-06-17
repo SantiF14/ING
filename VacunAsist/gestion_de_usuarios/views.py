@@ -208,6 +208,7 @@ def buscar_dni(request):
             context["nombre_apellido"] = persona["apellido"]
             context["fecha_nacimiento"] = str(datetime.strptime(persona["fechaNacimiento"][:10],"%Y-%m-%d").date())
             context["registrado"] = "no"
+            context["mensaje"] = None
     request.session["context"] = context
     return redirect(ver_turnos_del_dia)
 
