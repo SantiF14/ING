@@ -20,6 +20,12 @@
      <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
      <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_actual}}">
      <p>stock actual: <p></p>{{vacuna.stock_actual}}</p>
+     <input type="hidden" value="{{vacuna.vacunatorio.nombre}}"  id="{{vacuna.vacuna.nombre}}">
+     <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacuna.tipo}}"/>
+        <button type="button" id="{{vacuna.vacuna.tipo}}1" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;">Cargar vacuna</button>
+        <p></p>
+        <button type="button" id="{{vacuna.vacuna.tipo}}2" class="button2" data-toggle="modal" data-target="#modalForm" style="padding: 7px 14px; font-size: 15px; background-color: rgb(189, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);">Eliminar vacuna</button>
+        
    </div>
    <div class="col-1" style="background-color: transparent;" id="{{vacuna.vacunatorio.nombre}}"></div>
    {% endfor %}
@@ -152,6 +158,56 @@
         $('#FATodos').text(suma3);
         }
  
+</script>
+<script> 
+$(function() {
+    $("#COVID-192").on("click", function() {
+        var secondValue = $("#")
+        var firstValue = $("#COVID-19").val();
+        console.log(firstValue);
+        $("#TipoE").val(firstValue);
+    });
+});
+
+$(function() {
+    $("#Fiebre_amarilla2").on("click", function() {
+        var firstValue = $("#Fiebre_amarilla").val();
+        console.log(firstValue);
+        $("#TipoE").val(firstValue);
+    });
+});
+
+$(function() {
+    $("#Gripe2").on("click", function() {
+        var firstValue = $("#Gripe").val();
+        console.log(firstValue);
+        $("#TipoE").val(firstValue);
+    });
+});
+
+$(function() {
+    $("#COVID-191").on("click", function() {
+        var firstValue = $("#COVID-19").val();
+        console.log(firstValue);
+        $("#Tipo").val(firstValue);
+    });
+});
+
+$(function() {
+    $("#Fiebre_amarilla1").on("click", function() {
+        var firstValue = $("#Fiebre_amarilla").val();
+        console.log(firstValue);
+        $("#Tipo").val(firstValue);
+    });
+});
+
+$(function() {
+    $("#Gripe1").on("click", function() {
+        var firstValue = $("#Gripe").val();
+        console.log(firstValue);
+        $("#Tipo").val(firstValue);
+    });
+});
 </script>
 
 </body>

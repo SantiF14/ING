@@ -277,7 +277,8 @@ def cargar_vacuna_con_turno(request):
 
 
     request.session["mensaje"]="La vacuna se cargó de forma exitosa."
-    return redirect(mostrar_mis_turnos)
+    
+    return redirect(ver_turnos_del_dia)
 
 @login_required
 def cargar_vacuna_stock(request):
@@ -476,10 +477,6 @@ def visualizar_stock_administrador(request):
     user = request.user
 
 
-    if (vacuna):
-        vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=vacunatorio, vacuna=vacuna).first()
-        #cambiar return
-        return nose(request, f'Hay {vacuna_vacunatorio.stock_actual} vacunas en stock de tipo {tipo} en el vacunatorio {nomvacunatorio}.')
 
     vacuna_vacunatorio = VacunaVacunatorio
     context["vacunas"]=vacuna_vacunatorio.objects.filter()
@@ -696,7 +693,8 @@ def boton_fiebre_amarilla(request):
     fecha_nacimiento = request.POST.get("Fecha_nacimiento")
     fecha_nacimiento = datetime.strptime(fecha_nacimiento,"%Y-%m-%d").date()
     anios = calculate_age(fecha_nacimiento)
-    if (anios < 18):
+    print(anios)
+    if (anios > 60):
             #cambiar return
             context["mensaje"] = "El usuario es mayor de 60 años, no puede aplicarse la vacuna"
             request.session["context"] = context
