@@ -84,7 +84,6 @@
     </div>
   </div>
 </form>
-
 {% if tipo_a_cargar != "" %}
 <form action="" method="POST" id="formularioCargaSinTurno">{% csrf_token %}
   <div class="modal fade" id="modalCargaSinTurno" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -136,9 +135,8 @@
   let modalCargaSinTurno = new bootstrap.Modal(document.getElementById('modalCargaSinTurno'), {});
   modalCargaSinTurno.show();
 </script>
-{% endif %}
+{% elif registrado != "" %}
 
-{% if registrado != "" %}
 <form action="" method="POST" id="formularioBotones">{% csrf_token %}
   <div class="modal fade" id="modalBotones" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
     aria-hidden="true">
@@ -186,9 +184,8 @@
   let modalBoton = new bootstrap.Modal(document.getElementById('modalBotones'), {});
   modalBoton.show();
 </script>
-{% endif %}
 
-{% if mensaje != "" %}
+{% elif mensaje != "" %}
 {% if mensaje != None %}
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
