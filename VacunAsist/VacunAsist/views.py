@@ -284,6 +284,8 @@ def cargar_vacuna_con_turno(request):
 def cargar_vacuna_stock(request):
     cant = int(request.POST.get("Cantidad"))
     tipo = request.POST.get("Tipo")
+    lugar = request.POST.get("lugar")
+    
     cant = int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
@@ -294,12 +296,12 @@ def cargar_vacuna_stock(request):
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio__nombre=lugar, vacuna=vacuna).first()
 
     if (vacuna_vacunatorio):
         vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + cant
     else:
-        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna,stock_actual=cant)
+        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=lugar,vacuna=vacuna,stock_actual=cant)
 
     vacuna_vacunatorio.save()
 
@@ -311,6 +313,7 @@ def cargar_vacuna_stock(request):
 def eliminar_vacuna_stock(request):
     cant = request.POST.get("Cantidad")
     tipo = request.POST.get("Tipo")
+    lugar = request.POST.get("lugar")
     cant =int(cant)
     if (cant < 0):
         #fijarse donde lo va a retornar
@@ -321,7 +324,7 @@ def eliminar_vacuna_stock(request):
 
     vacuna = Vacuna.objects.get(tipo=tipo)
 
-    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo,vacuna=vacuna).first()
+    vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio__nombre=lugar,vacuna=vacuna).first()
 
     if (vacvacunatorio.stock_actual < cant):
         mensaje = f'No pueden eliminarse más vacunas de las que hay en stock ({vacvacunatorio.stock_actual}).'

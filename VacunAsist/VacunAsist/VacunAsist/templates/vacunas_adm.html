@@ -2,52 +2,90 @@
 {% extends "base_login.html" %}
 {% load static %}
 {% block content %}
+<style>
+  .filterDiv {
+    float: left;
+    background-color: #2196F3;
+
+    text-align: center;
+    margin: 2px;
+    display: none;
+  }
+  
+  .show {
+    display: block;
+  }
+  
+  
+  /* Style the buttons */
+  .btn {
+    background-color: #A2CB83;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #ddd;
+  }
+  
+  .btn.active {
+    background-color: #aacc6c;
+    color: white;
+  }
+  </style>
 <body class="user" onload="sumargripe()">
 
-<div style="height: 15%;"></div>
+<div style="height: 3%;"></div>
 <label></label>
-<select class="event-type-select">
-    <option value="all">Todas las opciones</option>
-    <option value="Polideportivo">Polideportivo</option>
-    <option value="Corralón Municipal">Corralón Municipal</option>
-    <option value="Hospital 9 de julio">Hospital 9 de julio</option>
-</select>
-<div class="container">
+
+<div class="container"> 
+  <h1 style="text-align: center;">seleccione que stock desea ver</h1>
+  <br>
+  <div id="myBtnContainer" style="text-align:center;">
+    <button class="btn active" onclick="filterSelection('Total')"> Stock Total</button>
+    <button class="btn" onclick="filterSelection('Polideportivo')"> Polideportivo</button>
+    <button class="btn" onclick="filterSelection('Corralón Municipal')"> Corralón Municipal</button>
+    <button class="btn" onclick="filterSelection('Hospital 9 de julio')"> Hospital 9 de julio</button>
+  </div>
+  <br>
+  <br>
  <div class="row">
    {% for vacuna in vacunas %}
-   <div class="col-3" style="margin-bottom: 5%;" data-eventtype="{{vacuna.vacunatorio.nombre}}">
+   <div class="col-3 filterDiv {{vacuna.vacunatorio.nombre}}" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
     <p>lugar: {{vacuna.vacunatorio.nombre}}</p>
      <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
      <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_actual}}">
      <p>stock actual: <p></p>{{vacuna.stock_actual}}</p>
      <input type="hidden" value="{{vacuna.vacunatorio.nombre}}"  id="lugar_t">
-     <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacuna.tipo}}"/>
-        <button type="button" id="{{vacuna.vacuna.tipo}}1" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;">Cargar vacuna</button>
+     <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="tipo-d"/>
+        <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}C" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;" onclick="myFunction4(this)">Cargar vacuna</button>
         <p></p>
-        <button type="button" id="{{vacuna.vacuna.tipo}}2" class="button2" data-toggle="modal" data-target="#modalForm" style="padding: 7px 14px; font-size: 15px; background-color: rgb(189, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);">Eliminar vacuna</button>
+        <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}E" class="button2" data-toggle="modal" data-target="#modalForm" style=" padding: 7px 15px; font-size: 15px; background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)"" onclick="myFunction4(this)">Eliminar vacuna</button>
         
    </div>
-   <div class="col-1" style="background-color: transparent;" id="{{vacuna.vacunatorio.nombre}}"></div>
+   <div class="col-1 filterDiv {{vacuna.vacunatorio.nombre}}" style="background-color: transparent;" data-eventtype="{{vacuna.vacunatorio.nombre}}""></div>
    {% endfor %}
-    <div class="col-3">
+    <div class="col-3 filterDiv Total" data-eventtype="Total">
         <p>Total de vacunas</p>
        <p>Tipo de vacuna: gripe</p>
        
        <p>Stock total: <p id="gripeTodos"> </p> </p>
     </div>
-    <div class="col-1" style="background-color: transparent;"></div>
-    <div class="col-3">
+    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
+    <div class="col-3 filterDiv Total" data-eventtype="Total">
         <p>Total de vacunas</p>
         <p>Tipo de vacuna: Covid-19</p>
         <p>Stock total: <p id="CovidTodos"></p></p>
     </div>
-    <div class="col-1" style="background-color: transparent;"></div>
-    <div class="col-3">
+    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
+    <div class="col-3 filterDiv Total" data-eventtype="Total">
         <p>Total de vacunas</p>
        <p>Tipo de vacuna: Fiebre_amarilla</p>
         <p>Stock total: <p id="FATodos"></p></p>
     </div>
-    <div class="col-1" style="background-color: transparent;"></div>
+    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
  </div>
 </div>
 
@@ -135,20 +173,84 @@
  </div>
 </form>
 
-
+{% if mensaje != "" %}
+{% if mensaje != None %}
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {{ mensaje }}
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+<script type="text/javascript" language="JavaScript">
+    let myModal = new bootstrap.Modal(document.getElementById('exampleModalCenter'), {});
+    myModal.show();
+</script>
+{% endif %}
+{% endif %}
 
 
 <script>  
+filterSelection("Total")
+function filterSelection(c) {
+  var x, i;
+  x = document.getElementsByClassName("filterDiv");
+  console.log(x);
+  if (c == "all") c = "";
+  // Add the "show" class (display:block) to the filtered elements, and remove the "show" class from the elements that are not selected
+  for (i = 0; i < x.length; i++) {
+    w3RemoveClass(x[i], "show");
+    if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+  }
+}
 
-    $(".event-type-select").change(function() {
-        var selectedEventType = this.options[this.selectedIndex].value;
-        if (selectedEventType == "all") {
-            $('.container div').removeClass('hidden');
-        } else {
-            $('.container div').addClass('hidden');
-            $('.container div[data-eventtype="' + selectedEventType + '"]').removeClass('hidden');
-        }
-    });
+// Show filtered elements
+function w3AddClass(element, name) {
+  var i, arr1, arr2;
+  arr1 = element.className.split(" ");
+  arr2 = name.split(" ");
+  for (i = 0; i < arr2.length; i++) {
+    if (arr1.indexOf(arr2[i]) == -1) {
+      element.className += " " + arr2[i];
+    }
+  }
+}
+
+// Hide elements that are not selected
+function w3RemoveClass(element, name) {
+  var i, arr1, arr2;
+  arr1 = element.className.split(" ");
+  arr2 = name.split(" ");
+  for (i = 0; i < arr2.length; i++) {
+    while (arr1.indexOf(arr2[i]) > -1) {
+      arr1.splice(arr1.indexOf(arr2[i]), 1);
+    }
+  }
+  element.className = arr1.join(" ");
+}
+
+// Add active class to the current control button (highlight it)
+var btnContainer = document.getElementById("myBtnContainer");
+var btns = btnContainer.getElementsByClassName("btn");
+for (var i = 0; i < btns.length; i++) {
+  btns[i].addEventListener("click", function() {
+    var current = document.getElementsByClassName("active");
+    current[0].className = current[0].className.replace(" active", "");
+    this.className += " active";
+  });
+}
+
+
     // si la respuesta que se espera es sumar
     function sumargripe(){
         var numerog1 = parseInt(document.getElementById('GripeCorralón Municipal').value);
@@ -171,57 +273,26 @@
         }
  
 </script>
+
+  
+ 
 <script> 
-$(function() {
-    $("#COVID-192").on("click", function() {
-        var secondValue = Attr("lugar_t");
-        var firstValue = $("#COVID-19").val();
-        console.log(secondValue)
-        $("#TipoE").val(firstValue);
-        $("#lugar").val(secondValue);
-        $
-    });
-});
+function myFunction4(eve){
+  var firstValue = eve.id;
+  var tipo = firstValue.substr(firstValue.length -1);
+  firstValue = firstValue.slice(0,-1);
+  var secondValue = eve.value;
+  console.log(secondValue);
+  console.log(firstValue);
+  if(tipo === "C"){
+    $("#Tipo").val(secondValue);
+    $("#lugar").val(firstValue);
+  }else{
+    $("#TipoE").val(secondValue);
+    $("#lugarE").val(firstValue);
+  }
 
-$(function() {
-    $("#Fiebre_amarilla2").on("click", function() {
-        var firstValue = $("#Fiebre_amarilla").val();
-        console.log(firstValue);
-        $("#TipoE").val(firstValue);
-    });
-});
-
-$(function() {
-    $("#Gripe2").on("click", function() {
-        var firstValue = $("#Gripe").val();
-        console.log(firstValue);
-        $("#TipoE").val(firstValue);
-    });
-});
-
-$(function() {
-    $("#COVID-191").on("click", function() {
-        var firstValue = $("#COVID-19").val();
-        console.log(firstValue);
-        $("#Tipo").val(firstValue);
-    });
-});
-
-$(function() {
-    $("#Fiebre_amarilla1").on("click", function() {
-        var firstValue = $("#Fiebre_amarilla").val();
-        console.log(firstValue);
-        $("#Tipo").val(firstValue);
-    });
-});
-
-$(function() {
-    $("#Gripe1").on("click", function() {
-        var firstValue = $("#Gripe").val();
-        console.log(firstValue);
-        $("#Tipo").val(firstValue);
-    });
-});
+}
 </script>
 
 </body>

@@ -483,4 +483,13 @@ header{
 
 .hidden{
   display: none;
+  background-color: red;
+}
+
+.filterDiv{
+  display: none;
+}
+
+.show {
+  display: block;
 }

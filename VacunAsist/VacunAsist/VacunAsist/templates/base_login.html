@@ -43,7 +43,12 @@
         <div class="dropdown-divider"></div>
           <p style="text-align: center; margin-top: 19px;" >Vacunador</p>
           <a class="dropdown-item" href="{% url 'TurnosHoy' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver turnos del día</a>
-          <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas</a>
+          <a class="dropdown-item" href="{% url 'VacunasVac' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas</a>
+          {% endif %}
+          {% if user.es_administrador %}
+          <div class="dropdown-divider"></div>
+          <p style="text-align: center; margin-top: 19px;" >Administrador</p>
+          <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas general</a>
           {% endif %}
         </div>
       </div>       
