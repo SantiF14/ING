@@ -218,7 +218,7 @@ def inscribir_campania_fiebre_amarilla(request):
 
     #Provisoriamente vamos a poner el if gigante anashey evaluar si ya tiene turno, que en teoria no es necesario
     if (vacuna):
-        request.session["mensaje"] = "Usted ya tiene una vacuna aplicada"
+        request.session["mensaje"] = "Usted ya tiene una vacuna aplicada en otro vacunatorio"
         request.session["titulo"] = "Inscripción fallida"
         return redirect(home)
     
@@ -306,7 +306,7 @@ def cargar_vacuna_stock(request):
     vacuna_vacunatorio.save()
 
     #fijarse donde lo va a retornar
-    request.session["mensaje"] = 'Las vacunas se cargaron de forma exitosa en el sistema'
+    request.session["mensaje"] = f'Las vacunas se cargaron de forma exitosa en el sistema, cantidad actual de vacunas de {tipo} en el vacunatorio {vacuna_vacunatorio.vacunatorio.nombre} es de: {vacuna_vacunatorio.stock_actual}.'
     return redirect(visualizar_stock_administrador)
 
 @login_required
@@ -331,7 +331,7 @@ def eliminar_vacuna_stock(request):
     else:
         vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - cant
         vacvacunatorio.save()
-        mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de la gripe en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
+        mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de {tipo} en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
     
 
     #fijarse donde lo va a retornar
@@ -701,7 +701,7 @@ def boton_fiebre_amarilla(request):
     print(anios)
     if (anios > 60):
             
-            context["mensaje"] = "El usuario es mayor de 60 años, no puede aplicarse la vacuna"
+            context["mensaje"] = "La persona es mayor de 60 años, no puede aplicarse la vacuna"
             request.session["context"] = context
             return redirect(ver_turnos_del_dia)
 
@@ -726,7 +726,6 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
 
     context={"mensaje":""}
     #asignar el sobrante cuando este echo en la base de datos
-    sobrante = 9
 
 
     dni = request.POST.get("Dni")
