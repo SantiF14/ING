@@ -3,9 +3,11 @@
  {% block content %}
 <body class="user">
 
-<div style="height: 20%;"></div>
+<div style="height: 10%;"></div>
 
 <div class="container">
+  <h1 style="text-align: center; margin-right: 90pt;"> Vacunatorio: {{user.vacunador.vacunatorio_de_trabajo}}</h1>
+  <br>
   <div class="row">
     {% for vacuna in vacunas %}
     <div class="col-3">
