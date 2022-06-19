@@ -103,9 +103,9 @@
             <input id="dni" value="{{ dni_a_cargar }}" name="Dni" class="form-control validate" readonly> 
           </div>
           
-          <div class="md-form mb-4" hidden>   
+          <div class="md-form mb-4">   
             <label data-error="wrong" data-success="right">Email</label>
-            <input  id="email" value="{{ email_a_cargar }}" name="Email" class="form-control validate" readonly> 
+            <input  id="email" value="{{ email_a_cargar }}" name="Email" class="form-control validate"> 
           </div>
 
           <div class="md-form mb-4">   
@@ -165,10 +165,11 @@
             <input  id="fecha_nacimiento" name="Fecha_nacimiento" value= "{{ fecha_nacimiento }}" class="form-control" readonly>
           </div>
 
-          <div class="md-form mb-4">
+          <div class="md-form mb-4" hidden>
             <label data-error="wrong" data-success="right" >Email</label>
-            <input  id="email" name="Email" value="{{ email }}"class="form-control" required>
+            <input  id="email" name="Email" value="{{ email }}"class="form-control">
           </div>
+
 
         </div>
         <div class="justify-content-center" style="align-items:center; padding-left:5%; padding-right:5%; padding-bottom:5%">
