@@ -393,7 +393,7 @@ def agregar_vacuna_COVID_historial(request):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
     if inscripcion:
         if (inscripcion.fecha == Null) or (inscripcion.fecha < (fecha + relativedelta(months=3))):
-            if  ((vacuna) and (vacuna.fecha < (hoy.date() + relativedelta(days=-83)))) or ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
+            if  ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
             else:
                 fecha_turno = fecha + relativedelta(months=3)
