@@ -103,14 +103,15 @@
             <input id="dni" value="{{ dni_a_cargar }}" name="Dni" class="form-control validate" readonly> 
           </div>
           
-          <div class="md-form mb-4">   
-            <label data-error="wrong" data-success="right">Email</label>
-            <input  required id="email" value="{{ email_a_cargar }}" name="Email" class="form-control validate"> 
-          </div>
 
           <div class="md-form mb-4">   
             <label data-error="wrong" data-success="right">Fecha</label>
             <input type="date" id="fecha" value="{{ today }}" name="Fecha" class="form-control validate" required pattern="\d{4}-\d{2}-\d{2}" readonly> 
+          </div>
+
+          <div class="md-form mb-4">   
+            <label data-error="wrong" data-success="right">Email</label>
+            <input  required id="email" value="{{ email_a_cargar }}" name="Email" class="form-control validate"> 
           </div>
 
           <div class="md-form mb-4">  
