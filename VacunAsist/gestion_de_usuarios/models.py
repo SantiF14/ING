@@ -91,15 +91,13 @@ class Vacuna(models.Model):
     through="Inscripcion",
     through_fields= ("vacuna", "usuario"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
     
     tienen_aplicaciones = models.ManyToManyField(Usuario, related_name="vacunas_aplicadas", 
     through="VacunaAplicada",
     through_fields= ("vacuna","usuario"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
 
     
 class Vacunatorio(models.Model):
@@ -111,8 +109,7 @@ class Vacunatorio(models.Model):
     through="VacunaVacunatorio",
     through_fields= ("vacunatorio", "vacuna"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
 
     def __str__(self) -> str:
         return self.nombre

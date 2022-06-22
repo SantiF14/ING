@@ -49,9 +49,9 @@ def home(request):
 
     
 
-        return render(request,"home.html",context)
+        return render(request,"home.html", context)
 
-    return render(request, 'index.html', {})    
+    return redirect('Index')    
 
 @login_required
 def mostrar_mis_turnos(request):
@@ -392,7 +392,7 @@ def agregar_vacuna_COVID_historial(request):
     #ver si no existe la inscripcion tira error, en caso de que si, cambiar a esto y probar if (inscripcion) and (inscripcion.fecha < (fecha + relativedelta(years=3))):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
     if inscripcion:
-        if (inscripcion.fecha == Null) or (inscripcion.fecha < (fecha + relativedelta(months=3))):
+        if (inscripcion.fecha == None) or (inscripcion.fecha < (fecha + relativedelta(months=3))):
             if  ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
             else:

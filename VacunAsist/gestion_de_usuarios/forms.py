@@ -7,6 +7,7 @@ from gestion_de_usuarios.models import *
 from django.core.exceptions import ValidationError
 from VacunAsist.settings import DATE_INPUT_FORMATS
 import requests
+import re
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from .models import Usuario
@@ -98,7 +99,7 @@ class FormularioDeRegistro (UserCreationForm):
             sexo = self.cleaned_data["sexo"]
             persona = {"dni":dni,
                 "tramite": numero_tramite,
-                "sexo": sexo,}
+                "sexo": sexo}
             headers = {
                 'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
                 'Content-Type' : "application/json"
