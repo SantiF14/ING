@@ -207,7 +207,7 @@ def inscribir_campania_fiebre_amarilla(request):
     #calculo la edad del usuario
     anios = calculate_age(usuario.fecha_nacimiento)
 
-    if (anios > 60):
+    if (anios + relativedelta(days=15) > 60):
         request.session["mensaje"] = "Usted supera el límite de edad para inscribirse a esta campaña."
         request.session["titulo"] = "Inscripción fallida"
         return redirect(home)
@@ -772,3 +772,189 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
     context["mensaje"] = "La vacuna se cargo de forma exitosa."
     request.session["context"] = context
     return redirect(ver_turnos_del_dia)
+
+@login_required
+def baja_campania(request):
+    dni = request.POST.get("Dni")
+    tipo = request.POST.get("tipo")
+
+    context = dict.fromkeys(["mensaje"], "")
+
+    inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna_id__tipo= tipo).first()
+
+    hoy = datetime.today()
+
+    if ((inscripcion.fecha != None) and (inscripcion.fecha < (hoy + relativedelta(days=7)))):
+        vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
+        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + 1
+        vacuna_vacunatorio.save()
+
+    inscripcion.delete()
+    context["mensaje"] = f'Ha sido dado de baja exitosamente de la campaña {tipo}'
+    request.session["context"] = context
+    return redirect(home)
+
+@login_required
+def baja_vacunador(request):
+    dni = request.POST.get("Dni")
+
+    context = dict.fromkeys(["mensaje"], "")
+
+    usuario=Usuario.objects.get(dni=dni)
+    usuario.es_vacunador=False
+
+    vacunador = Vacunador.objects.get(usuario_id=dni)
+
+    vacunador.delete()
+    context["mensaje"] = 'El vacunador ha sido dado de baja exitosamente'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+
+@login_required
+def baja_administrador(request):
+    dni = request.POST.get("Dni")
+
+    context = dict.fromkeys(["mensaje"], "")
+
+    usuario=Usuario.objects.get(dni=dni)
+    usuario.es_administrador=False
+
+    context["mensaje"] = 'El administrador ha sido dado de baja exitosamente'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def recuperar_contrasenia(request):
+    dni = request.POST.get("Dni")
+    numero_tramite = request.POST.get("Tramite")
+    context = dict.fromkeys(["mensaje"], "")
+
+    usuario=Usuario.objects.filter(dni=dni).first()
+
+    if (usuario):
+
+        persona = {"dni":dni,
+                "tramite": numero_tramite,
+                "sexo": usuario.sexo}
+        headers = {
+            'X-Api-Key': 'JhKDui9uWt63sxGsdE1Xw1pGisfKpjZK1WJ7EMmy',
+            'Content-Type' : "application/json"
+            }
+        try:
+            response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
+            headers=headers, json=persona)
+        except:
+            context["mensaje"] = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
+        else:
+            if (response.status_code == 403):
+                context["mensaje"] = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
+            if (response.status_code != 200):
+                context["mensaje"] = "Error de validación. Verifique que sus datos sean correctos e intente de nuevo."
+            else:
+                context["mensaje"] = f'Se ha enviado un mail a la dirección de correo electrónico {usuario.email} con la nueva clave'
+                contrasenia = ''.join(random.choices(string.ascii_letters, k=6), random.choices(string.digits, k=2))
+                usuario.set_password(self, contrasenia)
+                usuario.save()
+                #envia el mail
+                html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "COVID-19"}) #REVISAR FLACA NO TE OLVIDES UwU aribel
+                #try:    
+                #    send_mail('Nueva contraseña VacunAssist',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+                #except:
+                #    pass
+    else:
+        context["mensaje"] = 'El DNI ingresado no está cargado en el sistema'
+
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def posponer_turno_fallido(request):
+    context = dict.fromkeys(["mensaje"], "")
+    context["mensaje"] = 'usted cumplirá 60 años en este lapso de tiempo, si presiona aceptar, se le cancelara el turno'
+    request.session["context"] = context
+    return redirect('MOSTRAR MODAL')
+
+@login_required()
+def posponer_turno(request):
+    dni = request.POST.get("Dni")
+    dias = request.POST.get("Dias")
+    tipo = request.POST.get("Tipo")
+
+    context = dict.fromkeys(["mensaje"], "")
+
+    usuario=Usuario.objects.filter(dni=dni).first()
+    anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=dias))
+    inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna_id__tipo= tipo).first()
+    vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
+    if (anios < 60):
+        inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
+        inscripcion.save()
+        context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha}'
+    else:
+        inscripcion.delete()
+        context["mensaje"] = 'Su turno no se pospuso ya que no cumple con el limite de edad, usted fue desuscripto de la campaña'
+    vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + 1
+    vacuna_vacunatorio.save()
+
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def cambiar_vacunatorio_trabajo(request):
+    dni = request.POST.get("Dni")
+    nombre_vacunatorio = request.POST.get("Vacunatorio")
+    
+    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
+
+    vacunador = Vacunador.objects.get(usuario_id=dni)
+    vacunador.vacunatorio_de_trabajo = vacunatorio
+    vacunador.save()
+
+    context["mensaje"] = 'La modificación ha sido realizada con éxito'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def modificar_vacunatorio_preferencia(request):
+    dni = request.POST.get("Dni")
+    nombre_vacunatorio = request.POST.get("Vacunatorio")
+    
+    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
+
+    usuario = Usuario.objects.get(usuario_id=dni)
+    usuario.vacunatorio_pref = vacunatorio
+    usuario.save()
+
+    context["mensaje"] = 'Su nuevo vacunatorio de preferencia que es: {nombre_vacunatorio}, esto no modifica los turnos que ya tenga asignados'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def modificar_cuestionario_salud(request):
+    dni = request.POST.get("Dni")
+    cuestionario = request.POST.get("Cuestionario")
+    
+
+    usuario = Usuario.objects.get(usuario_id=dni)
+    usuario.de_riesgo = cuestionario
+    usuario.save()
+
+    context["mensaje"] = 'Su cuestionario de salud se modifico correctamente'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def modificar_datos_personales(request):
+    mail = request.POST.get("mail")
+    dni = request.POST.get("Dni")
+    
+
+    usuario = Usuario.objects.get(usuario_id=dni)
+    usuario.email = mail
+    usuario.save()
+
+    context["mensaje"] = 'Su mail se modifico correctamente'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+    
