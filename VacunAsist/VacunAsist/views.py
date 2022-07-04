@@ -963,7 +963,6 @@ def modificar_datos_personales(request):
 def cambiar_rol(request):
     user = request.user
     rol = request.POST.get("rol")
-    print("HOLA")
     user.rol_actual = rol
     user.save()
     if rol == "Ciudadano":
