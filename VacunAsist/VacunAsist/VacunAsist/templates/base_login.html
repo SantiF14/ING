@@ -32,26 +32,49 @@
           <img class="img" src="{% static 'Vacunasist/images/Logo.png' %}">
         </a>
       </div>
-      <div class="dropdown" style="margin: 40px;">
+      <div class="dropdown" style="margin: 40px; margin-left: 0px;">
         <button onclick="myFunction()" class="dropbtn"><i class="fa-solid fa-user" style="margin-right: 3%"></i> {{ request.user.nombre_apellido }}<i class="fa-solid fa-sort-down" style="margin-left: 3%;"></i></button>
         <div id="myDropdown" class="dropdown-content">
+          {% if rol == "Ciudadano" %}
           <a href="#home"><i class="fa-solid fa-pen-to-square" style="margin-right: 5%"></i>Mi perfil Proximamente..</a>
           <a href="{% url 'MisTurnos' %}"><i class="fa-solid fa-calendar-check" style="margin-right: 5%"></i>Mis turnos</a>
           <a href="{% url 'MisVacunas' %}"><i class="fa-solid fa-syringe" style="margin-right: 5%"></i>Mis vacunas</a>
           <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>
-        {% if user.es_vacunador %}
-        <div class="dropdown-divider"></div>
+          {% endif %}
+          {% if rol == "Vacunador" %}
           <p style="text-align: center; margin-top: 19px;" >Vacunador</p>
           <a class="dropdown-item" href="{% url 'TurnosHoy' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver turnos del día</a>
           <a class="dropdown-item" href="{% url 'VacunasVac' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas</a>
+          <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>
           {% endif %}
-          {% if user.es_administrador %}
-          <div class="dropdown-divider"></div>
+          {% if rol == "Administrador" %}
           <p style="text-align: center; margin-top: 19px;" >Administrador</p>
           <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas general</a>
+          <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>
           {% endif %}
         </div>
       </div>       
+      {% if rol != "" %}
+      <div class="dropdown" style="margin: 40px; margin-right: 0  px;">
+        <button onclick="myFunction2()" class="dropbtn"><i class="fa-solid fa-user" style="margin-right: 3%"></i> user.rol_actual<i class="fa-solid fa-sort-down" style="margin-left: 3%;"></i></button>
+        <div id="myDropdown2" class="dropdown-content">
+        {% if rol != "Ciudadano" %}
+          <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Ciudadano</a>
+        {% endif %}
+        {% if user.es_vacunador %}
+          {% if rol != "Vacunador" %}
+            <a class="dropdown-item" href="{% url 'TurnosHoy' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Vacunador</a>
+          {% endif %}
+        {% endif %}
+          {% if user.es_administrador %}
+            {% if rol != "Administrador" %}
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Administrador</a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>   
+      {% endif %}     
     </header>
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
@@ -97,6 +120,23 @@
     <script>
     function myFunction() {
       document.getElementById("myDropdown").classList.toggle("show");
+    }
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+      if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+          var openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+
+    function myFunction2() {
+      document.getElementById("myDropdown2").classList.toggle("show");
     }
     // Close the dropdown if the user clicks outside of it
     window.onclick = function(event) {
