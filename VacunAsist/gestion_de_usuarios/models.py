@@ -23,7 +23,8 @@ class MyAccountManager(BaseUserManager):
             fecha_nacimiento = fecha_nacimiento,
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
-            password=password
+            password=password,
+            rol_actual="User"
             )
         user.set_password(password)
         user.save(using=self._db)
@@ -62,8 +63,7 @@ class Usuario(AbstractBaseUser):
     password = models.CharField(null=True, max_length=50, verbose_name='contrasenia')  #ver max_length por hashing/encriptacion
     clave_alfanumerica = models.CharField(max_length=5)
     vacunatorio_pref = models.ForeignKey("Vacunatorio", on_delete=models.SET_NULL, null=True) #deberiamos cambiar las HU en tal caso, noguta
-    opciones_rol = [("Vac","Vacunador"),("Adm","Administrador"),("User","Usuario comun")]
-    rol_actual = models.CharField(max_length=4, choices=opciones_rol, default=None ,blank=True, null=True)
+    rol_actual = models.CharField(max_length=20, default=None ,blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Usuarios"

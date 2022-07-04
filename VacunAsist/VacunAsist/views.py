@@ -960,14 +960,15 @@ def modificar_datos_personales(request):
     
 
 @login_required
-def cambiar_roles(request):
-
+def cambiar_rol(request):
+    user = request.user
     rol = request.POST.get("rol")
-
+    print("HOLA")
+    user.rol_actual = rol
+    user.save()
     if rol == "Ciudadano":
-
-        redirect(home)
+        return redirect(home)
     elif rol == "Vacunador":
-        redirect(cargar_vacuna_con_turno)
-    elif rol == "Administrador":
-        redirect(cargar_vacuna_stock)
+        return redirect(ver_turnos_del_dia)
+    else:
+        return redirect(visualizar_stock_administrador)

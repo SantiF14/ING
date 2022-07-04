@@ -45,5 +45,5 @@ urlpatterns = [
     path('cargar_vacuna_sin_turno_gripe', cargar_vacuna_gripe_sin_turno, name="CargarSinTurnoGripe"),
     path('cargar_vacuna_sin_turno_covid', cargar_vacuna_COVID_sin_turno, name="CargarSinTurnoCOVID"),
     path('cargar_vacuna_sin_turno_fiebre', cargar_vacuna_fiebre_amarilla_sin_turno, name="CargarSinTurnoFiebreA"),
-
+    path('cambiar_rol/', cambiar_rol, name = "cambiarRol"),
 ]
