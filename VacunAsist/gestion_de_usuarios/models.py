@@ -62,7 +62,9 @@ class Usuario(AbstractBaseUser):
     password = models.CharField(null=True, max_length=50, verbose_name='contrasenia')  #ver max_length por hashing/encriptacion
     clave_alfanumerica = models.CharField(max_length=5)
     vacunatorio_pref = models.ForeignKey("Vacunatorio", on_delete=models.SET_NULL, null=True) #deberiamos cambiar las HU en tal caso, noguta
-    
+    opciones_rol = [("Vac","Vacunador"),("Adm","Administrador"),("User","Usuario comun")]
+    rol_actual = models.CharField(max_length=4, choices=opciones_rol, default=None ,blank=True, null=True)
+
     class Meta:
         verbose_name_plural = "Usuarios"
         app_label = 'gestion_de_usuarios'
@@ -91,15 +93,13 @@ class Vacuna(models.Model):
     through="Inscripcion",
     through_fields= ("vacuna", "usuario"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
     
     tienen_aplicaciones = models.ManyToManyField(Usuario, related_name="vacunas_aplicadas", 
     through="VacunaAplicada",
     through_fields= ("vacuna","usuario"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
 
     
 class Vacunatorio(models.Model):
@@ -111,8 +111,7 @@ class Vacunatorio(models.Model):
     through="VacunaVacunatorio",
     through_fields= ("vacunatorio", "vacuna"),
     default=None,
-    blank=True,
-    null=True)
+    blank=True)
 
     def __str__(self) -> str:
         return self.nombre

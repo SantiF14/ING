@@ -25,7 +25,7 @@ def index(request):
 def home(request):
 
     if request.user.is_authenticated:
-        context = dict.fromkeys(["user","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
+        context = dict.fromkeys(["user","rol","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
         user = request.user
         context["user"] = user
         context["mensaje"] = request.session.get('mensaje', "")
@@ -49,9 +49,9 @@ def home(request):
 
     
 
-        return render(request,"home.html",context)
+        return render(request,"home.html", context)
 
-    return render(request, 'index.html', {})    
+    return redirect('Index')    
 
 @login_required
 def mostrar_mis_turnos(request):
@@ -130,11 +130,11 @@ def inscribir_campania_gripe (request):
 
     ins = Inscripcion(usuario=usuario,fecha=fecha_turno,vacunatorio=usuario.vacunatorio_pref,vacuna=vacuna)
     ins.save()
-    #html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": usuario, "vacuna": "gripe"})
-    #try:
-    #    send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-    #except:
-    #    pass
+    html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": usuario, "vacuna": "gripe"})
+    try:
+        send_mail('Notificación de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    except:
+        pass
     request.session["mensaje"]= f"Usted se inscribió a la campaña de vacunación de la gripe. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado.",
     request.session["titulo"]="Inscripción exitosa"
     return redirect(home)
@@ -184,11 +184,11 @@ def inscribir_campania_COVID (request):
     ins.save()
 
     if (fecha_turno != None):
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": usuario, "vacuna": "COVID-19"})
-        #try:
-        #    send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": usuario, "vacuna": "COVID-19"})
+        try:
+            send_mail('Notificación de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
         request.session["mensaje"]= f"Usted se inscribió a la campaña de vacunación del COVID-19. Le hemos enviado un mail a la dirección {usuario.email} con la fecha de su turno. Por favor, revise su correo no deseado."
         request.session["titulo"]="Inscripción exitosa"
         return redirect(home)
@@ -363,11 +363,11 @@ def agregar_vacuna_gripe_historial(request):
             inscripcion.fecha = fecha_turno
             inscripcion.save()
             #envia el mail
-            #html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "Gripe"})
-            #try:    
-            #    send_mail('Notificación de actualizacion de turno de vacuna contra la gripe',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
-            #except:
-            #    pass
+            html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "Gripe"})
+            try:    
+                send_mail('Notificación de actualizacion de turno de vacuna contra la gripe',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
+            except:
+                pass
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
@@ -392,7 +392,7 @@ def agregar_vacuna_COVID_historial(request):
     #ver si no existe la inscripcion tira error, en caso de que si, cambiar a esto y probar if (inscripcion) and (inscripcion.fecha < (fecha + relativedelta(years=3))):
     #si eso no funciona llamar al 0800-222-lucho para mas informacion
     if inscripcion:
-        if (inscripcion.fecha == Null) or (inscripcion.fecha < (fecha + relativedelta(months=3))):
+        if (inscripcion.fecha == None) or (inscripcion.fecha < (fecha + relativedelta(months=3))):
             if  ((fecha + relativedelta(months=3)) < (hoy.date() + relativedelta(days=7))):
                 fecha_turno = hoy + relativedelta(days=7)
             else:
@@ -402,10 +402,10 @@ def agregar_vacuna_COVID_historial(request):
             inscripcion.save()
             #envia el mail
             html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "COVID-19"})
-            #try:    
-            #    send_mail('Notificación de actualizacion de turno de vacuna contra el COVID-19',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
-            #except:
-            #    pass
+            try:    
+                send_mail('Notificación de actualizacion de turno de vacuna contra el COVID-19',"",EMAIL_HOST_USER,[request.user.email], html_message=html_message)
+            except:
+                pass
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
@@ -553,20 +553,20 @@ def cargar_vacuna_gripe_sin_turno(request):
     if (inscripcion):
         inscripcion.fecha = hoy + relativedelta(years=1)
         inscripcion.save()
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
-        #try:    
-        #    send_mail('Notificación de actualizacion de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(years=1), "vacuna": "gripe"})
+        try:    
+            send_mail('Notificación de actualizacion de turno para vacuna contra la gripe',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
         
     
     if (not usuario):
         email = request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "gripe"})
-        #try:    
-        #    send_mail('Vacunacion contra la gripe',"",EMAIL_HOST_USER,[email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "gripe"})
+        try:    
+            send_mail('Vacunacion contra la gripe',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
     context["mensaje"] = 'La vacuna se cargo de forma exitosa.'
     request.session["context"] = context
@@ -659,20 +659,20 @@ def cargar_vacuna_COVID_sin_turno(request):
     if (inscripcion):
         inscripcion.fecha = hoy + relativedelta(months=3)
         inscripcion.save()
-        #html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(months=3), "vacuna": "COVID-19"})
-        #try:    
-        #    send_mail('Notificación de actualizacion de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_turno.html',{'fecha': hoy + relativedelta(months=3), "vacuna": "COVID-19"})
+        try:    
+            send_mail('Notificación de actualizacion de turno para vacuna contra el COVID-19',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
     
     
     if (not usuario):
         email = request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "COVID-19"})
-        #try:    
-        #    send_mail('Vacunacion contra el COVID-19',"",EMAIL_HOST_USER,[email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "COVID-19"})
+        try:    
+            send_mail('Vacunacion contra el COVID-19',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
     context["mensaje"] = "La vacuna se cargo de forma exitosa."
     request.session["context"] = context
@@ -756,18 +756,18 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
     usuario = Usuario.objects.filter(dni=dni).first()
     if (usuario):
         pass 
-        #html_message = loader.render_to_string('email_aviso_certificado2.html',{'fecha': hoy})
-        #try:    
-        #    send_mail('Certificado de vacunacion de fiebre amarilla',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_aviso_certificado2.html',{'fecha': hoy})
+        try:    
+            send_mail('Certificado de vacunacion de fiebre amarilla',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+        except:
+            pass
     else: 
         email =request.POST.get("Email")
-        #html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "Fiebre amarilla"})
-        #try:    
-        #    send_mail('Vacunacion contra la fiebre amarilla',"",EMAIL_HOST_USER,[email], html_message=html_message)
-        #except:
-        #    pass
+        html_message = loader.render_to_string('email_aviso_vacunacion.html',{'fecha': hoy, "vacuna": "Fiebre amarilla"})
+        try:    
+            send_mail('Vacunacion contra la fiebre amarilla',"",EMAIL_HOST_USER,[email], html_message=html_message)
+        except:
+            pass
         
     context["mensaje"] = "La vacuna se cargo de forma exitosa."
     request.session["context"] = context
@@ -958,3 +958,16 @@ def modificar_datos_personales(request):
     request.session["context"] = context
     return redirect('LA MISMA PAGINA ANASHEI')
     
+
+@login_required
+def cambiar_roles(request):
+
+    rol = request.POST.get("rol")
+
+    if rol == "Ciudadano":
+
+        redirect(home)
+    elif rol == "Vacunador":
+        redirect(cargar_vacuna_con_turno)
+    elif rol == "Administrador":
+        redirect(cargar_vacuna_stock)
