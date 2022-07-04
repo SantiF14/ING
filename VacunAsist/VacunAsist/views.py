@@ -55,12 +55,13 @@ def home(request):
 
 @login_required
 def mostrar_mis_turnos(request):
-
     usuario = request.user
     context=dict.fromkeys(["turnos","mensaje"],"")
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
     context["turnos"]=turnos
 
+    #print (check_password('Hola4321', request.user.password))
+    #print(user.check_password('Hola4321'))
     if not turnos:
         context["mensaje"]="Usted no tiene turnos asignados."
         
@@ -904,9 +905,9 @@ def posponer_turno(request):
 def cambiar_vacunatorio_trabajo(request):
     dni = request.POST.get("Dni")
     nombre_vacunatorio = request.POST.get("Vacunatorio")
-    
+    context = dict.fromkeys(["mensaje"], "")
     vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
-
+    
     vacunador = Vacunador.objects.get(usuario_id=dni)
     vacunador.vacunatorio_de_trabajo = vacunatorio
     vacunador.save()
@@ -919,7 +920,7 @@ def cambiar_vacunatorio_trabajo(request):
 def modificar_vacunatorio_preferencia(request):
     dni = request.POST.get("Dni")
     nombre_vacunatorio = request.POST.get("Vacunatorio")
-    
+    context = dict.fromkeys(["mensaje"], "")
     vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
 
     usuario = Usuario.objects.get(usuario_id=dni)
@@ -934,7 +935,7 @@ def modificar_vacunatorio_preferencia(request):
 def modificar_cuestionario_salud(request):
     dni = request.POST.get("Dni")
     cuestionario = request.POST.get("Cuestionario")
-    
+    context = dict.fromkeys(["mensaje"], "")
 
     usuario = Usuario.objects.get(usuario_id=dni)
     usuario.de_riesgo = cuestionario
@@ -948,7 +949,7 @@ def modificar_cuestionario_salud(request):
 def modificar_datos_personales(request):
     mail = request.POST.get("mail")
     dni = request.POST.get("Dni")
-    
+    context = dict.fromkeys(["mensaje"], "")
 
     usuario = Usuario.objects.get(usuario_id=dni)
     usuario.email = mail
@@ -971,3 +972,27 @@ def cambiar_roles(request):
         redirect(cargar_vacuna_con_turno)
     elif rol == "Administrador":
         redirect(cargar_vacuna_stock)
+
+@login_required()
+def modificar_contrasenia(request):
+    context = dict.fromkeys(["mensaje"], "")
+    dni = request.POST.get("Dni")
+    contrasenia = request.POST.get("Contrasenia")
+    confirmar_contrasenia = request.POST.get("Confirmar_Contrasenia")
+
+
+    if ((not bool(re.search(r'\d', contrasenia))) or (not bool(re.search('[a-zA-Z]', contrasenia)))):
+        context["mensaje"] = "La nueva contraseña debe tener al menos 8 caracteres, 1 letra y 1 número."
+    elif contrasenia and password2 and contrasenia != password2:  
+        context["mensaje"] ="La nueva contraseña y la confirmación deben ser iguales."
+    #elif ():
+
+    elif (contrasenia == confirmar_contrasenia):
+        usuario = Usuario.objects.get(usuario_id=dni)
+        usuario.set_password(self, contrasenia)
+        usuario.save()
+        context["mensaje"] = 'La contraseña ha sido modificada exitosamente'
+
+    context["mensaje"] = 'La nueva contraseña y la confirmación deben ser iguales'
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
