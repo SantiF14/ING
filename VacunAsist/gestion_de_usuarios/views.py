@@ -2,7 +2,7 @@ from datetime import date
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, HttpResponse
 from django.template import loader
-from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna
+from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, Vacunador
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
@@ -79,7 +79,7 @@ def ver_turnos_del_dia(request):
     hoy = str(date.today())
     tipos = Vacuna.objects.all()
     
-    if (context["mensaje"] == "") and (not turnos ):
+    if (context["mensaje"] == "") and (not turnos):
         context["mensaje"]= "No existen turnos asignados para el día de hoy."
     else:
         request.session["mensaje"] = ""
@@ -213,5 +213,63 @@ def buscar_dni(request):
     request.session["context"] = context
     return redirect(ver_turnos_del_dia)
 
+@login_required
+def alta_vacunador(request):
 
+    context = dict.fromkeys(["mensaje", "rol"],"")
+    context["rol"] = "Vac"
+    dni = request.POST.get("Dni")
+    vacunatorio_trabajo = request.POST.get("VacunatorioTrabajo")
+    usuario = Usuario.objects.filter(dni=dni).first()
+    vacunatorio = Vacunatorio.objects.filter(nombre=vacunatorio_trabajo).first()
+    if (usuario):
+        if (usuario.es_vacunador):
+            context["mensaje"] = "El usuario ya es un vacunador."
+        else:
+            usuario.es_vacunador = True
+            vacunador = Vacunador(usuario=usuario, vacunatorio_de_trabajo=vacunatorio)
+            vacunador.save()
+            usuario.vacunador = vacunador
+            usuario.save()
+
+            context["mensaje"] = "El vacunador ha sido dado de alta exitosamente."
+    else:    
+        context["mensaje"] = "El DNI ingresado no se encuentra registrado en el sistema"
+    request.session["context"] = context
+    return redirect(gestionar_usuarios_admin)
+
+@login_required
+def alta_administrador(request):
+
+    context = dict.fromkeys(["mensaje","rol"],"")
+
+    dni = request.POST.get("Dni")
+    usuario = Usuario.objects.filter(dni=dni).first()
+    if (usuario):
+        if (usuario.es_administrador):
+            context["mensaje"] = "El usuario ya es un administrador."
+        else:
+            usuario.es_administrador = True
+            usuario.save()
+            context["mensaje"] = "El administrador ha sido dado de alta exitosamente."
+    else:
+        context["mensaje"] = "El DNI ingresado no se encuentra registrado en el sistema"
+    request.session["context"] = context
+
+    return redirect(gestionar_usuarios_admin)
+
+@login_required
+def gestionar_usuarios_admin(request):
+
+    context = request.session.get("context",{})
+    request.session["context"] = {}
+    if (context == {}):
+        context["mensaje"] = request.session.get('mensaje',"")
+        context["rol"] = ""
     
+    vacunadores = Usuario.objects.filter(es_vacunador=True)
+    administradores = Usuario.objects.filter(es_administrador=True)
+    context["vacunadores"] = vacunadores
+    context["admins"] = administradores
+    context["vacunatorios"] = Vacunatorio.objects.all()
+    return render(request, "gestionar_usuarios_admin.html", context)

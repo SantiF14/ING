@@ -2,6 +2,7 @@
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
+from gestion_de_usuarios.views import gestionar_usuarios_admin
 from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime, date
 from dateutil.relativedelta import *
@@ -12,6 +13,9 @@ from django.contrib.auth.decorators import login_required
 from gestion_de_usuarios.views import ver_turnos_del_dia
 from django.urls import reverse
 from urllib.parse import urlencode
+import re
+import requests
+import random, string
 
 def calculate_age(born):
     today = date.today()
@@ -791,8 +795,8 @@ def baja_campania(request):
 def baja_vacunador(request):
     dni = request.POST.get("Dni")
 
-    context = dict.fromkeys(["mensaje"], "")
-
+    context = dict.fromkeys(["mensaje", "rol"], "")
+    context["rol"] = "Vacunador"
     usuario=Usuario.objects.get(dni=dni)
     usuario.es_vacunador=False
 
@@ -801,21 +805,21 @@ def baja_vacunador(request):
     vacunador.delete()
     context["mensaje"] = 'El vacunador ha sido dado de baja exitosamente'
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(gestionar_usuarios_admin)
 
 
 @login_required
 def baja_administrador(request):
     dni = request.POST.get("Dni")
 
-    context = dict.fromkeys(["mensaje"], "")
+    context = dict.fromkeys(["mensaje","rol"], "")
 
     usuario=Usuario.objects.get(dni=dni)
     usuario.es_administrador=False
 
     context["mensaje"] = 'El administrador ha sido dado de baja exitosamente'
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(gestionar_usuarios_admin)
 
 @login_required()
 def recuperar_contrasenia(request):
@@ -859,7 +863,7 @@ def recuperar_contrasenia(request):
         context["mensaje"] = 'El DNI ingresado no está cargado en el sistema'
 
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(gestionar_usuarios_admin)
 
 @login_required()
 def posponer_turno_fallido(request):
@@ -897,7 +901,8 @@ def posponer_turno(request):
 def cambiar_vacunatorio_trabajo(request):
     dni = request.POST.get("Dni")
     nombre_vacunatorio = request.POST.get("Vacunatorio")
-    context = dict.fromkeys(["mensaje"], "")
+    context = dict.fromkeys(["mensaje","rol"], "")
+    context["rol"] = "Vacunador"
     vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
     
     vacunador = Vacunador.objects.get(usuario_id=dni)
@@ -906,7 +911,7 @@ def cambiar_vacunatorio_trabajo(request):
 
     context["mensaje"] = 'La modificación ha sido realizada con éxito'
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(gestionar_usuarios_admin)
 
 @login_required()
 def modificar_vacunatorio_preferencia(request):
@@ -970,19 +975,19 @@ def cambiar_rol(request):
 def modificar_contrasenia(request):
     context = dict.fromkeys(["mensaje"], "")
     dni = request.POST.get("Dni")
-    contrasenia = request.POST.get("Contrasenia")
-    confirmar_contrasenia = request.POST.get("Confirmar_Contrasenia")
+    password = request.POST.get("password")
+    password2 = request.POST.get("password2")
 
 
-    if ((not bool(re.search(r'\d', contrasenia))) or (not bool(re.search('[a-zA-Z]', contrasenia)))):
+    if ((not bool(re.search(r'\d', password))) or (not bool(re.search('[a-zA-Z]', password)))):
         context["mensaje"] = "La nueva contraseña debe tener al menos 8 caracteres, 1 letra y 1 número."
-    elif contrasenia and password2 and contrasenia != password2:  
+    elif password and password2 and password != password2:  
         context["mensaje"] ="La nueva contraseña y la confirmación deben ser iguales."
-    elif (usuario.check_password(contrasenia)):
+    elif (usuario.check_password(password)):
         context["mensaje"] ='La nueva contraseña debe ser distinta a la contraseña actual'
-    elif (contrasenia == confirmar_contrasenia):
+    else:
         usuario = Usuario.objects.get(usuario_id=dni)
-        usuario.set_password(self, contrasenia)
+        usuario.set_password(password)
         usuario.save()
         context["mensaje"] = 'La contraseña ha sido modificada exitosamente'
 
