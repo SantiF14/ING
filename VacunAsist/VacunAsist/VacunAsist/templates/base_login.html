@@ -48,6 +48,7 @@
           {% endif %}
           {% if user.rol_actual == "Administrador" %}
           <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver stock de vacunas</a>
+          <a class="dropdown-item" href="{% url 'GestionarUsuarios' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Gestionar roles</a>
           <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>
           {% endif %}
         </div>

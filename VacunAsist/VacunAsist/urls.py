@@ -46,4 +46,10 @@ urlpatterns = [
     path('cargar_vacuna_sin_turno_covid', cargar_vacuna_COVID_sin_turno, name="CargarSinTurnoCOVID"),
     path('cargar_vacuna_sin_turno_fiebre', cargar_vacuna_fiebre_amarilla_sin_turno, name="CargarSinTurnoFiebreA"),
     path('cambiar_rol/', cambiar_rol, name = "cambiarRol"),
+    path('gestionar_usuarios_adm/', gestionar_usuarios_admin, name = "GestionarUsuarios"),
+    path('alta_vacunador/', alta_vacunador, name = "DarDeAltaVac"),
+    path('alta_administrador/', alta_administrador, name = "DarDeAltaAdmin"),
+    path('baja_vacunador/', baja_vacunador, name = "DarDeBajaVac"),
+    path('baja_administrador/', baja_administrador, name = "DarDeBajaAdmin"),
+    path('cambiar_vacunatorio_trabajo/', cambiar_vacunatorio_trabajo, name = "CambiarVacDeTrabajo"),
 ]
