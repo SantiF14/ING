@@ -1046,13 +1046,32 @@ def visualizar_cantidad_turnos(request):
 
 
     context = dict.fromkeys(["turnos","mensaje"], "")
-    
-    inscriptos = Inscripcion
-    context["turnos"]=Inscripcion.objects.filter(fecha__range=[request.POST.get("fecha_inicio"), request.POST.get("fecha_fin")])
-    context["mensaje"]= request.session.get('mensaje', "")
-    request.session["mensaje"] = ""
-    #ver si contemplar esto
 
+    fecha_inicio = request.POST.get("fecha_inicio")
+    fecha_fin = request.POST.get("fecha_fin")
+    if (fecha_inicio < fecha_fin):
+        context["turnos"]= Inscripcion.objects.filter(fecha__range=[fecha_inicio,fecha_fin])
+    else:
+        context["mensaje"]= 'Las fechas ingresadas no son válidas'
+
+    #ver si contemplar esto
+    request.session["context"] = context
     #cambiar return
     return redirect('LA MISMA PAGINA ANASHEI')
     #return render(request, 'vacunas_adm.html', context)
+
+@login_required
+def ver_cantidad_turnos(request):
+
+    context = request.session.get('context',{})
+    request.session["context"] = {}
+    hoy = datetime.today()
+    
+    if (context == {}):
+        context = dict.fromkeys(["turnos","mensaje"], "")
+        context["turnos"]= Inscripcion.objects.filter(fecha__range=[(hoy + relativedelta(days=-7)),hoy])
+    elif (context['mensaje'] == 'Las fechas ingresadas no son válidas'):
+        context["turnos"]= Inscripcion.objects.filter(fecha__range=[(hoy + relativedelta(days=-7)),hoy])
+    
+    ##fraaaaaaan correegi esto ananananashey
+    return render(request, 'index.html', context)
