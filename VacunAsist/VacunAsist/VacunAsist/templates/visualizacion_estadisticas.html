@@ -1,0 +1,13 @@
+{% extends "base_login.html" %}
+ {% load static %}
+ {% block content %}
+<body class="user">
+
+    {% if grafico %}
+    <div style="width:600;height:500">
+    {{ grafico|safe }}
+    </div>
+    {% endif %}
+
+
+{% endblock %}

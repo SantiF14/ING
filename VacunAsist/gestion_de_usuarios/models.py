@@ -130,7 +130,6 @@ class Vacunador(models.Model):
 
 class Inscripcion(models.Model):
     class Meta:
-        unique_together = ("usuario","vacuna")
         verbose_name_plural = "Inscripciones"
         
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True) #decidir
@@ -141,13 +140,24 @@ class Inscripcion(models.Model):
 
 class VacunaAplicada(models.Model):
     class Meta: 
+        unique_together = ("usuario","vacuna")
         verbose_name_plural = "Vacunas_aplicadas"
     usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING, db_constraint=False)
     vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
+    vacunatorio = models.ForeignKey(Vacunatorio, on_delete=models.DO_NOTHING, default=None)
     fecha = models.DateField(default=date.today)
     marca = models.CharField(max_length=20, blank=True, null=True)
     lote = models.CharField(max_length=20, blank=True, null=True)
     con_nosotros = models.BooleanField()
+
+class VacunasNoAplicadas(models.Model):
+    class Meta: 
+        verbose_name_plural = "Vacunas_pospuestas"
+    usuario = models.ForeignKey("Usuario", on_delete=models.DO_NOTHING, db_constraint=False)
+    vacuna = models.ForeignKey(Vacuna, on_delete=models.DO_NOTHING)
+    fecha = models.DateField()
+    vacunatorio = models.ForeignKey(Vacunatorio, on_delete=models.DO_NOTHING)
+    estado = models.CharField(max_length=10)
 
 
 class VacunaVacunatorio(models.Model):
@@ -155,4 +165,4 @@ class VacunaVacunatorio(models.Model):
         unique_together = ("vacuna", "vacunatorio")
     vacuna = models.ForeignKey("Vacuna", on_delete=models.PROTECT)
     vacunatorio = models.ForeignKey("Vacunatorio", on_delete=models.PROTECT)
-    stock_actual = models.PositiveIntegerField()
+    stock_remanente = models.PositiveIntegerField()

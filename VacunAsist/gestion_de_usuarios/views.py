@@ -18,6 +18,9 @@ from pathlib import Path
 import requests
 import json
 from datetime import date, datetime
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
 
 User = get_user_model()
 
@@ -295,3 +298,58 @@ def gestionar_usuarios_admin(request):
     context["admins"] = administradores
     context["vacunatorios"] = Vacunatorio.objects.all()
     return render(request, "gestionar_usuarios_admin.html", context)
+
+@login_required
+def visualizar_estadisticas(request):
+    
+
+    context = {}
+    df = pd.read_csv(r"C:\Users\arias\GIT\ING\VacunAsist\VacunAsist\VacunAsist\static\covid_19_clean_complete.csv")
+    print(df)
+    fig = go.Figure()
+
+    country_list = list(df['Country/Region'].unique())
+
+    #tipos_vacunas = Vacuna.objects.all()
+
+    #vacunatorios = Vacunatorio.objects.all() 
+
+    for country in country_list:
+        fig.add_trace(
+            go.Scatter(
+                x = df['Date'][df['Country/Region']==country],
+                y = df['Confirmed'][df['Country/Region']==country],
+                name = country, visible = True
+            )
+        )
+
+    buttons = []
+
+    for i, country in enumerate(country_list):
+        args = [False] * len(country_list)
+        args[i] = True
+
+        button = dict(label = country,
+                      method = "update",
+                      args=[{"visible": args}])
+
+        buttons.append(button)
+
+    fig.update_layout(
+        updatemenus=[dict(
+                        active=0,
+                        type="dropdown",
+                        buttons=buttons,
+                        x = 0,
+                        y = 1.1,
+                        xanchor = 'left',
+                        yanchor = 'bottom'
+                    )], 
+        autosize=False,
+        width=1000,
+        height=800
+    )
+
+    context['grafico'] = fig.to_html()
+
+    return render(request,"visualizacion_estadisticas.html",context)
