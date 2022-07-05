@@ -52,9 +52,6 @@ urlpatterns = [
     path('baja_vacunador/', baja_vacunador, name = "DarDeBajaVac"),
     path('baja_administrador/', baja_administrador, name = "DarDeBajaAdmin"),
     path('cambiar_vacunatorio_trabajo/', cambiar_vacunatorio_trabajo, name = "CambiarVacDeTrabajo"),
-<<<<<<< Updated upstream
     path('inicio_sesion_rol/', iniciar_sesion_rol),
-=======
     path('visualizacion_estadisticas/', visualizar_estadisticas, name = "VerEstadisticas"),
->>>>>>> Stashed changes
 ]

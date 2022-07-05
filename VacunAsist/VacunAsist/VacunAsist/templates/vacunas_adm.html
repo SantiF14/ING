@@ -56,8 +56,8 @@
    <div class="col-3 filterDiv {{vacuna.vacunatorio.nombre}}" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
     <p>lugar: {{vacuna.vacunatorio.nombre}}</p>
      <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
-     <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_actual}}">
-     <p>stock actual: <p></p>{{vacuna.stock_actual}}</p>
+     <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_remanente}}">
+     <p>stock actual: <p></p>{{vacuna.stock_remanente}}</p>
      <input type="hidden" value="{{vacuna.vacunatorio.nombre}}"  id="lugar_t">
      <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="tipo-d"/>
         <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}C" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;" onclick="myFunction4(this)">Cargar vacuna</button>

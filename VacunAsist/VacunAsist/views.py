@@ -238,7 +238,7 @@ def inscribir_campania_fiebre_amarilla(request):
 
 @login_required
 def cargar_vacuna_con_turno(request):
-
+    user = request.user
     dni = request.POST.get("Dni")
     tipo = request.POST.get("Tipo")
     marca = request.POST.get("Marca")
@@ -274,7 +274,7 @@ def cargar_vacuna_con_turno(request):
         
     #REVISAR : Deberia restar uno a vacunas en stock? Depende de como lo terminemos modelando.
 
-    vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True)
+    vacuna = VacunaAplicada(usuario=usuario,vacuna=vacu,fecha=hoy,marca=marca,lote=lote,con_nosotros=True,vacunatorio=user.vacunatorio_trabajo)
     vacuna.save()
 
 
@@ -301,14 +301,14 @@ def cargar_vacuna_stock(request):
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio__nombre=lugar, vacuna=vacuna).first()
 
     if (vacuna_vacunatorio):
-        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + cant
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + cant
     else:
-        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=lugar,vacuna=vacuna,stock_actual=cant)
+        vacuna_vacunatorio = VacunaVacunatorio(vacunatorio=lugar,vacuna=vacuna,stock_remanente=cant)
 
     vacuna_vacunatorio.save()
 
     #fijarse donde lo va a retornar
-    request.session["mensaje"] = f'Las vacunas se cargaron de forma exitosa en el sistema, cantidad actual de vacunas de {tipo} en el vacunatorio {vacuna_vacunatorio.vacunatorio.nombre} es de: {vacuna_vacunatorio.stock_actual}.'
+    request.session["mensaje"] = f'Las vacunas se cargaron de forma exitosa en el sistema, cantidad actual de vacunas de {tipo} en el vacunatorio {vacuna_vacunatorio.vacunatorio.nombre} es de: {vacuna_vacunatorio.stock_remanente}.'
     return redirect(visualizar_stock_administrador)
 
 @login_required
@@ -328,12 +328,12 @@ def eliminar_vacuna_stock(request):
 
     vacvacunatorio = VacunaVacunatorio.objects.filter(vacunatorio__nombre=lugar,vacuna=vacuna).first()
 
-    if (vacvacunatorio.stock_actual < cant):
-        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock ({vacvacunatorio.stock_actual}).'
+    if (vacvacunatorio.stock_remanente < cant):
+        mensaje = f'No pueden eliminarse más vacunas de las que hay en stock ({vacvacunatorio.stock_remanente}).'
     else:
-        vacvacunatorio.stock_actual = vacvacunatorio.stock_actual - cant
+        vacvacunatorio.stock_remanente = vacvacunatorio.stock_remanente - cant
         vacvacunatorio.save()
-        mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de {tipo} en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_actual}.'
+        mensaje = f'Las vacunas se eliminaron correctamente, cantidad actual de vacunas de {tipo} en el vacunatorio {vacvacunatorio.vacunatorio.nombre} es de: {vacvacunatorio.stock_remanente}.'
     
 
     #fijarse donde lo va a retornar
@@ -373,7 +373,7 @@ def agregar_vacuna_gripe_historial(request):
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False,vacunatorio=None)
     vacunaaplicada.save()
 
 
@@ -411,7 +411,7 @@ def agregar_vacuna_COVID_historial(request):
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False,vacunatorio=None)
     vacunaaplicada.save()
 
 
@@ -432,7 +432,7 @@ def agregar_vacuna_fiebre_amarilla_historial(request):
 
     fecha = date(fecha.year, fecha.month, fecha.day)
 
-    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False)
+    vacunaaplicada = VacunaAplicada(usuario=user,fecha=fecha,vacuna=vacuna,marca=marca,lote=lote,con_nosotros=False,vacunatorio=None)
     vacunaaplicada.save()
 
 @login_required
@@ -498,7 +498,7 @@ def boton_gripe(request):
     vacunador = Vacunador.objects.get(usuario_id=user.dni)
     sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="Gripe")
     
-    if (sobrante.stock_actual == 0):
+    if (sobrante.stock_remanente == 0):
         #cambiar return
         context["mensaje"] = 'No hay sobrante de vacunas de Gripe en este momento.'
         request.session["context"] = context
@@ -526,7 +526,7 @@ def boton_gripe(request):
 def cargar_vacuna_gripe_sin_turno(request):
 
     context = {"mensaje":""}
-
+    user = request.user
 
     dni = request.POST.get("Dni")
     marca = request.POST.get("Marca")
@@ -539,12 +539,12 @@ def cargar_vacuna_gripe_sin_turno(request):
     hoy = datetime.today()
     hoy = date(hoy.year, hoy.month, hoy.day)
 
-    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni, vacuna=vacuna)
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni, vacuna=vacuna, vacunatorio=user.vacunatorio_trabajo)
     vacuna_aplicada.save()
 
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
     if (vacuna_vacunatorio): #PROVISORIAMENTE: DEBERIAN ESTAR SI O SI TODAS LAS VACUNA_VACUNATORIO
-        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente - 1
         vacuna_vacunatorio.save()
 
     if (inscripcion):
@@ -578,7 +578,7 @@ def boton_COVID(request):
     vacunador = Vacunador.objects.get(usuario_id=user.dni)
     sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="COVID-19")
     
-    if (sobrante.stock_actual == 0 ):
+    if (sobrante.stock_remanente == 0 ):
         #cambiar return
         context["mensaje"] = 'No hay sobrante de vacunas de COVID-19 en este momento.'
         request.session["context"] = context
@@ -632,7 +632,7 @@ def cargar_vacuna_COVID_sin_turno(request):
 
     context = {"mensaje":""}
 
-
+    user = request.user
     dni = request.POST.get("Dni")
     marca = request.POST.get("Marca")
     lote = request.POST.get("Lote")
@@ -645,12 +645,12 @@ def cargar_vacuna_COVID_sin_turno(request):
     hoy = date(hoy.year, hoy.month, hoy.day)
 
     #en teoria deberia ser distinto el cargar la vacuna aplicada si esta registrado o no, pero si esto es legal, deberia funcionar para ambos
-    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna, vacunatorio=user.vacunatorio_trabajo)
     vacuna_aplicada.save()
 
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
     if (vacuna_vacunatorio): #PROVISORIAMENTE: DEBERIAN ESTAR SI O SI TODAS LAS VACUNA_VACUNATORIO
-        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente - 1
         vacuna_vacunatorio.save()
 
     if (inscripcion):
@@ -684,7 +684,7 @@ def boton_fiebre_amarilla(request):
     vacunador = Vacunador.objects.get(usuario_id=user.dni)
     sobrante = VacunaVacunatorio.objects.get(vacunatorio_id=vacunador.vacunatorio_de_trabajo_id, vacuna_id__tipo__exact="Fiebre_amarilla")
 
-    if (sobrante.stock_actual == 0):
+    if (sobrante.stock_remanente == 0):
         
         context["mensaje"] = 'No hay sobrante de vacunas de Fiebre amarilla en este momento.'
         request.session["context"] = context
@@ -724,7 +724,7 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
     context={"mensaje":""}
     #asignar el sobrante cuando este echo en la base de datos
 
-
+    user = request.user
     dni = request.POST.get("Dni")
     marca = request.POST.get("Marca")
     lote = request.POST.get("Lote")
@@ -739,12 +739,12 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
     hoy = date(hoy.year, hoy.month, hoy.day)
 
     #en teoria deberia ser distinto el cargar la vacuna aplicada si esta registrado o no, pero si esto es legal, deberia funcionar para ambos
-    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna)
+    vacuna_aplicada = VacunaAplicada(fecha=hoy, marca=marca, lote=lote, con_nosotros=True, usuario_id=dni,vacuna=vacuna, vacunatorio=user.vacunatorio_trabajo)
     vacuna_aplicada.save()
 
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=request.user.vacunador.vacunatorio_de_trabajo, vacuna=vacuna).first()
     if (vacuna_vacunatorio): #PROVISORIAMENTE: DEBERIAN ESTAR SI O SI TODAS LAS VACUNA_VACUNATORIO
-        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual - 1
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente - 1
         vacuna_vacunatorio.save()
 
     if (inscripcion):
@@ -774,17 +774,20 @@ def cargar_vacuna_fiebre_amarilla_sin_turno(request):
 def baja_campania(request):
     dni = request.POST.get("Dni")
     tipo = request.POST.get("tipo")
-
+    
     context = dict.fromkeys(["mensaje"], "")
 
     inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna_id__tipo= tipo).first()
 
     hoy = datetime.today()
 
-    if ((inscripcion.fecha != None) and (inscripcion.fecha < (hoy + relativedelta(days=7)))):
-        vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
-        vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + 1
-        vacuna_vacunatorio.save()
+    if ((inscripcion.fecha != None)):
+        vacuna_no_aplicada = VacunasNoAplicadas(usuario=request.user, vacuna=inscripcion.vacuna, vacunatorio=inscripcion.vacunatorio,fecha=inscripcion.fecha, estado="Cancelado")
+        vacuna_no_aplicada.save()
+        if (inscripcion.fecha < (hoy + relativedelta(days=7))):
+            vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
+            vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
+            vacuna_vacunatorio.save()
 
     inscripcion.delete()
     context["mensaje"] = f'Ha sido dado de baja exitosamente de la campaña {tipo}'
@@ -883,15 +886,22 @@ def posponer_turno(request):
     usuario=Usuario.objects.filter(dni=dni).first()
     anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=dias))
     inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna_id__tipo= tipo).first()
+    vacuna_tipo = inscripcion.vacuna
+    vacunatorio = inscripcion.vacunatorio
+    fecha_inscripcion = inscripcion.fecha
     vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
     if (anios < 60):
+        estado = "Pospuesto"
         inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
         inscripcion.save()
         context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha}'
     else:
+        estado = "Cancelado"
         inscripcion.delete()
         context["mensaje"] = 'Su turno no se pospuso ya que no cumple con el limite de edad, usted fue desuscripto de la campaña'
-    vacuna_vacunatorio.stock_actual = vacuna_vacunatorio.stock_actual + 1
+    vacuna_no_aplicada = VacunasNoAplicadas(usuario=usuario, vacuna=vacuna_tipo, vacunatorio=vacunatorio,fecha=fecha_inscripcion, estado=estado)
+    vacuna_no_aplicada.save()
+    vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
     vacuna_vacunatorio.save()
 
     request.session["context"] = context
