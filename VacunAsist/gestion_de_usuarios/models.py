@@ -24,7 +24,7 @@ class MyAccountManager(BaseUserManager):
             clave_alfanumerica = clave_alfanumerica,
             vacunatorio_pref = vacunatorio_pref,
             password=password,
-            rol_actual="User"
+            rol_actual="Ciudadano"
             )
         user.set_password(password)
         user.save(using=self._db)

@@ -54,27 +54,26 @@
         </div>
       </div>     
           <div class="dropdown " style="margin: 40px; margin-right: 0  px; ">
-            <button onclick="myFunction2()" class="dropbtn"><i class="fa-solid" style="margin-right: 3%"></i> {{ user.rol_actual }}<i class="fa-solid fa-sort-down" style="margin-left: 3%;"></i></button>
-            <div id="myDropdown2" class="dropdown-content">
+            <button onclick="myFunction2()" class="dropbtn"> {{ user.rol_actual }}  <i class="fa-solid" id="rol_flecha" style="margin-left: 3%;"></i></button> <div id="myDropdown2" class="dropdown-content">
             <form action="{% url 'cambiarRol' %}" method="POST">{% csrf_token %}
             <input type="text" hidden value="" name="rol" id="rol">
             {% if user.rol_actual != "Ciudadano" %}
-                <button type="button" value="Ciudadano" onclick=functionRol(this)>Ciudadano</button>
+              <button type="button" class="dropdown-item" style="text-align: center; padding-top: 10px; padding-bottom: 10px ; " value="Ciudadano" onclick=functionRol(this)>Ciudadano</button>
             {% endif %}
             {% if user.es_vacunador %}
               {% if user.rol_actual != "Vacunador" %}
-              <button type="button" value="Vacunador" onclick=functionRol(this)>Vacunador</button>
+              <button type="button" class="dropdown-item" style="text-align: center; padding-top: 10px; padding-bottom: 10px ; " value="Vacunador" onclick=functionRol(this)>Vacunador</button>
               {% endif %}
             {% endif %}
               {% if user.es_administrador %}
                 {% if user.rol_actual != "Administrador" %}
-                  <button type="button" value="Administrador" onclick=functionRol(this)>Administrador</button>
+                <button type="button" class="dropdown-item" style="text-align: center; padding-top: 10px; padding-bottom: 10px ; " value="Administrador" onclick=functionRol(this)>Administrador</button>
                 {% endif %}
               {% endif %}
             </form>  
             </div>
           </div> 
-    </form>  
+    </form>   
     </header>
     <div class="container-fluid">
       <div class="row align-items-start mydiv">     
@@ -98,6 +97,16 @@
     {% endblock %}
 
   </body>
+
+  <script type="text/javascript" language="JavaScript">
+    let rol = document.getElementById("rol_flecha");
+    let v1 = "{{user.es_vacunador}}";
+    let v2 = "{{user.es_administrador}}";
+    if(v1 == "True" || v2 == "True"){
+      rol.setAttribute("class", "fa-solid fa-sort-down")
+    }
+  </script>
+
   <script>
     /* When the user clicks on the button, 
     toggle between hiding and showing the dropdown content */

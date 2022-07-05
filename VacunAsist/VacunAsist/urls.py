@@ -52,4 +52,5 @@ urlpatterns = [
     path('baja_vacunador/', baja_vacunador, name = "DarDeBajaVac"),
     path('baja_administrador/', baja_administrador, name = "DarDeBajaAdmin"),
     path('cambiar_vacunatorio_trabajo/', cambiar_vacunatorio_trabajo, name = "CambiarVacDeTrabajo"),
+    path('inicio_sesion_rol/', iniciar_sesion_rol),
 ]

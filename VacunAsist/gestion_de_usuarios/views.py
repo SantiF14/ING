@@ -66,6 +66,10 @@ def registrar(request):
 
 @login_required
 def cerrar_sesion(request):
+    user = request.user
+    usuario = Usuario.objects.get(dni=user.dni)
+    usuario.rol_actual = ""
+    usuario.save()
     logout(request)
     return redirect("Index")
 
@@ -96,7 +100,7 @@ def ver_turnos_del_dia(request):
     return render(request, "ver_turnos_hoy.html", context)
 
 def iniciar_sesion(request, *args, **kwargs):
-    context = {}
+    context = dict.fromkeys(["roles","adm","vac"],"")
     user = request.user
     if user.is_authenticated: 
         return redirect("Home")
@@ -108,10 +112,15 @@ def iniciar_sesion(request, *args, **kwargs):
             user = Usuario.objects.get(dni = dni)
             if user:
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                destination = get_redirect_if_exists(request)
-                if destination:
-                    return redirect(destination)
-                return redirect("Home")
+                if not(user.es_administrador) or not(user.es_vacunador) :
+                    return redirect("Home")
+                else:
+                    context["roles"] = "si"
+                    if user.es_administrador:
+                        context["adm"] = "si"
+                    if user.es_vacunador:
+                        context["vac"] = "si"
+                    return render(request, "Login.html", context)
         else:  
             context['login_form'] = form
     else:
@@ -119,6 +128,19 @@ def iniciar_sesion(request, *args, **kwargs):
         context['login_form'] = form
     return render(request, "Login.html", context)
 
+
+def iniciar_sesion_rol(request):
+    rol = request.POST.get("rol")
+    user = request.user
+    usuario = Usuario.objects.get(dni=user.dni)
+    usuario.rol_actual = rol
+    usuario.save()
+    if rol == "Administrador":
+        return redirect("VacunasStock")
+    elif rol == "Vacunador":
+        return redirect(ver_turnos_del_dia)
+    else:
+        return redirect("Home")
 
 
 @login_required
