@@ -58,10 +58,7 @@ def mostrar_mis_turnos(request):
     usuario = request.user
     context=dict.fromkeys(["turnos","mensaje"],"")
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
-    context["turnos"]=turnos
-
-    #print (check_password('Hola4321', request.user.password))
-    #print(user.check_password('Hola4321'))
+    context["turnos"]=turnos    
     if not turnos:
         context["mensaje"]="Usted no tiene turnos asignados."
         
@@ -476,11 +473,6 @@ def visualizar_stock_administrador(request):
 
 
     context = dict.fromkeys(["vacunas","mensaje"], "")
-    vacunatorio = request.POST.get("Vacunatorio")
-    tipo = request.POST.get("Tipo")
-    user = request.user
-
-
 
     vacuna_vacunatorio = VacunaVacunatorio
     context["vacunas"]=vacuna_vacunatorio.objects.filter()
@@ -986,15 +978,81 @@ def modificar_contrasenia(request):
         context["mensaje"] = "La nueva contraseña debe tener al menos 8 caracteres, 1 letra y 1 número."
     elif contrasenia and password2 and contrasenia != password2:  
         context["mensaje"] ="La nueva contraseña y la confirmación deben ser iguales."
-    #elif ():
-
+    elif (usuario.check_password(contrasenia)):
+        context["mensaje"] ='La nueva contraseña debe ser distinta a la contraseña actual'
     elif (contrasenia == confirmar_contrasenia):
         usuario = Usuario.objects.get(usuario_id=dni)
         usuario.set_password(self, contrasenia)
         usuario.save()
         context["mensaje"] = 'La contraseña ha sido modificada exitosamente'
 
-    context["mensaje"] = 'La nueva contraseña y la confirmación deben ser iguales'
     request.session["context"] = context
     return redirect('LA MISMA PAGINA ANASHEI')
+
+
+@login_required()
+def asignar_turno_manual_covid(request):        
+    context = dict.fromkeys(["mensaje"], "")
+    nombre_vacunatorio = request.POST.get("Vacunatorio")
+    cantidad = request.POST.get("Cantidad")
+
+    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
+
+    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= 'COVID-19', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
+    
+    if( len(inscripcion) >= cantidad):
+        hoy = datetime.today()
+        indice = 0
+        while (indice < cantidad):
+            inscripcion[indice].fecha = hoy + relativedelta(days=15)
+            inscripcion[indice].save()
+            indice = indice + 1
+        context["mensaje"] = 'Se han asignado los turnos correctamente'
+    else:
+        context["mensaje"] = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
         
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required()
+def asignar_turno_manual_fiebre_amarilla(request):        
+    context = dict.fromkeys(["mensaje"], "")
+    nombre_vacunatorio = request.POST.get("Vacunatorio")
+    cantidad = request.POST.get("Cantidad")
+
+    eliminar = Inscripcion.objects.all(vacuna_id__tipo= 'Fiebre_amarilla', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio).filter(60 < calculate_age(usuario.fecha_nacimiento + relativedelta(days=15)))  
+   
+    for elim in eliminar:
+        elim.delete()
+
+    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= 'Fiebre_amarilla', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
+    
+    if( len(inscripcion) >= cantidad):
+        indice = 0
+        hoy = datetime.today()
+        while (indice < cantidad):
+            inscripcion[indice].fecha = hoy + relativedelta(days=15)
+            inscripcion[indice].save()
+            indice = indice + 1
+        context["mensaje"] = 'Se han asignado los turnos correctamente'
+    else:
+        context["mensaje"] = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
+        
+    request.session["context"] = context
+    return redirect('LA MISMA PAGINA ANASHEI')
+
+@login_required
+def visualizar_cantidad_turnos(request):
+
+
+    context = dict.fromkeys(["turnos","mensaje"], "")
+    
+    inscriptos = Inscripcion
+    context["turnos"]=Inscripcion.objects.filter(fecha__range=[request.POST.get("fecha_inicio"), request.POST.get("fecha_fin")])
+    context["mensaje"]= request.session.get('mensaje', "")
+    request.session["mensaje"] = ""
+    #ver si contemplar esto
+
+    #cambiar return
+    return redirect('LA MISMA PAGINA ANASHEI')
+    #return render(request, 'vacunas_adm.html', context)
