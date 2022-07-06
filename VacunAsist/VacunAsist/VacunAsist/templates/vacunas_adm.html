@@ -270,7 +270,7 @@ for (var i = 0; i < btns.length; i++) {
         var numerof3 = document.getElementById('Fiebre_amarillaHospital 9 de julio').value;
         var suma3 = parseInt(numerof1)+parseInt(numerof2)+parseInt(numerof3);
         $('#FATodos').text(suma3);
-        }
+        } 
  
 </script>
 
@@ -284,10 +284,10 @@ function myFunction4(eve){
   var secondValue = eve.value;
   console.log(secondValue);
   console.log(firstValue);
-  if(tipo === "C"){
+  if (tipo === "C") {
     $("#Tipo").val(secondValue);
     $("#lugar").val(firstValue);
-  }else{
+  } else {
     $("#TipoE").val(secondValue);
     $("#lugarE").val(firstValue);
   }

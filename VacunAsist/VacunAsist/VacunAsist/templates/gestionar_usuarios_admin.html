@@ -1,11 +1,44 @@
 {% extends "base_login.html" %}
  {% load static %}
  {% block content %}
+ <style>
+  .filterDiv {
+    float: left;
+    background-color: #2196F3;
+
+    text-align: center;
+    margin: 2px;
+    display: none;
+  }
+  
+  .show {
+    display: block;
+  }
+  
+  
+  /* Style the buttons */
+  .btn {
+    background-color: #A2CB83;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #ddd;
+  }
+  
+  .btn.active {
+    background-color: #aacc6c;
+    color: white;
+  }
+  </style>
 <body class="user">
 <div class="container">
 <div id="myBtnContainer" style="text-align:center; padding-top: 2%;">
-    <button class="button2" onclick="cambiarRol('Admin')">Gestionar Administradores</button>
-    <button class="button2" onclick="cambiarRol('Vac')">Gestionar Vacunadores</button>
+    <button class="btn active" onclick="cambiarRol('Admin')">Gestionar Administradores</button>
+    <button class="btn" onclick="cambiarRol('Vac')">Gestionar Vacunadores</button>
 </div>
 
 <form action="" hidden method="POST" id="formularioConDNI">{% csrf_token %}
@@ -20,8 +53,8 @@
         
         <div class="col-12"><p  style="background-color: white; float:left;"><strong>Administradores</strong></p></div>
         <form method="post" action="{% url 'BuscarDNI' %}">{% csrf_token %}
-          <div class="col-2"style="float:right"><button class="button2" name="limpiar_admin" id="limpiar_dni_Admin" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Limpiar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_admin" id="buscar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Buscar</button></div>
+          <div class="col-2"style="float:right"><button class="button2" name="limpiar_admin" id="limpiar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Limpiar</button></div>
+          <div class="col-2" style="float:right"><button class="button2" name="buscar_admin" id="buscar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Buscar</button></div>
           <div class="col-2" style="float:right"><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Administrador">Dar de alta</button></div>
           <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" name="Dni" id="myInputAdmin"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
         </form>
@@ -53,8 +86,8 @@
       <div class="container " style = "float: left;">
         <div class="col-12"><p  style="background-color: white; float: left;"><strong>Vacunadores:</strong></p></div>
         <form method="post" action="">{% csrf_token %}
-          <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni_Vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Limpiar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Buscar</button></div>
+          <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Limpiar</button></div>
+          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Buscar</button></div>
           <div class="col-2" style="float:right"><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Vacunador">Dar de alta</button></div>
           <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" name="Dni" id="myInputVac"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
         </form>
@@ -223,6 +256,17 @@
   
 </script>
 <script>
+  var btnContainer = document.getElementById("myBtnContainer");
+  var btns = btnContainer.getElementsByClassName("btn");
+  for (var i = 0; i < btns.length; i++) {
+  btns[i].addEventListener("click", function() {
+    var current = document.getElementsByClassName("active");
+    current[0].className = current[0].className.replace(" active", "");
+    this.className += " active";
+  });
+}
+</script>
+<script>
     var edit_row = document.querySelectorAll('#myTableAdmin .edit_row');
     for(var i=0; i<edit_row.length; i++) {
       edit_row[i].addEventListener('click', function(e){
@@ -267,20 +311,22 @@
     table = document.getElementById(`myTable${ventana}`);
     tr = table.getElementsByTagName("tr");
     id = eve.id
-    if (id != "buscar_dni") {
-        filter = "";
+    if (id === "limpiar_dni_vac" || id === "limpiar_dni_adm") {
+        filter = null;
         input.value = "";
     }
     // Loop through all table rows, and hide those who don't match the search query
     for (i = 0; i < tr.length; i++) {
       td = tr[i].getElementsByTagName("td")[0];
       if (td) {
+        if (filter != ""){
         txtValue = td.textContent || td.innerText;
-        if (txtValue.toUpperCase().trim() === filter) {
-          tr[i].style.display = "";
-        } else {
-          tr[i].style.display = "None";
-        }
+          if (txtValue.toUpperCase().trim() === filter || filter == null) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "None";
+          }
+      }
       }
     }
   }

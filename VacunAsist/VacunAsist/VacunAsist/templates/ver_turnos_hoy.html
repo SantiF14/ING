@@ -283,39 +283,37 @@
 
   function myFunction3(eve) {
     // Declare variables
-    var input, filter, table, tr, td, i, txt  , id, vacio;
+    var input, filter, table, tr, td, i, txt, id, vacio;
     input = document.getElementById("myInput");
     filter = input.value.toUpperCase();
     table = document.getElementById("myTable");
     tr = table.getElementsByTagName("tr");
     id = eve.id
     if (id == "limpiar_dni") {
-        filter = "";
+        filter = null;
         input.value = "";
     }
     vacio = true
-    console.log("Hola")
     // Loop through all table rows, and hide those who don't match the search query
     for (i = 0; i < tr.length; i++) {
       td = tr[i].getElementsByTagName("td")[0];
       if (td) {
+        if (filter != ""){
         txtValue = td.textContent || td.innerText;
-        if (txtValue.toUpperCase().trim() === filter) {
-          tr[i].style.display = "";
-        } else {
-          tr[i].style.display = "none";
-        }
-        if (tr[i].style.display != "none"){
-          vacio = false
+          if (txtValue.toUpperCase().trim() === filter || filter == null) {
+            tr[i].style.display = "";
+            vacio = false;
+          } else {
+            tr[i].style.display = "None";
+          }
         }
       }
     }
-    if (vacio == true) {   
+    if (vacio == true && id == "buscar_dni" && filter != "") {   
       elemento = document.getElementById("buscar_dni");
       elemento.setAttribute('onclick', "");
       elemento.setAttribute('type', "submit");
-      elemento.click()
-      
+      elemento.click()   
     }
   }
 
