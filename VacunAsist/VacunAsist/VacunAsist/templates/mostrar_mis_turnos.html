@@ -5,21 +5,23 @@
 
 <div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%;">
     <div class="col-12" style="height: 100%; background-color: #fff;">
-        <table class="table table-hover" style="background-color: white;  border: 1px solid; border-color: black; ">
+        <table class="table table-hover" id="myTable" style="background-color: white;  border: 1px solid; border-color: black; ">
           <p style="background-color: white;"><strong>Mis turnos:</strong></p>
             <thead class="table-secondary">
             <tr>
                 <th scope="col">Fecha</th>
                 <th scope="col">Vacuna</th>
                 <th scope="col">Vacunatorio</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody style="overflow: scroll;">
             {% for turno in turnos %}
             <tr>
-                <td>{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
-                <td>{{turno.vacuna.tipo}}</td>
-                <td>{{turno.vacunatorio.nombre}}</td>
+                <td class="dni_t">{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
+                <td class="tipo_t">{{turno.vacuna.tipo}}</td>
+                <td class="row_c">{{turno.vacunatorio.nombre}}</td>
+                <td class="edit_row"><button class="button2" style="font-size: small; padding: 4px 8px;">Dar de baja</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -50,6 +52,65 @@
     myModal.show();
     </script>
 {% endif %}
+
+<form action="/posponer_turno/" method="POST" id="formularioBotones">{% csrf_token %}
+  <div style="margin-top: 10%;" class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center" style="background: #a2cb83d8;">
+          <h4 class="modal-title w-100 font-weight-bold">Agregar vacuna</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="modal-body mx-3">
+          <input type="text" id="dni" name="Dni" hidden value="{{user.dni}}">
+          <input type="text" name="Tipo" id="tipo" hidden value="">
+          <input type="text" name="Dias" id="dias" hidden value="">
+
+        </div>
+        <div class="modal-body mx-3">
+          <button type="button" class="button2 btn-default" value="15" onclick=functionPosponer(this)>A 15 dias</button>
+          <button type="button" class="button2 btn-default" value="30" onclick=functionPosponer(this)>A 30 dias</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 </body>
+<script>
+  var edit_row = document.querySelectorAll('#myTable .edit_row');
+  for(var i=0; i<edit_row.length; i++) {
+    edit_row[i].addEventListener('click', function(e){
+      // get parent row, add data from its cells in form fields
+      var tr_parent = this.parentNode;
+      document.getElementById('tipo').value = tr_parent.querySelector('.tipo_t').innerHTML;
+
+      // display the form, and focus on a form field
+      $("#modalLoginForm").modal()
+      document.getElementById('dni').focus();
+    }, false);
+
+  }
+</script>
+<script>
+  function functionPosponer(eve){
+    var boton = eve.value;
+    elemento = document.getElementById("dias");
+    if (boton == "15"){
+      
+      elemento.setAttribute('value', "15");
+      
+    }
+    if (boton == "30"){
+      
+      elemento.setAttribute('value', "30");
+      
+    } 
+    eve.setAttribute('type', "submit");
+    eve.click();
+  }
+</script>
 
 {% endblock %}

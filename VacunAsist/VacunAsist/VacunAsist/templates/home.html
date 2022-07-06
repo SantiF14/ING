@@ -52,8 +52,9 @@
                     <input type="submit" class="button2" value="Inscribir campaña Gripe">
                 </form>
                 {% else %}
-                <form action="/inscribir_campania_gripe/" method="POST">{% csrf_token %}
-                  <input type="submit" class="button2" value="Proximamente Cancelar" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
+                <form action="/baja_campania/"  method="POST">{% csrf_token %}
+                  <input type="text" name="tipo" id="gripe" value="Gripe" hidden>
+                  <button type="button" class="button2" value="Gripe" onclick="functionBoton(this)" style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">Cancelar</button>
                 </form>
               {% endif %}
             </div>
@@ -69,8 +70,9 @@
                     <input type="submit" value="Inscribir campaña COVID-19" class="button2" >
                 </form>
                 {% else %}
-                <form action="/inscribir_campania_COVID/" method="POST">{% csrf_token %}
-                  <input type="submit" value="Proximamente Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">
+                <form action="/baja_campania/" method="POST">{% csrf_token %}
+                  <input type="text" name="tipo" id="covid" value="COVID-19" hidden>
+                  <button type="button" value="COVID-19" class="button2" onclick="functionBoton(this)" style="background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)">Cancelar</button>
                 </form>
               {% endif %}
           </div>
@@ -91,8 +93,9 @@
                       <input type="submit" value="Inscribir campaña Fiebre amarilla" class="button2" >
                   </form>
                   {% else %}
-                  <form action="/inscribir_campania_fiebre_amarilla/" method="POST">{% csrf_token %}
-                    <input type="submit" value="Proximamente Cancelar" class="button2" disabled style="background-color: rgb(139, 0, 0); box-shadow: inset 0px 34px 0px -15px  rgb(180, 67, 67); border:1px solid rgb(110, 8, 8)">
+                  <form action="/baja_campania/"  method="POST">{% csrf_token %}
+                    <input type="text" name="tipo" id="Fa" value="Fiebre_amarilla" hidden>
+                    <button type="button" value="Fiebre_amarilla" class="button2" onclick="functionBoton(this)" style="background-color: rgb(139, 0, 0); box-shadow: inset 0px 34px 0px -15px  rgb(180, 67, 67); border:1px solid rgb(110, 8, 8)">Cancelar</button>
                   </form>
                 {% endif %}
               {% endif %}
@@ -107,6 +110,15 @@
     let myModal = new bootstrap.Modal(document.getElementById('exampleModalCenter'), {});
     myModal.show();
     </script>
+  <script>
+    function functionBoton(eve){
+      boton = eve.value;
+      elemento = document.getElementById("formularioBotones");
+
+      eve.setAttribute('type', "submit");
+      eve.click();
+    }
+  </script>
 </body>
     {% endblock %}
 

@@ -54,4 +54,6 @@ urlpatterns = [
     path('cambiar_vacunatorio_trabajo/', cambiar_vacunatorio_trabajo, name = "CambiarVacDeTrabajo"),
     path('inicio_sesion_rol/', iniciar_sesion_rol),
     path('visualizacion_estadisticas/', visualizar_estadisticas, name = "VerEstadisticas"),
+    path('posponer_turno/',posponer_turno),
+    path('baja_campania/', baja_campania),
 ]
