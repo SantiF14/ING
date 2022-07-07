@@ -56,4 +56,5 @@ urlpatterns = [
     path('visualizacion_estadisticas/', visualizar_estadisticas, name = "VerEstadisticas"),
     path('posponer_turno/',posponer_turno),
     path('baja_campania/', baja_campania),
+    path('confirmacion_posponer_turno/', posponer_turno_fallido)
 ]

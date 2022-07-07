@@ -63,6 +63,7 @@ def mostrar_mis_turnos(request):
     context = request.session.get("context",{})
     if (context == {}):
         context["mensaje"] = request.session.get('mensaje',"")
+        context["Confi"] = request.session.get('Confi',"")
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
  
     if not turnos:
@@ -211,9 +212,9 @@ def inscribir_campania_fiebre_amarilla(request):
     hoy = datetime.today()
     
     #calculo la edad del usuario
-    anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=15))
+    anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=-15))
 
-    if (anios  > 60):
+    if (anios  >= 60):
         request.session["mensaje"] = "Usted supera el límite de edad para inscribirse a esta campaña."
         request.session["titulo"] = "Inscripción fallida"
         return redirect(home)
@@ -872,47 +873,52 @@ def recuperar_contrasenia(request):
 
 @login_required()
 def posponer_turno_fallido(request):
+    user = request.user
     context = dict.fromkeys(["mensaje"], "")
-    context["mensaje"] = 'usted cumplirá 60 años en este lapso de tiempo, si presiona aceptar, se le cancelara el turno'
+    inscripcion = Inscripcion.objects.filter(usuario_id=user.dni,vacuna_id__tipo="Fiebre_amarilla").first()
+    inscripcion.delete()
+    context["mensaje"] = 'Su turno se cancelo exitosamente'
     request.session["context"] = context
-    return redirect('MOSTRAR MODAL')
+    return redirect(mostrar_mis_turnos)
 
 @login_required()
 def posponer_turno(request):
     dni = request.POST.get("Dni")
     dias = int(request.POST.get("Dias"))
     tipo = request.POST.get("Tipo")
-    confirmacion = request.POST.get("Confirmacion")
     context = dict.fromkeys(["mensaje","Confi"], "")
 
     #esto seria para hacer la confirmacion de la baja pero no estoy del todo seguro.
     #if confirmacion != "":
 
     usuario=Usuario.objects.filter(dni=dni).first()
-    anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=dias))
+    anios = calculate_age(usuario.fecha_nacimiento + relativedelta(days=-dias))
     inscripcion = Inscripcion.objects.filter(usuario_id=dni,vacuna_id__tipo= tipo).first()
     vacuna_tipo = inscripcion.vacuna
     vacunatorio = inscripcion.vacunatorio
     fecha_inscripcion = inscripcion.fecha
+    print(anios)
+    print(tipo)
     vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
-    if anios > 60:
+    if tipo=="Fiebre_amarilla" and anios >= 60 :
+        print('hola')
         context["mensaje"] = 'usted cumplirá 60 años en este lapso de tiempo, si presiona aceptar, se le cancelara el turno'
         context["Confi"] = "si"
         request.session["context"] = context
-        redirect (mostrar_mis_turnos)
-    elif (anios < 60):
-        estado = "Pospuesto"
-        inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
-        inscripcion.save()
-        context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha}'
-    else:
-        estado = "Cancelado"
-        inscripcion.delete()
-        context["mensaje"] = 'Su turno no se pospuso ya que no cumple con el limite de edad, usted fue desuscripto de la campaña'
+        return redirect (mostrar_mis_turnos)
+
     vacuna_no_aplicada = VacunasNoAplicadas(usuario=usuario, vacuna=vacuna_tipo, vacunatorio=vacunatorio,fecha=fecha_inscripcion, estado=estado)
     vacuna_no_aplicada.save()
-    vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
-    vacuna_vacunatorio.save()
+    fecha = (datetime.today() + relativedelta(days=7))
+    fecha = date(fecha.year, fecha.month, fecha.day)
+    if (inscripcion.fecha <= fecha):
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
+        vacuna_vacunatorio.save()
+    estado = "Pospuesto"
+    inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
+    inscripcion.save()
+    context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha}'
+    
 
     request.session["context"] = context
     return redirect(mostrar_mis_turnos)
