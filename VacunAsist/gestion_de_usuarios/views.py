@@ -116,6 +116,8 @@ def iniciar_sesion(request, *args, **kwargs):
             if user:
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 if not(user.es_administrador) or not(user.es_vacunador) :
+                    user.rol_actual = "Ciudadano"
+                    user.save()
                     return redirect("Home")
                 else:
                     context["roles"] = "si"

@@ -883,7 +883,7 @@ def posponer_turno(request):
     dias = int(request.POST.get("Dias"))
     tipo = request.POST.get("Tipo")
     confirmacion = request.POST.get("Confirmacion")
-    context = dict.fromkeys(["mensaje"], "")
+    context = dict.fromkeys(["mensaje","Confi"], "")
 
     #esto seria para hacer la confirmacion de la baja pero no estoy del todo seguro.
     #if confirmacion != "":
@@ -897,6 +897,7 @@ def posponer_turno(request):
     vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
     if anios > 60:
         context["mensaje"] = 'usted cumplirá 60 años en este lapso de tiempo, si presiona aceptar, se le cancelara el turno'
+        context["Confi"] = "si"
         request.session["context"] = context
         redirect (mostrar_mis_turnos)
     elif (anios < 60):

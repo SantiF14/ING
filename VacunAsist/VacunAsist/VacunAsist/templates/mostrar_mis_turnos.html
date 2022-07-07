@@ -29,7 +29,39 @@
     </div>
 </div>
 
-{% if mensaje != "" %}
+{% if Confi != "" %}
+<form action="/confirmacion_posponer_turno/" method="POST" id="">{% csrf_token %}
+  <div class="modal fade" id="modalCargaSinTurno" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center" style="background: #a2cb83d8;">
+          <h4 class="modal-title w-100 font-weight-bold">Confirmacion de cancelacion</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="modal-body mx-3">
+
+          <div class="md-form mb-4">   
+            <p>{{ mensaje }}</p>
+          </div>
+
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="button" id="cargarSinTurno" class="button2 btn-default" onclick=funcionCargaSinTurno() value = "{{ tipo_a_cargar }}"style="min-width: 100%;">Cargar vacuna</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<script type="text/javascript" language="JavaScript">
+  let modalCargaSinTurno = new bootstrap.Modal(document.getElementById('modalCargaSinTurno'), {});
+  modalCargaSinTurno.show();
+</script>
+
+
+{% elif mensaje != "" %}
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
