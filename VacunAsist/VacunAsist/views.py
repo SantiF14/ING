@@ -2,7 +2,7 @@
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
-from gestion_de_usuarios.views import gestionar_usuarios_admin
+from gestion_de_usuarios.views import gestionar_usuarios_admin, ver_perfil
 from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime, date
 from dateutil.relativedelta import *
@@ -940,47 +940,22 @@ def cambiar_vacunatorio_trabajo(request):
     return redirect(gestionar_usuarios_admin)
 
 @login_required()
-def modificar_vacunatorio_preferencia(request):
-    dni = request.POST.get("Dni")
-    nombre_vacunatorio = request.POST.get("Vacunatorio")
-    context = dict.fromkeys(["mensaje"], "")
-    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
-
-    usuario = Usuario.objects.get(usuario_id=dni)
-    usuario.vacunatorio_pref = vacunatorio
-    usuario.save()
-
-    context["mensaje"] = 'Su nuevo vacunatorio de preferencia que es: {nombre_vacunatorio}, esto no modifica los turnos que ya tenga asignados'
-    request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
-
-@login_required()
-def modificar_cuestionario_salud(request):
-    dni = request.POST.get("Dni")
-    cuestionario = request.POST.get("Cuestionario")
-    context = dict.fromkeys(["mensaje"], "")
-
-    usuario = Usuario.objects.get(usuario_id=dni)
-    usuario.de_riesgo = cuestionario
-    usuario.save()
-
-    context["mensaje"] = 'Su cuestionario de salud se modifico correctamente'
-    request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
-
-@login_required()
-def modificar_datos_personales(request):
+def modificar_datos(request):
     mail = request.POST.get("mail")
     dni = request.POST.get("Dni")
+    cuestionario = request.POST.get("Cuestionario")
+    nombre_vacunatorio = request.POST.get("Vacunatorio")
+    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
     context = dict.fromkeys(["mensaje"], "")
-
     usuario = Usuario.objects.get(usuario_id=dni)
+    usuario.vacunatorio_pref = vacunatorio
+    usuario.de_riesgo = cuestionario
     usuario.email = mail
     usuario.save()
-
-    context["mensaje"] = 'Su mail se modifico correctamente'
+    context["mensaje"] = 'Sus datos han sido modificados correctamente.'
+    #context["mensaje"] = 'Su nuevo vacunatorio de preferencia que es: {nombre_vacunatorio}, esto no modifica los turnos que ya tenga asignados'
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(ver_perfil)
     
 
 @login_required

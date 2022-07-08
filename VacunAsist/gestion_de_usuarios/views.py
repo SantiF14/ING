@@ -410,5 +410,13 @@ def ver_perfil(request):
 
     if (context == {}):
         context["mensaje"] = ""
+    user = request.user
+    context["DNI"] = user.dni
+    context["nombre_apellido"] = user.nombre_apellido
+    context["fecha_nacimiento"] = user.fecha_nacimiento
+    context["mail"] = user.email
+    context["cuestionario"] = user.de_riesgo
+    context["vacunatorio_pref"] = user.vacunatorio_pref
+
 
     return render(request,"perfil.html",context) 
