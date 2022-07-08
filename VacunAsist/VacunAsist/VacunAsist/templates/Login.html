@@ -61,7 +61,7 @@ Basado en:
                         </div>
                         {% endif %}
                         
-                        <a href="#" style="float:left; margin-inline-start: 3%;"><span>¿Olvidaste tu contraseña? (Proximamente...)</span></a> 
+                        <a href="#" style="float:left; margin-inline-start: 3%;"><span>¿Olvidaste tu contraseña?</span></a> 
                         <br><br>
                         <button type="submit"  style="background-color: #A2CB83;color:white; font-weight:600; min-width:90%; border-color: #3b6e22;" class="btn btn-primary mb-2">
                             Entrar
@@ -75,27 +75,28 @@ Basado en:
     {% if roles != "" %}
     <form action="/inicio_sesion_rol/" method="POST" id="formularioCargaSinTurno">{% csrf_token %}
       <div class="modal fade" id="modalCargaSinTurno" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-        aria-hidden="true">
+        aria-hidden="true" data-backdrop="static"  data-keyboard="false">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header text-center" style="background: #a2cb83d8;">
-              <h4 class="modal-title w-100 font-weight-bold">Selecione el rol con el cual quiere iniciar sesion</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <h4 class="modal-title w-100 font-weight-bold">Selecione el rol con el cual quiere iniciar sesión</h4>
                 <span aria-hidden="true"></span>
               </button>
             </div>
+            <div class="d-flex justify-content-center" style="margin:10%">
             <input type="text" hidden name="rol" id="rol" value="">
             <div class="modal-body mx-3">
             <div class="justify-content-center" style="align-items:center; padding-left:5%; padding-right:5%; padding-bottom:5%">
-                <button type="submit" class="button2" value="ciu" onclick="functionBoton(this)">Ciudadano</button>
+                <button type="submit" class="button2" value="ciu" style="min-width:100%" onclick="functionBoton(this)">Ciudadano</button>
             </div>
             <div class="justify-content-center" style="align-items:center; padding-left:5%; padding-right:5%; padding-bottom:5%">
-                <button type="submit" class="button2" value="vac" onclick="functionBoton(this)">Vacunador</button>
+                <button type="submit" class="button2" value="vac" style="min-width:100%" onclick="functionBoton(this)">Vacunador</button>
             </div>
             <div class="justify-content-center" style="align-items:center; padding-left:5%; padding-right:5%; padding-bottom:5%">
-                <button type="submit" class="button2" value="adm" onclick="functionBoton(this)">Administrador</button>
+                <button type="submit" class="button2" value="adm" style="min-width:100%" onclick="functionBoton(this)">Administrador</button>
             </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

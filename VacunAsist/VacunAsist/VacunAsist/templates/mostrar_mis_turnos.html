@@ -21,7 +21,7 @@
                 <td class="dni_t">{{turno.fecha.day}}/{{turno.fecha.month}}/{{turno.fecha.year}}</td>
                 <td class="tipo_t">{{turno.vacuna.tipo}}</td>
                 <td class="row_c">{{turno.vacunatorio.nombre}}</td>
-                <td class="edit_row"><button class="button2" style="font-size: small; padding: 4px 8px;">Dar de baja</button></td>
+                <td class="edit_row"><button class="button2" style="font-size: small; padding: 5px 4px;">Posponer</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -36,7 +36,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header text-center" style="background: #a2cb83d8;">
-          <h4 class="modal-title w-100 font-weight-bold">Confirmacion de cancelacion</h4>
+          <h4 class="modal-title w-100 font-weight-bold">Confirmación de cancelación</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true"></span>
           </button>
@@ -49,7 +49,10 @@
 
         </div>
         <div class="modal-footer d-flex justify-content-center">
-          <button type="submit" id="cargarSinTurno" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 100%;">Confirmacion</button>
+          <button type="submit" id="cargarSinTurno" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 50%;">Confirmar</button>
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="button" id="cargarSinTurno" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 50%;">Cancelar</button>
         </div>
       </div>
     </div>
@@ -91,7 +94,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header text-center" style="background: #a2cb83d8;">
-          <h4 class="modal-title w-100 font-weight-bold">Agregar vacuna</h4>
+          <h4 class="modal-title w-100 font-weight-bold">Posponer turno</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true"></span>
           </button>
@@ -102,9 +105,11 @@
           <input type="text" name="Dias" id="dias" hidden value="">
 
         </div>
-        <div class="modal-body mx-3">
-          <button type="button" class="button2 btn-default" value="15" onclick=functionPosponer(this)>A 15 dias</button>
-          <button type="button" class="button2 btn-default" value="30" onclick=functionPosponer(this)>A 30 dias</button>
+        <div class="modal-body mx-3" style="justify-items: center;">
+          <div class="row d-flex" style="padding:3%; justify-content: center;">
+          <button type="button" class="button2 btn-default" value="15" style="max-width: 45%; margin-right: 2%;" onclick=functionPosponer(this)>A 15 dias</button>
+          <button type="button" class="button2 btn-default" value="30" style="max-width: 45%; margin-left: 2%;" onclick=functionPosponer(this)>A 30 dias</button>
+        </div>
         </div>
       </div>
     </div>

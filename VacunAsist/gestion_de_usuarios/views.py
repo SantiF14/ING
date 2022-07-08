@@ -2,7 +2,7 @@ from datetime import date
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, HttpResponse
 from django.template import loader
-from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, Vacunador
+from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, Vacunador, VacunasNoAplicadas
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
@@ -21,6 +21,7 @@ from datetime import date, datetime
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from dateutil.relativedelta import relativedelta
 
 User = get_user_model()
 
@@ -304,10 +305,56 @@ def gestionar_usuarios_admin(request):
 @login_required
 def visualizar_estadisticas(request):
     
+    context = dict.fromkeys(["mensaje","grafico","grafico_total"],"")
+
+
+    fecha_inicial = request.GET.get("Fecha_ini")
+    fecha_final = request.GET.get("Fecha_fin")
+
+
+
+    if (fecha_inicial):
+        fecha_inicial = date.fromisoformat(fecha_inicial).isocalendar()
+        fecha_final = date.fromisoformat(fecha_final).isocalendar()
+        if (fecha_inicial < fecha_final):
+
+            #while (fecha_inicial.weekday() != 0):
+            #    fecha_inicial = fecha_inicial + relativedelta(day=-1)
+            #while (fecha_final.weekday() != 0):
+            #    fecha_final = fecha_final + relativedelta(day=-1)
+
+            if (fecha_final.week() - fecha_inicial.week() >= 3):
+                vac_aplicadas = VacunaAplicada.objects.all().values()
+                vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
+
+                pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
+                vac_no_aplicadas_df = pd.DataFrame(pospuestas_y_canceladas)
+
+                df_vacunas = vac_aplicadas_df.append(vac_no_aplicadas_df)
+                print(df_vacunas)
+
+            
+            else:
+                context["mensaje"] = "Las fechas deben consistuir por lo menos 4 semanas."
+        else:
+            context["mensaje"] = "Las fechas ingresadas son inválidas."
+        
+        
+    
+        
+
+
+    vac_aplicadas = VacunaAplicada.objects.all().values()
+    vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
+
+    pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
+    vac_no_aplicadas_df = pd.DataFrame(pospuestas_y_canceladas)
+
+    df_vacunas = vac_aplicadas_df.append(vac_no_aplicadas_df)
+    print(df_vacunas)
 
     context = {}
     df = pd.read_csv(r"C:\Users\arias\GIT\ING\VacunAsist\VacunAsist\VacunAsist\static\covid_19_clean_complete.csv")
-    print(df)
     fig = go.Figure()
 
     country_list = list(df['Country/Region'].unique())
@@ -355,3 +402,13 @@ def visualizar_estadisticas(request):
     context['grafico'] = fig.to_html()
 
     return render(request,"visualizacion_estadisticas.html",context)
+
+@login_required
+def ver_perfil(request):
+    context = request.session.get("context",{})
+    request.session["context"] = {}
+
+    if (context == {}):
+        context["mensaje"] = ""
+
+    return render(request,"perfil.html",context) 
