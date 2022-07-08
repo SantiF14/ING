@@ -897,11 +897,9 @@ def posponer_turno(request):
     vacuna_tipo = inscripcion.vacuna
     vacunatorio = inscripcion.vacunatorio
     fecha_inscripcion = inscripcion.fecha
-    print(anios)
-    print(tipo)
     vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= tipo)
     if tipo=="Fiebre_amarilla" and anios >= 60 :
-        print('hola')
+
         context["mensaje"] = 'usted cumplirá 60 años en este lapso de tiempo, si presiona aceptar, se le cancelara el turno'
         context["Confi"] = "si"
         request.session["context"] = context
@@ -916,8 +914,9 @@ def posponer_turno(request):
         vacuna_vacunatorio.save()
     estado = "Pospuesto"
     inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
+    inscripcion.vacunatorio = usuario.vacunatorio_pref
     inscripcion.save()
-    context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha}'
+    context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha} en el vacunatorio {usuario.vacunatorio_pref}'
     
 
     request.session["context"] = context
@@ -1081,3 +1080,30 @@ def ver_cantidad_turnos(request):
     
     ##fraaaaaaan correegi esto ananananashey
     return render(request, 'index.html', context)
+
+@login_required
+def actualizar_remanente(request):
+
+
+    context = dict.fromkeys(["mensaje"], "")
+    hoy = datetime.today()
+    hoy = hoy + relativedelta(days=-1)
+
+    inscripciones = Inscripcion.objects.all().filter(fecha__range=[(hoy + relativedelta(months=-1)),hoy])
+    
+
+    for inscripcion in inscripciones:
+        vacuna_no_aplicada = VacunasNoAplicadas(usuario = inscripcion.usuario, fecha = inscripcion.fecha, vacunatorio = inscripcion.vacunatorio, vacuna = inscripcion.vacuna, estado = 'Pospuesto')
+        vacuna_no_aplicada.save()
+        usuario = inscripcion.usuario
+        inscripcion.fecha = 'None'
+        inscripcion.vacunatorio = usuario.vacunatorio_pref
+        inscripcion.save()
+        vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio= inscripcion.vacunatorio, vacuna=inscripcion.vacuna)
+        vacuna_vacunatorio = vacuna_vacunatorio + 1
+        vacuna_vacunatorio.save()
+
+    context["mensaje"]= 'El remanente de vacunas se actualizo correctamente'
+    request.session["context"] = context
+    ##fraaaaaaan correegi esto ananananashey
+    return redirect('LA MISMA PAGINA ANASHEI')
