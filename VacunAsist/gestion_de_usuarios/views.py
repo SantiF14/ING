@@ -1,17 +1,20 @@
 from datetime import date
 from django.http import HttpResponse
+import numpy as np
 from django.shortcuts import render, redirect, HttpResponse
 from django.template import loader
 from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, Vacunador, VacunasNoAplicadas
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
+import plotly.express as px
 import random, string
 from django.core.mail import send_mail
 from VacunAsist.settings import EMAIL_HOST_USER
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 import pdfkit
+import itertools
 import mimetypes
 import os
 from pathlib import Path
@@ -311,17 +314,26 @@ def visualizar_estadisticas(request):
     fecha_inicial = request.GET.get("Fecha_ini")
     fecha_final = request.GET.get("Fecha_fin")
 
-
+    vac_aplicadas = VacunaAplicada.objects.all().values()
+    vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
+    pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
+    vac_no_aplicadas_df = pd.DataFrame(pospuestas_y_canceladas)
+    df_vacunas = vac_aplicadas_df.append(vac_no_aplicadas_df)
+    df_vacunas["estado"] = df_vacunas["estado"].replace(to_replace=np.nan, value="Aplicado")
+    df_vacunas['fecha'] = pd.to_datetime(df_vacunas['fecha'])
+    df_vacunas['fecha'] = df_vacunas['fecha'] - pd.to_timedelta(7, unit='d')
+    df_vacunas = df_vacunas.groupby(['vacuna_id','vacunatorio_id','estado', pd.Grouper(key='fecha', freq='W-MON')])["id"].count().reset_index().sort_values("fecha")
+    df_vacunas.columns = ["Vacuna", "Vacunatorio", "Estado", "Semana", "Cantidad"]
 
     if (fecha_inicial):
         fecha_inicial = date.fromisoformat(fecha_inicial).isocalendar()
         fecha_final = date.fromisoformat(fecha_final).isocalendar()
         if (fecha_inicial < fecha_final):
 
-            #while (fecha_inicial.weekday() != 0):
-            #    fecha_inicial = fecha_inicial + relativedelta(day=-1)
-            #while (fecha_final.weekday() != 0):
-            #    fecha_final = fecha_final + relativedelta(day=-1)
+            while (fecha_inicial.weekday() != 0):
+                fecha_inicial = fecha_inicial + relativedelta(day=-1)
+            while (fecha_final.weekday() != 0):
+                fecha_final = fecha_final + relativedelta(day=-1)
 
             if (fecha_final.week() - fecha_inicial.week() >= 3):
                 vac_aplicadas = VacunaAplicada.objects.all().values()
@@ -335,50 +347,88 @@ def visualizar_estadisticas(request):
 
             
             else:
-                context["mensaje"] = "Las fechas deben consistuir por lo menos 4 semanas."
+                context["mensaje"] = "Las fechas deben constituir por lo menos 4 semanas."
         else:
             context["mensaje"] = "Las fechas ingresadas son inválidas."
-        
-        
+    #else:
+
+        #fecha_final = datetime.today()
+        #fecha_inicial = fecha_final - relativedelta(weeks=4)
+        #while (fecha_inicial.isocalendar().weekday() != 0):
+        #    fecha_inicial = fecha_inicial + relativedelta(day=-1)
+        #while (fecha_final.isocalendar().weekday() != 0):
+        #    fecha_final = fecha_final + relativedelta(day=1)
+        #print(fecha_inicial)
+        #print(fecha_final)
     
-        
+    #df_vacunas = df_vacunas[df_vacunas["Semana"] >= fecha_inicial][df_vacunas["Semana"] <= fecha_final]
 
+    
 
-    vac_aplicadas = VacunaAplicada.objects.all().values()
-    vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
+    
 
-    pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
-    vac_no_aplicadas_df = pd.DataFrame(pospuestas_y_canceladas)
+    tipos_vacunas = Vacuna.objects.all().values()
+    tipos_dicci = dict()
+    for tipo in tipos_vacunas:
+        tipos_dicci.update({tipo["id"]: tipo["tipo"]}) 
 
-    df_vacunas = vac_aplicadas_df.append(vac_no_aplicadas_df)
+    vacunatorios = Vacunatorio.objects.all().values()
+    vacunatorios_dicci = dict()
+    for vac in vacunatorios:
+        vacunatorios_dicci.update({vac["id"]: vac["nombre"]}) 
+    
+
+    df_vacunas["Vacuna"] = df_vacunas["Vacuna"].replace(to_replace=tipos_dicci)
+    df_vacunas["Vacunatorio"] = df_vacunas["Vacunatorio"].replace(to_replace=vacunatorios_dicci)
     print(df_vacunas)
 
-    context = {}
-    df = pd.read_csv(r"C:\Users\arias\GIT\ING\VacunAsist\VacunAsist\VacunAsist\static\covid_19_clean_complete.csv")
+    context = {}    
+
+    tipos_vacunas = list(df_vacunas['Vacuna'].unique())
+    vacunatorios = list(df_vacunas["Vacunatorio"].unique())
+    semanas = list(df_vacunas["Semana"].unique())
+    primer_semana = min(semanas)
+    while (primer_semana < pd.to_datetime(datetime.today())):
+        if primer_semana not in semanas:
+            semanas.append(primer_semana)
+        primer_semana = primer_semana + pd.to_timedelta(7, unit='d')
+    estados = list(df_vacunas["Estado"].unique())
+
+    combinaciones = list(itertools.product(tipos_vacunas,vacunatorios,semanas, estados))
+    df_vacunas = df_vacunas.set_index(['Vacuna', 'Vacunatorio', "Semana",'Estado']).reindex(combinaciones, fill_value=0).reset_index()
+    
+    df_polideportivo = df_vacunas[df_vacunas["Vacunatorio"] == "Polideportivo"]
+    df_corralon = df_vacunas[df_vacunas["Vacunatorio"] == "Corralón Municipal"]
+    df_hospital = df_vacunas[df_vacunas["Vacunatorio"] == "Hospital 9 de julio"]
+
     fig = go.Figure()
-
-    country_list = list(df['Country/Region'].unique())
-
-    #tipos_vacunas = Vacuna.objects.all()
-
-    #vacunatorios = Vacunatorio.objects.all() 
-
-    for country in country_list:
-        fig.add_trace(
-            go.Scatter(
-                x = df['Date'][df['Country/Region']==country],
-                y = df['Confirmed'][df['Country/Region']==country],
-                name = country, visible = True
+    for estado in estados:
+        for vacuna in tipos_vacunas:
+            if (vacuna == "Gripe"):
+                fig.add_trace(
+                go.Scatter(
+                x = df_polideportivo['Semana'][df_polideportivo["Estado"] == estado][df_polideportivo['Vacuna']==vacuna],
+                y = df_polideportivo['Cantidad'][df_polideportivo["Estado"] == estado][df_polideportivo['Vacuna']==vacuna],
+                name = estado, visible = True
+                )
             )
-        )
+            else:
+                fig.add_trace(
+                go.Scatter(
+                x = df_polideportivo['Semana'][df_polideportivo["Estado"] == estado][df_polideportivo['Vacuna']==vacuna],
+                y = df_polideportivo['Cantidad'][df_polideportivo["Estado"] == estado][df_polideportivo['Vacuna']==vacuna],
+                name = estado, visible = False
+                )
+            )
+
 
     buttons = []
 
-    for i, country in enumerate(country_list):
-        args = [False] * len(country_list)
+    for i, tipo in enumerate(tipos_vacunas):
+        args = [False] * len(tipos_vacunas)
         args[i] = True
 
-        button = dict(label = country,
+        button = dict(label = tipo,
                       method = "update",
                       args=[{"visible": args}])
 
@@ -396,11 +446,172 @@ def visualizar_estadisticas(request):
                     )], 
         autosize=False,
         width=1000,
-        height=800
+       height=800
     )
 
-    context['grafico'] = fig.to_html()
+    context['grafico_poli'] = fig.to_html()
 
+    fig = go.Figure()
+
+    for estado in estados:
+        for vacuna in tipos_vacunas:
+            if (vacuna == "Gripe"):
+                fig.add_trace(
+                go.Scatter(
+                    x = df_corralon['Semana'][df_corralon["Estado"]==estado][df_corralon['Vacuna']==vacuna],
+                    y = df_corralon['Cantidad'][df_corralon["Estado"]==estado][df_corralon['Vacuna']==vacuna],
+                    name = estado, visible = True
+                )
+            )
+            else:
+                fig.add_trace(
+                go.Scatter(
+                    x = df_corralon['Semana'][df_corralon["Estado"]==estado][df_corralon['Vacuna']==vacuna],
+                    y = df_corralon['Cantidad'][df_corralon["Estado"]==estado][df_corralon['Vacuna']==vacuna],
+                    name = estado, visible = False
+                )
+            )
+
+
+    buttons = []
+
+    for i, tipo in enumerate(tipos_vacunas):
+        args = [False] * len(tipos_vacunas)
+        args[i] = True
+
+        button = dict(label = tipo,
+                      method = "update",
+                      args=[{"visible": args}])
+
+        buttons.append(button)
+
+    fig.update_layout(
+        updatemenus=[dict(
+                        active=0,
+                        type="dropdown",
+                        buttons=buttons,
+                        x = 0,
+                        y = 1.1,
+                        xanchor = 'left',
+                        yanchor = 'bottom'
+                    )], 
+        autosize=False,
+        width=1000,
+       height=800
+    )
+
+    context['grafico_corr'] = fig.to_html()
+
+    fig = go.Figure()
+
+    for estado in estados:
+        for vacuna in tipos_vacunas:
+            if (vacuna == "Gripe"):
+                fig.add_trace(
+                go.Scatter(
+                    x = df_hospital['Semana'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
+                    y = df_hospital['Cantidad'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
+                    name = vacuna, visible = True
+                )
+            )
+            else:
+                fig.add_trace(
+                go.Scatter(
+                    x = df_hospital['Semana'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
+                    y = df_hospital['Cantidad'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
+                    name = vacuna, visible = False
+                )
+            )
+
+    buttons = []
+
+    for i, tipo in enumerate(tipos_vacunas):
+        args = [False] * len(tipos_vacunas)
+        args[i] = True
+
+        button = dict(label = tipo,
+                      method = "update",
+                      args=[{"visible": args}])
+
+        buttons.append(button)
+
+    fig.update_layout(
+        updatemenus=[dict(
+                        active=0,
+                        type="dropdown",
+                        buttons=buttons,
+                        x = 0,
+                        y = 1.1,
+                        xanchor = 'left',
+                        yanchor = 'bottom'
+                    )], 
+        autosize=False,
+        width=1000,
+       height=800
+    )
+
+    context['grafico_hosp'] = fig.to_html()
+
+    df_totales_por_vacuna = df_vacunas.groupby(["Vacuna","Estado","Semana"])["Cantidad"].sum().reset_index()
+
+    print(df_totales_por_vacuna[df_totales_por_vacuna["Vacuna"] == "Fiebre_amarilla"])
+
+    fig = go.Figure()
+
+    for estado in estados:
+        for vacuna in tipos_vacunas:
+            if (vacuna == "Gripe"):
+                fig.add_trace(
+                go.Scatter(
+                    x = df_totales_por_vacuna['Semana'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
+                    y = df_totales_por_vacuna['Cantidad'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
+                    name = vacuna, visible = True
+                )
+            )
+            else:
+                fig.add_trace(
+                go.Scatter(
+                    x = df_totales_por_vacuna['Semana'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
+                    y = df_totales_por_vacuna['Cantidad'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
+                    name = vacuna, visible = False
+                )
+            )
+
+    buttons = []
+
+    for i, tipo in enumerate(tipos_vacunas):
+        args = [False] * len(tipos_vacunas)
+        args[i] = True
+
+        button = dict(label = tipo,
+                      method = "update",
+                      args=[{"visible": args}])
+
+        buttons.append(button)
+
+    fig.update_layout(
+        updatemenus=[dict(
+                        active=0,
+                        type="dropdown",
+                        buttons=buttons,
+                        x = 0,
+                        y = 1.1,
+                        xanchor = 'left',
+                        yanchor = 'bottom'
+                    )], 
+        autosize=False,
+        width=1000,
+       height=800
+    )
+
+    context['grafico_vacuna'] = fig.to_html()
+
+    df_total = df_vacunas.groupby(["Estado"]).sum().reset_index()
+    fig = px.pie(df_total, values="Cantidad", names='Estado', title='Porcentaje total segun estado')
+
+    #AGREGAR RANGE_SELECTORS
+
+    context["grafico_total"] = fig.to_html()
     return render(request,"visualizacion_estadisticas.html",context)
 
 @login_required
