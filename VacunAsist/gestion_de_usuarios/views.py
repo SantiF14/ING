@@ -408,6 +408,7 @@ def ver_perfil(request):
     context = request.session.get("context",{})
     request.session["context"] = {}
 
+
     if (context == {}):
         context["mensaje"] = ""
     user = request.user
@@ -416,7 +417,11 @@ def ver_perfil(request):
     context["fecha_nacimiento"] = user.fecha_nacimiento
     context["mail"] = user.email
     context["cuestionario"] = user.de_riesgo
-    context["vacunatorio_pref"] = user.vacunatorio_pref
+    context["vacunatorio_pref"] = user.vacunatorio_pref.nombre
+    print(context["vacunatorio_pref"])
+    vacunatorio = Vacunatorio
+    context["vacunatorios"] = vacunatorio.objects.filter()
+ 
 
 
     return render(request,"perfil.html",context) 

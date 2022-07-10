@@ -1,4 +1,4 @@
-
+from django.contrib.auth import login
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
@@ -905,8 +905,6 @@ def posponer_turno(request):
         request.session["context"] = context
         return redirect (mostrar_mis_turnos)
 
-    vacuna_no_aplicada = VacunasNoAplicadas(usuario=usuario, vacuna=vacuna_tipo, vacunatorio=vacunatorio,fecha=fecha_inscripcion, estado=estado)
-    vacuna_no_aplicada.save()
     fecha = (datetime.today() + relativedelta(days=7))
     fecha = date(fecha.year, fecha.month, fecha.day)
     if (inscripcion.fecha <= fecha):
@@ -914,6 +912,8 @@ def posponer_turno(request):
         vacuna_vacunatorio.save()
     estado = "Pospuesto"
     inscripcion.fecha = inscripcion.fecha + relativedelta(days=dias)
+    vacuna_no_aplicada = VacunasNoAplicadas(usuario=usuario, vacuna=vacuna_tipo, vacunatorio=vacunatorio,fecha=fecha_inscripcion, estado=estado)
+    vacuna_no_aplicada.save()
     inscripcion.vacunatorio = usuario.vacunatorio_pref
     inscripcion.save()
     context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha} en el vacunatorio {usuario.vacunatorio_pref}'
@@ -941,12 +941,12 @@ def cambiar_vacunatorio_trabajo(request):
 @login_required()
 def modificar_datos(request):
     mail = request.POST.get("mail")
-    dni = request.POST.get("Dni")
+    user = request.user
     cuestionario = request.POST.get("Cuestionario")
     nombre_vacunatorio = request.POST.get("Vacunatorio")
     vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
     context = dict.fromkeys(["mensaje"], "")
-    usuario = Usuario.objects.get(usuario_id=dni)
+    usuario = Usuario.objects.get(dni=user.dni)
     usuario.vacunatorio_pref = vacunatorio
     usuario.de_riesgo = cuestionario
     usuario.email = mail
@@ -974,7 +974,7 @@ def cambiar_rol(request):
 @login_required()
 def modificar_contrasenia(request):
     context = dict.fromkeys(["mensaje"], "")
-    dni = request.POST.get("Dni")
+    usuario = request.user
     password = request.POST.get("password")
     password2 = request.POST.get("password2")
 
@@ -986,13 +986,14 @@ def modificar_contrasenia(request):
     elif (usuario.check_password(password)):
         context["mensaje"] ='La nueva contraseña debe ser distinta a la contraseña actual'
     else:
-        usuario = Usuario.objects.get(usuario_id=dni)
         usuario.set_password(password)
         usuario.save()
+        login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
         context["mensaje"] = 'La contraseña ha sido modificada exitosamente'
 
     request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(ver_perfil)
+    
 
 
 @login_required()

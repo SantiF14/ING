@@ -6,68 +6,109 @@
 <div class="row d-flex justify-content-center" style="margin:3%">
 <div class="col-md-8" style=" background-color: white;">
     <div>
-        <form id="profileForm" class="bv-form">
+        <form method="POST" id="profileForm" class="bv-form" action="/modificar_datos/"> {% csrf_token %}
             <div class="col-md-12" style="padding-left: 0px;">
                 <h2 class="title">Datos Personales</h2>
             </div> 
             <div class="row">
                 <input hidden="hidden">
-                <div class="col-md-12 control-label">DNI<br> 
-                    <input type="text" id="dni" name="Dni" required="required" maxlength="8" minlength="7" disabled="disabled" class="form-control validate">
+                <div class="col-md-4 control-label">DNI<br> 
+                    <input value="{{ DNI }}" type="text" id="dni" name="Dni" required="required" maxlength="8" minlength="7" disabled="disabled" class="form-control validate" style="text-align: center;">
                 </div> 
-                <div class="col-md-12 control-label">Apellido y Nombre <font color="red">*</font><br> 
-                    <input type="text" id="nombre" name="nombre" required="required" maxlength="50" data-bv-field="nombre" class="form-control input-perfil">
+                <div class="col-md-4 control-label">Apellido y Nombre <br> 
+                    <input value="{{ nombre_apellido }}" type="text" id="nombre" name="nombre" required="required" maxlength="50" data-bv-field="nombre" class="form-control input-perfil" style="text-align: center;" disabled>
                      <!---->
                     </div>
-                </div> 
+                <div class="col-md-4 control-label">Fecha de nacimiento<br> 
+                    <input value="{{ fecha_nacimiento }}" type="datetime"  required="required" maxlength="50" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" data-bv-field="email" class="form-control input-perfil" disabled> <!---->
+                </div>
+            </div>
                 <div class="row">
-                    <div class="col-md-6 control-label">Correo electrónico <font color="red">*</font><br> 
-                        <input type="text" id="email" name="email" required="required" maxlength="50" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" data-bv-field="email" class="form-control input-perfil"> <!---->
+                    <div class="col-md-4 control-label">Direccion de correo<br> 
+                        <input style="text-align: center;" value="{{ mail }}" type="text" id="mail" name="mail" required="required" maxlength="50" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" data-bv-field="email" class="form-control input-perfil"> <!---->
                     </div>
-                    <div class="col-md-6 control-label">Numero Telefonico <font color="red">*</font><br> 
-                        <div data-v-19c9a1c7="" id="telefono" class="vue-phone-number-input flex form-control input-perfil" data-bv-field="telefono" name="telefono" autocomplete="new-password"><!---->
-                            <div data-v-19c9a1c7="" class="flex-1">
-                                <div data-v-e59be3b4="" data-v-19c9a1c7="" class="input-tel input-phone-number is-valid has-value" data-bv-field="telefono" name="telefono" autocomplete="new-password">
-                                    <input data-v-e59be3b4="" id="telefono-2_phone_number" placeholder="Teléfono *" required="required" type="tel" data-bv-field="telefono" name="telefono" autocomplete="new-password" class="input-tel__input no-country-selector" style="border-radius: 4px; caret-color: dodgerblue; border-color: yellowgreen;">
-                                    <label data-v-e59be3b4="" for="telefono-2_phone_number" class="input-tel__label" style="color: yellowgreen;"> Teléfono * </label>
-                                    <!---->
-                                    <!---->
-                                </div>
-                            </div>
-                        </div> <!----></div>
-                    </div> 
+                    <div class="col-md-4 control-label">De riesgo<br> 
+                        {% if cuestionario == True %}
+                        <label for="">Si
+                        <input type="radio" name="Cuestionario" value="1" class="form-check-inline" required checked>   
+                        </label>
+                        <br>
+                        <label for="">No
+                            <input type="radio" name="Cuestionario" value="0" class="form-check-inline" required>   
+                        </label>
+                        {% else %}
+                        <label for="">Si
+                        <input type="radio" name="Cuestionario" value="1" class="form-check-inline" required>   
+                        </label>
+                        <br>
+                        <label for="">No
+                            <input type="radio" name="Cuestionario" value="0" class="form-check-inline" required checked>   
+                        </label>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 control-label">Vacunatorio de preferencia<br> 
+                        <select name="Vacunatorio" required="required"   class="form-control input-perfil" style="text-align: center;">
+                            {% for vacunatorio in vacunatorios %}
+                            {% if vacunatorio.nombre != vacunatorio_pref %}
+                                <option value="{{ vacunatorio.nombre }}"  >{{ vacunatorio.nombre }}</option>
+                            {% else %}
+                                <option value="{{ vacunatorio.nombre }}" selected >{{ vacunatorio.nombre }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        
+                    </div>
+                </div> 
                     <div class="row">
-                        <div class="col-md-12">Clase Fiscal <font color="red">*</font><br> 
-                            <select id="tipo_fiscal" class="form-control input-compra" style="float: left; min-width: 85px; margin-bottom: 10px;">
-                                <option value="">Elige una Clase Fiscal</option> 
-                                <option value="2">Consumidor Final</option> 
-                                <option value="3">Monotributista</option> 
-                                <option value="1">Responsable Inscripto</option>
-                            </select> <!----></div>
-                        </div> 
-                        <div class="row">
-                            <div class="col-md-12">Numero de Documento (SOLO NUMEROS) <font color="red">*</font><br> 
-                                <input type="text" id="numero_documento" name="numero_documento" required="required" autocomplete="new-password" data-bv-field="numero_documento" onkeypress="return event.charCode >= 45 &amp;&amp; event.charCode <= 57" class="form-control input-perfil"> <!----> <!----> 
-                                <input type="hidden" id="hid_tipo_documento input-perfil" value="2">
-                            </div>
-                        </div> 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p id="ModificarContraseña">
-                                        <button id="ModificarContraseña" type="button" data-loading-text="<i class='fa fa-spinner fa-spin '></i> Actualizando" class="btn btn-success col-md-12">Modificar contraseña</button>
-                                    </p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p id="ActualizarDatos">
-                                        <button id="ActualizarDatos" type="submit" data-loading-text="<i class='fa fa-spinner fa-spin '></i> Actualizando" class="btn btn-success col-md-12"> Actualizar</button>
-                                    </p>
-                                </div>
-                            </div>
+                        <div class="col-md-6">
+                            <p id="ModificarContraseña">
+                                <button id="ModificarContraseña" type="button"  class="btn btn-success col-md-12" data-toggle="modal" data-target="#myModal">Modificar contraseña</button>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p id="ActualizarDatos">
+                                <button id="ActualizarDatos" type="submit" class="btn btn-success col-md-12"> Actualizar</button>
+                            </p>
+                        </div>
+                    </div>
                         </form>
                     </div>
                 </div>
             </div>
         </body>
+
+        <form action="/modificar_contrasenia/" method="POST" id="formularioBotones">{% csrf_token %}
+            <div style="margin-top: 10%;" id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header text-center" style="background: #a2cb83d8;">
+                    <h4 class="modal-title w-100 font-weight-bold">Posponer turno</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <div class="modal-body mx-3">
+                  <div class="md-form mb-4">
+            
+                    <label data-error="wrong" data-success="right" for="defaultForm-pass">Nueva contraseña</label>
+                    <input id="dni" name="password" type="password" class="form-control validate" >
+                  </div>
+              
+                    <div class="md-form mb-4">
+                      
+                      <label data-error="wrong" data-success="right" for="defaultForm-email">Repita contraseña</label>
+                      <input  id="tipo" name="password2" type="password" class="form-control validate" >
+                      
+                    </div>
+                  </div>
+                  <div class="modal-footer d-flex justify-content-center">
+                    <button type="submit" class="button2 btn-default" style="min-width: 100%;">Modificar contraseña</button>
+                  </div>
+                  </div>
+                </div>
+              </div>
+          </form>
 
 {% if mensaje != "" %}
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
