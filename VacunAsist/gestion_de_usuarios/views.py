@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 import requests
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -308,12 +308,13 @@ def gestionar_usuarios_admin(request):
 @login_required
 def visualizar_estadisticas(request):
     
-    context = dict.fromkeys(["mensaje","grafico","grafico_total"],"")
-
-
+    context = dict.fromkeys(["mensaje","grafico_poli","grafico_corr","grafico_hosp","grafico_total","grafico_vacuna","vacunatorios"],"")
+    print(context["mensaje"])
+    #Obtengo la fecha inicial y la fecha final de la pantalla
     fecha_inicial = request.GET.get("Fecha_ini")
     fecha_final = request.GET.get("Fecha_fin")
 
+    #Cargo las vacunas aplicadas y no aplicadas en un df, corrijo valores y nombres de columnas
     vac_aplicadas = VacunaAplicada.objects.all().values()
     vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
     pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
@@ -322,44 +323,38 @@ def visualizar_estadisticas(request):
     df_vacunas["estado"] = df_vacunas["estado"].replace(to_replace=np.nan, value="Aplicado")
     df_vacunas['fecha'] = pd.to_datetime(df_vacunas['fecha'])
     df_vacunas['fecha'] = df_vacunas['fecha'] - pd.to_timedelta(7, unit='d')
-    df_vacunas = df_vacunas.groupby(['vacuna_id','vacunatorio_id','estado', pd.Grouper(key='fecha', freq='W-MON')])["id"].count().reset_index().sort_values("fecha")
+    df_vacunas = df_vacunas.groupby(['vacuna_id','vacunatorio_id','estado', pd.Grouper(key='fecha', freq='W-MON')])["id"].count().reset_index()
     df_vacunas.columns = ["Vacuna", "Vacunatorio", "Estado", "Semana", "Cantidad"]
 
+    #Si existe fecha inicial, comienzo las validaciones
     if (fecha_inicial):
-        fecha_inicial = date.fromisoformat(fecha_inicial).isocalendar()
-        fecha_final = date.fromisoformat(fecha_final).isocalendar()
-        if (fecha_inicial < fecha_final):
+        fecha_inicial = date.fromisoformat(fecha_inicial)
+        fecha_final = date.fromisoformat(fecha_final)
+        if (fecha_inicial < fecha_final) and (fecha_final<date.today()):
 
-            while (fecha_inicial.weekday() != 0):
-                fecha_inicial = fecha_inicial + relativedelta(day=-1)
-            while (fecha_final.weekday() != 0):
-                fecha_final = fecha_final + relativedelta(day=-1)
+            while (fecha_inicial.isocalendar().weekday != 1):
+                fecha_inicial = fecha_inicial + timedelta(days=-1)
+            while (fecha_final.isocalendar().weekday != 1):
+                fecha_final = fecha_final + timedelta(days=1)
 
-            if (fecha_final.week() - fecha_inicial.week() >= 3):
-                vac_aplicadas = VacunaAplicada.objects.all().values()
-                vac_aplicadas_df = pd.DataFrame(vac_aplicadas)
-
-                pospuestas_y_canceladas = VacunasNoAplicadas.objects.all().values()
-                vac_no_aplicadas_df = pd.DataFrame(pospuestas_y_canceladas)
-
-                df_vacunas = vac_aplicadas_df.append(vac_no_aplicadas_df)
-                print(df_vacunas)
-
-            
-            else:
+            if ((fecha_final.isocalendar().week) - (fecha_inicial.isocalendar().week) < 3):
                 context["mensaje"] = "Las fechas deben constituir por lo menos 4 semanas."
+                
+            print(fecha_inicial)
+            print(fecha_final)
         else:
             context["mensaje"] = "Las fechas ingresadas son inválidas."
-    #else:
-
-        #fecha_final = datetime.today()
-        #fecha_inicial = fecha_final - relativedelta(weeks=4)
-        #while (fecha_inicial.isocalendar().weekday() != 0):
-        #    fecha_inicial = fecha_inicial + relativedelta(day=-1)
-        #while (fecha_final.isocalendar().weekday() != 0):
-        #    fecha_final = fecha_final + relativedelta(day=1)
-        #print(fecha_inicial)
-        #print(fecha_final)
+            
+    # Sino, el rango de fechas es desde el día de hoy, 4 semanas hacia atrás.
+    if (not fecha_inicial or context["mensaje"] != ""):
+        fecha_final = date.today()
+        fecha_inicial = fecha_final - timedelta(weeks=3)
+        while (fecha_inicial.isocalendar().weekday != 1):
+            fecha_inicial = fecha_inicial + timedelta(days=-1)
+        while (fecha_final.isocalendar().weekday != 1):
+            fecha_final = fecha_final + timedelta(days=1)
+        print(fecha_inicial)
+        print(fecha_final)
     
     #df_vacunas = df_vacunas[df_vacunas["Semana"] >= fecha_inicial][df_vacunas["Semana"] <= fecha_final]
 
@@ -380,23 +375,23 @@ def visualizar_estadisticas(request):
 
     df_vacunas["Vacuna"] = df_vacunas["Vacuna"].replace(to_replace=tipos_dicci)
     df_vacunas["Vacunatorio"] = df_vacunas["Vacunatorio"].replace(to_replace=vacunatorios_dicci)
-    print(df_vacunas)
 
-    context = {}    
 
     tipos_vacunas = list(df_vacunas['Vacuna'].unique())
     vacunatorios = list(df_vacunas["Vacunatorio"].unique())
     semanas = list(df_vacunas["Semana"].unique())
-    primer_semana = min(semanas)
-    while (primer_semana < pd.to_datetime(datetime.today())):
-        if primer_semana not in semanas:
-            semanas.append(primer_semana)
-        primer_semana = primer_semana + pd.to_timedelta(7, unit='d')
+    semana_actual =fecha_inicial
+    while (semana_actual < date.today()):
+        if (pd.to_datetime(semana_actual)) not in semanas:
+            semanas.append(semana_actual)
+        semana_actual = semana_actual + pd.to_timedelta(7, unit='d')
     estados = list(df_vacunas["Estado"].unique())
 
     combinaciones = list(itertools.product(tipos_vacunas,vacunatorios,semanas, estados))
-    df_vacunas = df_vacunas.set_index(['Vacuna', 'Vacunatorio', "Semana",'Estado']).reindex(combinaciones, fill_value=0).reset_index()
+    df_vacunas = df_vacunas.set_index(['Vacuna', 'Vacunatorio', "Semana",'Estado']).reindex(combinaciones, fill_value=0).reset_index().sort_values("Semana")
     
+    df_vacunas =df_vacunas[(df_vacunas["Semana"] >= pd.to_datetime(fecha_inicial)) & (df_vacunas["Semana"] <= pd.to_datetime(fecha_final))]
+
     df_polideportivo = df_vacunas[df_vacunas["Vacunatorio"] == "Polideportivo"]
     df_corralon = df_vacunas[df_vacunas["Vacunatorio"] == "Corralón Municipal"]
     df_hospital = df_vacunas[df_vacunas["Vacunatorio"] == "Hospital 9 de julio"]
@@ -446,7 +441,8 @@ def visualizar_estadisticas(request):
                     )], 
         autosize=False,
         width=1000,
-       height=800
+        height=800, 
+        yaxis=dict(range=[-1,9])      
     )
 
     context['grafico_poli'] = fig.to_html()
@@ -497,7 +493,8 @@ def visualizar_estadisticas(request):
                     )], 
         autosize=False,
         width=1000,
-       height=800
+       height=800,
+       yaxis=dict(range=[-1,9]) 
     )
 
     context['grafico_corr'] = fig.to_html()
@@ -511,7 +508,7 @@ def visualizar_estadisticas(request):
                 go.Scatter(
                     x = df_hospital['Semana'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
                     y = df_hospital['Cantidad'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
-                    name = vacuna, visible = True
+                    name = estado, visible = True
                 )
             )
             else:
@@ -519,7 +516,7 @@ def visualizar_estadisticas(request):
                 go.Scatter(
                     x = df_hospital['Semana'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
                     y = df_hospital['Cantidad'][df_hospital["Estado"]==estado][df_hospital['Vacuna']==vacuna],
-                    name = vacuna, visible = False
+                    name = estado, visible = False
                 )
             )
 
@@ -547,14 +544,13 @@ def visualizar_estadisticas(request):
                     )], 
         autosize=False,
         width=1000,
-       height=800
+       height=800,
+       yaxis=dict(range=[-1,9]) 
     )
 
     context['grafico_hosp'] = fig.to_html()
 
     df_totales_por_vacuna = df_vacunas.groupby(["Vacuna","Estado","Semana"])["Cantidad"].sum().reset_index()
-
-    print(df_totales_por_vacuna[df_totales_por_vacuna["Vacuna"] == "Fiebre_amarilla"])
 
     fig = go.Figure()
 
@@ -565,7 +561,7 @@ def visualizar_estadisticas(request):
                 go.Scatter(
                     x = df_totales_por_vacuna['Semana'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
                     y = df_totales_por_vacuna['Cantidad'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
-                    name = vacuna, visible = True
+                    name = estado, visible = True
                 )
             )
             else:
@@ -573,7 +569,7 @@ def visualizar_estadisticas(request):
                 go.Scatter(
                     x = df_totales_por_vacuna['Semana'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
                     y = df_totales_por_vacuna['Cantidad'][df_totales_por_vacuna["Estado"]==estado][df_totales_por_vacuna['Vacuna']==vacuna],
-                    name = vacuna, visible = False
+                    name = estado, visible = False
                 )
             )
 
@@ -601,7 +597,8 @@ def visualizar_estadisticas(request):
                     )], 
         autosize=False,
         width=1000,
-       height=800
+       height=800,
+       yaxis=dict(range=[-1,9]) 
     )
 
     context['grafico_vacuna'] = fig.to_html()
@@ -612,6 +609,7 @@ def visualizar_estadisticas(request):
     #AGREGAR RANGE_SELECTORS
 
     context["grafico_total"] = fig.to_html()
+    print(context["mensaje"])
     return render(request,"visualizacion_estadisticas.html",context)
 
 @login_required
