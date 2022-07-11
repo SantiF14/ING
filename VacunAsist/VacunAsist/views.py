@@ -1097,14 +1097,14 @@ def actualizar_remanente(request):
         vacuna_no_aplicada = VacunasNoAplicadas(usuario = inscripcion.usuario, fecha = inscripcion.fecha, vacunatorio = inscripcion.vacunatorio, vacuna = inscripcion.vacuna, estado = 'Pospuesto')
         vacuna_no_aplicada.save()
         usuario = inscripcion.usuario
-        inscripcion.fecha = 'None'
+        inscripcion.fecha = None
         inscripcion.vacunatorio = usuario.vacunatorio_pref
         inscripcion.save()
         vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio= inscripcion.vacunatorio, vacuna=inscripcion.vacuna)
-        vacuna_vacunatorio = vacuna_vacunatorio + 1
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
         vacuna_vacunatorio.save()
 
     context["mensaje"]= 'El remanente de vacunas se actualizo correctamente'
     request.session["context"] = context
     ##fraaaaaaan correegi esto ananananashey
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(visualizar_stock_administrador)

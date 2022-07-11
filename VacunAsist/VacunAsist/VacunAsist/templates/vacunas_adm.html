@@ -48,6 +48,7 @@
     <button class="btn" onclick="filterSelection('Polideportivo')"> Polideportivo</button>
     <button class="btn" onclick="filterSelection('Corralón Municipal')"> Corralón Municipal</button>
     <button class="btn" onclick="filterSelection('Hospital 9 de julio')"> Hospital 9 de julio</button>
+  
   </div>
   <br>
   <br>
@@ -87,6 +88,9 @@
     </div>
     <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
  </div>
+</div>
+<div style="text-align: center; margin-right: 5%;">
+  <button class="button2" onclick="location.href='{% url 'actualizar_remanente' %}'">Actualizar remanente </button>
 </div>
 
 <form action="/eliminar_vacuna_stock/" method="POST" id="edit_form">{% csrf_token %}

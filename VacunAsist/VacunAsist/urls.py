@@ -59,5 +59,6 @@ urlpatterns = [
     path('confirmacion_posponer_turno/', posponer_turno_fallido),
     path('mi_perfil/',ver_perfil, name="MiPerfil"),
     path('modificar_datos/', modificar_datos),
-    path('modificar_contrasenia/', modificar_contrasenia)
+    path('modificar_contrasenia/', modificar_contrasenia),
+    path('actualizar_remanente/',actualizar_remanente, name="actualizar_remanente"),
 ]
