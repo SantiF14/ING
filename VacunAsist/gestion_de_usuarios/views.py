@@ -330,7 +330,7 @@ def visualizar_estadisticas(request):
     if (fecha_inicial):
         fecha_inicial = date.fromisoformat(fecha_inicial)
         fecha_final = date.fromisoformat(fecha_final)
-        if (fecha_inicial < fecha_final) and (fecha_final<date.today()):
+        if (fecha_inicial < fecha_final) and (fecha_final<=date.today()):
 
             while (fecha_inicial.isocalendar().weekday != 1):
                 fecha_inicial = fecha_inicial + timedelta(days=-1)
