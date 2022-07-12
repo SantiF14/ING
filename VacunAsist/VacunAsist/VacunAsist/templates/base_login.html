@@ -17,7 +17,23 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-   
+    <script>
+      $(document).ready(function(){
+          function alignModal(){
+              var modalDialog = $(this).find(".modal-dialog");
+              
+              // Applying the top margin on modal to align it vertically center
+              modalDialog.css("margin-top", Math.max(0, ($(window).height() - modalDialog.height()) / 2));
+          }
+          // Align modal when it is displayed
+          $(".modal").on("shown.bs.modal", alignModal);
+          
+          // Align modal when user resize the window
+          $(window).on("resize", function(){
+              $(".modal:visible").each(alignModal);
+          });   
+      });
+      </script>
 
     <title>
       VacunAssist
@@ -48,6 +64,7 @@
           {% endif %}
           {% if user.rol_actual == "Administrador" %}
           <a class="dropdown-item" href="{% url 'VacunasStock' %}"><i class="fa-solid fa-vial-circle-check" style="margin-right: 5%"></i>Ver stock de vacunas</a>
+          <a class="dropdown-item" href="{% url 'visualizar_turnos' %}"><i class="fa-solid fa-calendar-day" style="margin-right: 5%"></i>Ver cantidad de turnos</a>
           <a class="dropdown-item" href="{% url 'GestionarUsuarios' %}"><i class="fa-solid fa-users" style="margin-right: 5%"></i>Gestionar roles</a>
           <a class="dropdown-item" href="{% url 'VerEstadisticas' %}"><i class="fa-solid fa-chart-line" style="margin-right: 5%"></i>Ver estadisticas</a>
           <a href="{% url 'Logout' %}"><i class="fa-solid fa-right-from-bracket" style="margin-right: 5%"></i>Cerrar sesión</a>

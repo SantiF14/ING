@@ -76,7 +76,7 @@ class FormularioDeRegistro (UserCreationForm):
             raise ValidationError("La contraseña debe contener por lo menos un dígito.")
         if not bool(re.search('[a-zA-Z]', password1)):
             raise ValidationError("La contraseña debe contener por lo menos una letra.")
-        if password1 and password2 and password1 != password2:  
+        if not(password1 and password2 and password1 == password2):  
             raise ValidationError("Las contraseñas no coinciden.")  
         return password2  
 

@@ -61,4 +61,6 @@ urlpatterns = [
     path('modificar_datos/', modificar_datos),
     path('modificar_contrasenia/', modificar_contrasenia),
     path('actualizar_remanente/',actualizar_remanente, name="actualizar_remanente"),
+    path('recuperar_contrasenia/',recuperar_contrasenia, name="RecuperarContraseña"),
+    path('cantidad_turnos',visualizar_cantidad_turnos, name="visualizar_turnos"),
 ]

@@ -107,7 +107,9 @@ def ver_turnos_del_dia(request):
     return render(request, "ver_turnos_hoy.html", context)
 
 def iniciar_sesion(request, *args, **kwargs):
-    context = dict.fromkeys(["roles","adm","vac"],"")
+    context = dict.fromkeys(["adm","vac","roles","mensaje"],"")
+    context["mensaje"] = request.session.get("mensaje","")
+    request.session["mensaje"] = ""
     user = request.user
     if user.is_authenticated: 
         return redirect("Home")

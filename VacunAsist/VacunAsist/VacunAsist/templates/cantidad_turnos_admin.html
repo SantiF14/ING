@@ -42,57 +42,31 @@
 <label></label>
 
 <div class="container"> 
-  <h1 style="text-align: center;">Seleccione que stock desea ver</h1>
+  <h1 style="text-align: center;">Turnos</h1>
   <br>
-  <div id="myBtnContainer" style="text-align:center;">
-    <button class="btn active" onclick="filterSelection('Total')"> Stock Total</button>
-    <button class="btn" onclick="filterSelection('Polideportivo')"> Polideportivo</button>
-    <button class="btn" onclick="filterSelection('Corralón Municipal')"> Corralón Municipal</button>
-    <button class="btn" onclick="filterSelection('Hospital 9 de julio')"> Hospital 9 de julio</button>
-  
-  </div>
+
   <br>
   <br>
  <div class="row">
-   {% for vacuna in vacunas %}
-   <div class="col-3 filterDiv {{vacuna.vacunatorio.nombre}}" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
-    <p>lugar: {{vacuna.vacunatorio.nombre}}</p>
-     <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
-     <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_remanente}}">
-     <p>stock actual: <p></p>{{vacuna.stock_remanente}}</p>
-     <input type="hidden" value="{{vacuna.vacunatorio.nombre}}"  id="lugar_t">
-     <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="tipo-d"/>
-        <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}C" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;" onclick="myFunction4(this)">Cargar vacuna</button>
-        <p></p>
-        <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}E" class="button2" data-toggle="modal" data-target="#modalForm" style=" padding: 7px 15px; font-size: 15px; background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)"" onclick="myFunction4(this)">Eliminar vacuna</button>
-        
-   </div>
-   <div class="col-1 filterDiv {{vacuna.vacunatorio.nombre}}" style="background-color: transparent;" data-eventtype="{{vacuna.vacunatorio.nombre}}""></div>
-   {% endfor %}
-    <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-       <p>Tipo de vacuna: gripe</p>
+    <div class="col-4" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
+        <p>Gripe</p>
+
+        <p>Cantidad turnos: <p></p>{{turnos_gripe}}</p>
+       </div>
+    
+       <div class="col-4" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
+        <p>Covid 19</p>
+
+        <p>Cantidad turnos: <p></p>{{turnos_covid}}</p>
+       </div>
+
+       <div class="col-4" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
+        <p>Fiebre amarilla</p>
+
+        <p>Cantidad turnos: <p></p>{{turnos_fieb}}</p>
+       </div>
        
-       <p>Stock total: <p id="gripeTodos"> </p> </p>
-    </div>
-    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
-    <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-        <p>Tipo de vacuna: Covid-19</p>
-        <p>Stock total: <p id="CovidTodos"></p></p>
-    </div>
-    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
-    <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-       <p>Tipo de vacuna: Fiebre_amarilla</p>
-        <p>Stock total: <p id="FATodos"></p></p>
-    </div>
-    <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
  </div>
-</div>
-<div style="text-align: center; margin-right: 5%;">
-  <button class="button2" onclick="location.href='{% url 'actualizar_remanente' %}'">Actualizar remanente </button>
-</div>
 
 <form action="/eliminar_vacuna_stock/" method="POST" id="edit_form">{% csrf_token %}
  <div class="modal fade" id="modalForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -206,54 +180,6 @@
 
 
 <script>  
-filterSelection("Total")
-function filterSelection(c) {
-  var x, i;
-  x = document.getElementsByClassName("filterDiv");
-  console.log(x);
-  if (c == "all") c = "";
-  // Add the "show" class (display:block) to the filtered elements, and remove the "show" class from the elements that are not selected
-  for (i = 0; i < x.length; i++) {
-    w3RemoveClass(x[i], "show");
-    if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
-  }
-}
-
-// Show filtered elements
-function w3AddClass(element, name) {
-  var i, arr1, arr2;
-  arr1 = element.className.split(" ");
-  arr2 = name.split(" ");
-  for (i = 0; i < arr2.length; i++) {
-    if (arr1.indexOf(arr2[i]) == -1) {
-      element.className += " " + arr2[i];
-    }
-  }
-}
-
-// Hide elements that are not selected
-function w3RemoveClass(element, name) {
-  var i, arr1, arr2;
-  arr1 = element.className.split(" ");
-  arr2 = name.split(" ");
-  for (i = 0; i < arr2.length; i++) {
-    while (arr1.indexOf(arr2[i]) > -1) {
-      arr1.splice(arr1.indexOf(arr2[i]), 1);
-    }
-  }
-  element.className = arr1.join(" ");
-}
-
-// Add active class to the current control button (highlight it)
-var btnContainer = document.getElementById("myBtnContainer");
-var btns = btnContainer.getElementsByClassName("btn");
-for (var i = 0; i < btns.length; i++) {
-  btns[i].addEventListener("click", function() {
-    var current = document.getElementsByClassName("active");
-    current[0].className = current[0].className.replace(" active", "");
-    this.className += " active";
-  });
-}
 
 
     // si la respuesta que se espera es sumar

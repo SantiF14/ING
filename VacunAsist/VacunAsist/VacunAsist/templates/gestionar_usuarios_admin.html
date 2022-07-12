@@ -18,6 +18,7 @@
   
   /* Style the buttons */
   .btn {
+    font-size: 16pt;
     background-color: #A2CB83;
     border: none;
     outline: none;
@@ -37,8 +38,8 @@
 <body class="user">
 <div class="container">
 <div id="myBtnContainer" style="text-align:center; padding-top: 2%;">
-    <button class="btn active" onclick="cambiarRol('Admin')">Gestionar Administradores</button>
-    <button class="btn" onclick="cambiarRol('Vac')">Gestionar Vacunadores</button>
+    <button class="btn active" onclick="cambiarRol('Admin')" >Gestionar Administradores</button>
+    <button class="btn" onclick="cambiarRol('Vac')" >Gestionar Vacunadores</button>
 </div>
 
 <form action="" hidden method="POST" id="formularioConDNI">{% csrf_token %}
@@ -49,19 +50,18 @@
 
 <div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%;" id="ventana_admin">
     <div class="" style="height: 100%; background-color: #fff;">
-      <div class="container">
-        
-        <div class="col-12"><p  style="background-color: white; float:left;"><strong>Administradores</strong></p></div>
+      <div class="container" style = "float: left; margin-bottom: 2%;">
+        <div class="col-12"><p  style="background-color: white; float: left; font-size: 18pt;"><strong>Administradores</strong></p></div>
         <form method="post" action="{% url 'BuscarDNI' %}">{% csrf_token %}
-          <div class="col-2"style="float:right"><button class="button2" name="limpiar_admin" id="limpiar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Limpiar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_admin" id="buscar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Buscar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Administrador">Dar de alta</button></div>
-          <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" name="Dni" id="myInputAdmin"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
+          <div class="col-2"style="float:right;  padding: 0px;"><button class="button2" name="limpiar_admin" id="limpiar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Limpiar</button></div>
+          <div class="col-2" style="float:right; padding: 0px;"><button class="button2" name="buscar_admin" id="buscar_dni_adm" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Admin">Buscar</button></div>
+          <div class="col-2" style="float:right; padding: 0px;"><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Administrador">Dar de alta</button></div>
+          <div class="col-4" style="float:right; padding: 0px;"><input style="border: 1px solid #ccc; border-radius: 4px; width: 90%; padding: 8px 15px; margin: 6px 0px;" type="text" name="Dni" id="myInputAdmin"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
         </form>
     </div>
         <table class="table table-hover" id="myTableAdmin" style="border: 1px solid black;">
             <thead class="table-secondary">
-            <tr>
+            <tr style="vertical-align:middle; font-size: 14pt;">
                 <th scope="col">DNI</th>
                 <th scope="col">Nombre y apellido</th>
                 <th scope="col">Email</th>
@@ -70,31 +70,31 @@
             </thead>
             <tbody style="overflow: scroll;">
             {% for admin in admins %}
-            <tr>
+            <tr style="vertical-align:middle;">
                 <td class="dni_t">{{admin.dni}}</td>
                 <td class="row_b">{{admin.nombre_apellido}}</td>
                 <td class="tipo_t">{{admin.email}}</td>
-                <td class="edit_row"><button class="button2" style="font-size: small; padding: 4px 8px;">Dar de baja</button></td>
+                <td class="edit_row"><button class="button2" style="font-size: 12pt; padding: 4px 8px;">Dar de baja</button></td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-<div class="container-sm" hidden style="float: left; padding-left: 5%; padding-top: 4%; " id="ventana_vac">
+<div class="container-sm" hidden style="float: left; padding-left: 5%; padding-top: 4%;" id="ventana_vac">
     <div class="" style="height: 100%; background-color: #fff;">
-      <div class="container " style = "float: left;">
-        <div class="col-12"><p  style="background-color: white; float: left;"><strong>Vacunadores:</strong></p></div>
+      <div class="container " style = "float: left; margin-bottom: 2%;">
+        <div class="col-12"><p  style="background-color: white; float: left; font-size: 18pt;"><strong>Vacunadores</strong></p></div>
         <form method="post" action="">{% csrf_token %}
-          <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Limpiar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Buscar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Vacunador">Dar de alta</button></div>
-          <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" name="Dni" id="myInputVac"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
+          <div class="col-2"style="float:right; padding: 0px; "><button class="button2" name="limpiar_dni" id="limpiar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Limpiar</button></div>
+          <div class="col-2" style="float:right; padding: 0px;  "><button class="button2" name="buscar_dni" id="buscar_dni_vac" style="border-color: transparent;" onclick=myFunction3(this) type="button" value="Vac">Buscar</button></div>
+          <div class="col-2" style="float:right; padding: 0px;  "><button class="button2" style="border-color: transparent;" onclick=cargarModalAlta(this) type="button" value="Vacunador">Dar de alta</button></div>
+          <div class="col-4" style="float:right;padding: 0px;"><input style="border: 1px solid #ccc; border-radius: 4px; width: 90%; padding: 8px 15px; margin: 6px 0;" type="text" name="Dni" id="myInputVac"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
         </form>
       </div>
         <table class="table table-hover" id="myTableVac" style="border: 1px solid black;">
             <thead class="table-secondary">
-            <tr>
+            <tr style="vertical-align:middle; font-size: 14pt;">
                 <th scope="col">DNI</th>
                 <th scope="col">Nombre y apellido</th>
                 <th scope="col">Email</th>
@@ -105,13 +105,13 @@
             </thead>
             <tbody style="overflow: scroll;">
             {% for vacunador in vacunadores %}
-            <tr>
+            <tr style="vertical-align:middle;">
                 <td class="dni_t">{{vacunador.dni}}</td>
                 <td class="row_b">{{vacunador.nombre_apellido}}</td>
                 <td class="row_c">{{vacunador.email}}</td>
                 <td class="vac_t">{{vacunador.vacunador.vacunatorio_de_trabajo.nombre}}</td>
-                <td class="edit_row_1"><button class="button2" style="font-size: small; padding: 4px 8px;">Cambiar vacunatorio</button></td>
-                <td class="edit_row_2"><button class="button2" style="font-size: small; padding: 4px 8px;">Dar de baja</button></td>
+                <td class="edit_row_1"><button class="button2" style="font-size: 12pt; padding: 4px 8px;">Cambiar vacunatorio</button></td>
+                <td class="edit_row_2"><button class="button2" style="font-size: 12pt; padding: 4px 8px;">Dar de baja</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -135,7 +135,7 @@
           <div class="md-form mb-4">
             
             <label data-error="wrong" data-success="right" for="defaultForm-pass">DNI</label>
-            <input id="dni" name="Dni" class="form-control validate" required>
+            <input id="dni" name="Dni" maxlength="8" minlength="7" class="form-control validate" required>
           </div> 
 
           <div class="md-form mb-4" hidden id="campoVacunatorioTrabajo">           
@@ -255,6 +255,10 @@
     }
   
 </script>
+
+
+
+
 <script>
   var btnContainer = document.getElementById("myBtnContainer");
   var btns = btnContainer.getElementsByClassName("btn");

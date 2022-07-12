@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
+from gestion_de_usuarios.views import iniciar_sesion
 from gestion_de_usuarios.views import gestionar_usuarios_admin, ver_perfil
 from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime, date
@@ -805,6 +806,7 @@ def baja_vacunador(request):
     context["rol"] = "Vacunador"
     usuario=Usuario.objects.get(dni=dni)
     usuario.es_vacunador=False
+    usuario.save()
 
     vacunador = Vacunador.objects.get(usuario_id=dni)
 
@@ -822,16 +824,19 @@ def baja_administrador(request):
 
     usuario=Usuario.objects.get(dni=dni)
     usuario.es_administrador=False
+    usuario.save()
 
     context["mensaje"] = 'El administrador ha sido dado de baja exitosamente'
     request.session["context"] = context
     return redirect(gestionar_usuarios_admin)
 
-@login_required()
+
 def recuperar_contrasenia(request):
     dni = request.POST.get("Dni")
     numero_tramite = request.POST.get("Tramite")
-    context = dict.fromkeys(["mensaje"], "")
+    print(dni)
+    print(numero_tramite)
+    mensaje = ""
 
     usuario=Usuario.objects.filter(dni=dni).first()
 
@@ -848,28 +853,28 @@ def recuperar_contrasenia(request):
             response = requests.post("https://hhvur3txna.execute-api.sa-east-1.amazonaws.com/dev/person/validate", 
             headers=headers, json=persona)
         except:
-            context["mensaje"] = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
+            mensaje = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
         else:
             if (response.status_code == 403):
-                context["mensaje"] = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
+                mensaje = "Hubo un fallo de la conexión con el RENAPER, vuelva a intentarlo más tarde."
             if (response.status_code != 200):
-                context["mensaje"] = "Error de validación. Verifique que sus datos sean correctos e intente de nuevo."
+                mensaje = "Error de validación. Verifique que sus datos sean correctos e intente de nuevo."
             else:
-                context["mensaje"] = f'Se ha enviado un mail a la dirección de correo electrónico {usuario.email} con la nueva clave'
-                contrasenia = ''.join(random.choices(string.ascii_letters, k=6), random.choices(string.digits, k=2))
-                usuario.set_password(self, contrasenia)
+                mensaje = f'Se ha enviado un mail a la dirección de correo electrónico {usuario.email} con la nueva clave'
+                contrasenia = ''.join(random.choices(string.ascii_letters, k=6)).join(random.choices(string.digits, k=2))
+                usuario.set_password(contrasenia)
                 usuario.save()
                 #envia el mail
-                html_message = loader.render_to_string('email_turno.html',{'fecha': fecha_turno, "user": request.user, "vacuna": "COVID-19"}) #REVISAR FLACA NO TE OLVIDES UwU aribel
-                #try:    
-                #    send_mail('Nueva contraseña VacunAssist',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
-                #except:
-                #    pass
+                html_message = loader.render_to_string('email_nueva_contrasenia.html',{'contrasenia': contrasenia, "usuario": usuario}) 
+                try:    
+                    send_mail('Nueva contraseña VacunAssist',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+                except:
+                    pass
     else:
-        context["mensaje"] = 'El DNI ingresado no está cargado en el sistema'
+        mensaje = 'El DNI ingresado no está cargado en el sistema'
 
-    request.session["context"] = context
-    return redirect(gestionar_usuarios_admin)
+    request.session["mensaje"] = mensaje
+    return redirect(iniciar_sesion)
 
 @login_required()
 def posponer_turno_fallido(request):
@@ -979,9 +984,9 @@ def modificar_contrasenia(request):
     password2 = request.POST.get("password2")
 
 
-    if ((not bool(re.search(r'\d', password))) or (not bool(re.search('[a-zA-Z]', password)))):
+    if ((not bool(re.search(r'\d', password))) or (not bool(re.search('[a-zA-Z]', password))) or (len(password) < 8)):
         context["mensaje"] = "La nueva contraseña debe tener al menos 8 caracteres, 1 letra y 1 número."
-    elif password and password2 and password != password2:  
+    elif not(password and password2 and password == password2):  
         context["mensaje"] ="La nueva contraseña y la confirmación deben ser iguales."
     elif (usuario.check_password(password)):
         context["mensaje"] ='La nueva contraseña debe ser distinta a la contraseña actual'
@@ -996,17 +1001,22 @@ def modificar_contrasenia(request):
     
 
 
-@login_required()
-def asignar_turno_manual_covid(request):        
+@login_required
+def asignar_turno_manual(request):
     context = dict.fromkeys(["mensaje"], "")
     nombre_vacunatorio = request.POST.get("Vacunatorio")
     cantidad = request.POST.get("Cantidad")
+    tipo = request.POST.get("Tipo")
 
-    vacunatorio = Vacunatorio.objects.get(nombre=nombre_vacunatorio)
+    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
 
-    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= 'COVID-19', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
-    
-    if( len(inscripcion) >= cantidad):
+
+    if (tipo == "Fiebre_amarilla"):
+        eliminar = Inscripcion.objects.filter(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio).filter(usuario__fecha_nacimiento_lt= date.today() + relativedelta(days=15) + relativedelta(years=-60))
+        for elim in eliminar:
+            elim.delete()
+
+    if(len(inscripcion) >= cantidad):
         hoy = datetime.today()
         indice = 0
         while (indice < cantidad):
@@ -1018,53 +1028,34 @@ def asignar_turno_manual_covid(request):
         context["mensaje"] = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
         
     request.session["context"] = context
+
     return redirect('LA MISMA PAGINA ANASHEI')
 
-@login_required()
-def asignar_turno_manual_fiebre_amarilla(request):        
-    context = dict.fromkeys(["mensaje"], "")
-    nombre_vacunatorio = request.POST.get("Vacunatorio")
-    cantidad = request.POST.get("Cantidad")
 
-    eliminar = Inscripcion.objects.all(vacuna_id__tipo= 'Fiebre_amarilla', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio).filter(60 < calculate_age(usuario.fecha_nacimiento + relativedelta(days=15)))  
-   
-    for elim in eliminar:
-        elim.delete()
-
-    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= 'Fiebre_amarilla', fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
-    
-    if( len(inscripcion) >= cantidad):
-        indice = 0
-        hoy = datetime.today()
-        while (indice < cantidad):
-            inscripcion[indice].fecha = hoy + relativedelta(days=15)
-            inscripcion[indice].save()
-            indice = indice + 1
-        context["mensaje"] = 'Se han asignado los turnos correctamente'
-    else:
-        context["mensaje"] = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
-        
-    request.session["context"] = context
-    return redirect('LA MISMA PAGINA ANASHEI')
 
 @login_required
 def visualizar_cantidad_turnos(request):
 
 
-    context = dict.fromkeys(["turnos","mensaje"], "")
+    context = dict.fromkeys(["turnos_total","turnos_poli","turnos_corr","turnos_hosp","mensaje","titulo"], "")
+    turnos = Inscripcion.objects.exclude(fecha__isnull=True)
+    context["titulo"] = "Estas visualizando: todos los turnos."
+    if request.POST:
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+        if fecha_inicio and fecha_fin and (fecha_inicio >= date.today()) and (fecha_inicio < fecha_fin):
+            context["titulo"] = f"Estas visualizando: turnos entre {fecha_inicio} y {fecha_fin}."
+            turnos = Inscripcion.objects.exclude(fecha__is_null=True).filter(fecha__range=[fecha_inicio, fecha_fin])
+        else:
+            context["mensaje"]= 'Las fechas ingresadas no son válidas'
+    
+    context["turnos_gripe"] = len(turnos.filter(vacuna__tipo="Gripe"))
+    context["turnos_covid"] = len(turnos.filter(vacuna__tipo="COVID-19"))
+    context["turnos_fieb"] = len(turnos.filter(vacuna__tipo="Fiebre_amarilla"))
 
-    fecha_inicio = request.POST.get("fecha_inicio")
-    fecha_fin = request.POST.get("fecha_fin")
-    if (fecha_inicio < fecha_fin):
-        context["turnos"]= Inscripcion.objects.filter(fecha__range=[fecha_inicio,fecha_fin])
-    else:
-        context["mensaje"]= 'Las fechas ingresadas no son válidas'
+    return render(request,"cantidad_turnos_admin.html",context)
 
-    #ver si contemplar esto
-    request.session["context"] = context
-    #cambiar return
-    return redirect('LA MISMA PAGINA ANASHEI')
-    #return render(request, 'vacunas_adm.html', context)
+
 
 @login_required
 def ver_cantidad_turnos(request):
