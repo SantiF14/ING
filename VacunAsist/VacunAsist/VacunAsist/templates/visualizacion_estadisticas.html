@@ -41,24 +41,32 @@
 <body class="user">
 <div class="container">
   
-    <div class="container " style = "float: left;">
-        <div class="col-6"><p  style="background-color: white; float: left; font-size: 22pt;"><strong>Estadisticas:</strong></p></div>
-        <form method="get" action="#">{% csrf_token %}
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;" type="submit">Mostrar</button></div>
-          <div class="col-2" style="float:right"><input style="border: 1px solid gray ;" type="date" name="Fecha_fin" id="myInput2"   placeholder="Fecha final"></div>
-          <div class="col-2" style="float:right"><input style="border: 1px solid gray ;" type="date" name="Fecha_ini" id="myInput"  placeholder="Fecha inicial"></div>
-          
-        </form>
+    <div class="container " style = " text-align: center;">
+        <div ><p  style="background-color: white; font-size: 22pt;"><strong>Estadisticas</strong></p></div>
     </div>
     <div id="myBtnContainer" style="text-align:center; padding-top: 2%;">
+      <h3>Seleccione que desea ver</h3>
       <button class="btn active" onclick="cambiarGrafico('Polideportivo')">Polideportivo</button>
       <button class="btn" onclick="cambiarGrafico('Corralon')">Corralon Municipal</button>
       <button class="btn" onclick="cambiarGrafico('Hospital')">Hospital 9 de Julio</button>
       <button class="btn" onclick="cambiarGrafico('Total')">Total por vacuna</button>
       <button class="btn" onclick="cambiarGrafico('Porcentaje')">Porcentaje</button>
   </div>
-</div>
+  <br>
+  <div class="container" style="float: right; text-align: right"><h3 style="margin-right: 17%;">Ingrese las fechas que desea ver:</h3> 
+    <form method="get" action="#">{% csrf_token %}
+    <div class="" style="align-items: center;">
+      <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;margin-top: 10px;" type="submit">Mostrar</button></div>
+      <div class="col-2" style="float:right;"><p style="float: left;">Fecha de fin:</p><input style="border: 1px solid gray; float: left;;" type="date" name="Fecha_fin" id="myInput2"   placeholder="Fecha final"></div>
+      <div class="col-2" style="float:right"><p style="float: left;">Fecha de inicio:</p><input style="border: 1px solid gray; float: left;;" type="date" name="Fecha_ini" id="myInput1"  placeholder="Fecha inicial"></div>
+    </form>
+    </div>
+   </div>  
+  </div>
+</div><br><br><br><br><br>
+
 <div class="container" >
+  <h2>Tipo de vacuna que desea ver</h2>
 <div class="container-sm" style="float: left;" id="ventana_poli">
     {% if grafico_poli %}
     <div style="width:60%">
