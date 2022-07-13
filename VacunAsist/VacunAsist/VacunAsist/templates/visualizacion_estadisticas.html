@@ -53,7 +53,7 @@
       <button class="btn" onclick="cambiarGrafico('Porcentaje')">Porcentaje</button>
   </div>
   <br>
-  <div class="container" style="float: right; text-align: right"><h3 style="margin-right: 17%;">Ingrese las fechas que desea ver:</h3> 
+  <div class="container" style="float: left; text-align: left"><h3 style="margin-right: 17%;">Ingrese las fechas que desea ver:</h3> 
     <form method="get" action="#">{% csrf_token %}
     <div class="" style="align-items: center;">
       <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;margin-top: 10px;" type="submit">Mostrar</button></div>
@@ -66,7 +66,6 @@
 </div><br><br><br><br><br>
 
 <div class="container" >
-  <h2>Tipo de vacuna que desea ver</h2>
 <div class="container-sm" style="float: left;" id="ventana_poli">
     {% if grafico_poli %}
     <div style="width:60%">

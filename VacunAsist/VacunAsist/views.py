@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
+from pyrsistent import v
 from gestion_de_usuarios.views import iniciar_sesion
 from gestion_de_usuarios.views import gestionar_usuarios_admin, ver_perfil
 from gestion_de_usuarios.models import VacunaAplicada
@@ -484,8 +485,8 @@ def visualizar_stock_administrador(request):
 
     context = dict.fromkeys(["vacunas","mensaje"], "")
 
-    vacuna_vacunatorio = VacunaVacunatorio
-    context["vacunas"]=vacuna_vacunatorio.objects.filter()
+    context["sobrante"]=len(Inscripcion.objects.filter(fecha__lt=date.today()))
+    context["vacunas"]=VacunaVacunatorio.objects.all()
     context["mensaje"]= request.session.get('mensaje', "")
     request.session["mensaje"] = ""
     #ver si contemplar esto
@@ -921,6 +922,11 @@ def posponer_turno(request):
     vacuna_no_aplicada.save()
     inscripcion.vacunatorio = usuario.vacunatorio_pref
     inscripcion.save()
+    html_message = loader.render_to_string('email_turno_pospuesto.html',{'tipo': tipo, "usuario": usuario, "fecha":inscripcion.fecha, "vacunatorio_pref":usuario.vacunatorio_pref}) 
+    try:    
+        send_mail('Turno pospuesto',"",EMAIL_HOST_USER,[usuario.email], html_message=html_message)
+    except:
+        pass
     context["mensaje"] = f'Su turno para la vacuna del {tipo} se pospuso correctamente para el día {inscripcion.fecha} en el vacunatorio {usuario.vacunatorio_pref}'
     
 
@@ -1003,18 +1009,13 @@ def modificar_contrasenia(request):
 
 @login_required
 def asignar_turno_manual(request):
-    context = dict.fromkeys(["mensaje"], "")
+    mensaje =  ""
     nombre_vacunatorio = request.POST.get("Vacunatorio")
-    cantidad = request.POST.get("Cantidad")
+    cantidad = int(request.POST.get("Cantidad"))
     tipo = request.POST.get("Tipo")
 
-    inscripcion = Inscripcion.objects.all(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
+    inscripcion = Inscripcion.objects.filter(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
 
-
-    if (tipo == "Fiebre_amarilla"):
-        eliminar = Inscripcion.objects.filter(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio).filter(usuario__fecha_nacimiento_lt= date.today() + relativedelta(days=15) + relativedelta(years=-60))
-        for elim in eliminar:
-            elim.delete()
 
     if(len(inscripcion) >= cantidad):
         hoy = datetime.today()
@@ -1023,36 +1024,46 @@ def asignar_turno_manual(request):
             inscripcion[indice].fecha = hoy + relativedelta(days=15)
             inscripcion[indice].save()
             indice = indice + 1
-        context["mensaje"] = 'Se han asignado los turnos correctamente'
+        mensaje = 'Se han asignado los turnos correctamente'
     else:
-        context["mensaje"] = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
+        mensaje = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
         
-    request.session["context"] = context
+    request.session["mensaje"] = mensaje
 
-    return redirect('LA MISMA PAGINA ANASHEI')
+    return redirect(visualizar_cantidad_turnos)
 
 
 
 @login_required
 def visualizar_cantidad_turnos(request):
 
-
-    context = dict.fromkeys(["turnos_total","turnos_poli","turnos_corr","turnos_hosp","mensaje","titulo"], "")
-    turnos = Inscripcion.objects.exclude(fecha__isnull=True)
-    context["titulo"] = "Estas visualizando: todos los turnos."
-    if request.POST:
-        fecha_inicio = request.POST.get("fecha_inicio")
-        fecha_fin = request.POST.get("fecha_fin")
-        if fecha_inicio and fecha_fin and (fecha_inicio >= date.today()) and (fecha_inicio < fecha_fin):
-            context["titulo"] = f"Estas visualizando: turnos entre {fecha_inicio} y {fecha_fin}."
-            turnos = Inscripcion.objects.exclude(fecha__is_null=True).filter(fecha__range=[fecha_inicio, fecha_fin])
-        else:
-            context["mensaje"]= 'Las fechas ingresadas no son válidas'
-    
-    context["turnos_gripe"] = len(turnos.filter(vacuna__tipo="Gripe"))
-    context["turnos_covid"] = len(turnos.filter(vacuna__tipo="COVID-19"))
-    context["turnos_fieb"] = len(turnos.filter(vacuna__tipo="Fiebre_amarilla"))
-
+    hoy = date.today()
+    context = dict.fromkeys(["turnos","mensaje"], "")
+    context["mensaje"] = request.session.get("mensaje","")
+    request.session["mensaje"] = ""
+    turnos_asignados = Inscripcion.objects.exclude(fecha__isnull=True).filter(fecha__range=[hoy, hoy + relativedelta(months=1)])
+    eliminar = Inscripcion.objects.filter(vacuna_id__tipo= "Fiebre_amarilla", fecha = None).filter(usuario__fecha_nacimiento__lt= date.today() + relativedelta(days=15) + relativedelta(years=-60))
+    for elim in eliminar:
+        elim.delete()
+    turnos_no_asignados = Inscripcion.objects.exclude(fecha__isnull=False)
+    #if request.POST:
+    #    fecha_inicio = request.POST.get("fecha_inicio")
+    #    fecha_fin = request.POST.get("fecha_fin")
+    #    if fecha_inicio and fecha_fin and (fecha_inicio >= date.today()) and (fecha_inicio < fecha_fin):
+    #        context["titulo"] = f"Estas visualizando: turnos entre {fecha_inicio} y {fecha_fin}."
+    #        turnos = Inscripcion.objects.exclude(fecha__is_null=True).filter(fecha__range=[fecha_inicio, fecha_fin])
+    #    else:
+    #        context["mensaje"]= 'Las fechas ingresadas no son válidas'
+    vacunatorios = [i.nombre for i in Vacunatorio.objects.all()]
+    vacunas = [i.tipo for i in Vacuna.objects.all()]
+    dicci_todos = dict.fromkeys(vacunatorios)
+    for vacunatorio in vacunatorios:
+        dicci_todos[vacunatorio]=dict.fromkeys(vacunas)
+        for vacuna in vacunas:
+            dicci_todos[vacunatorio][vacuna]= [len(turnos_asignados.filter(vacuna_id__tipo=vacuna,vacunatorio_id__nombre=vacunatorio)),len(turnos_no_asignados.filter(vacuna_id__tipo=vacuna,vacunatorio_id__nombre=vacunatorio))]
+    context["turnos"] = dicci_todos
+    context["vacunas"] = vacunas
+    context["vacunatorios"] = vacunatorios
     return render(request,"cantidad_turnos_admin.html",context)
 
 
@@ -1077,25 +1088,33 @@ def ver_cantidad_turnos(request):
 def actualizar_remanente(request):
 
 
-    context = dict.fromkeys(["mensaje"], "")
+    mensaje = ""
     hoy = datetime.today()
-    hoy = hoy + relativedelta(days=-1)
 
-    inscripciones = Inscripcion.objects.all().filter(fecha__range=[(hoy + relativedelta(months=-1)),hoy])
+    inscripciones = Inscripcion.objects.all().filter(fecha__lt=hoy)
     
+    if inscripciones:
+        for inscripcion in inscripciones:
+            vacuna_no_aplicada = VacunasNoAplicadas(usuario = inscripcion.usuario, fecha = inscripcion.fecha, vacunatorio = inscripcion.vacunatorio, vacuna = inscripcion.vacuna, estado = 'Pospuesto')
+            vacuna_no_aplicada.save()
+            usuario = inscripcion.usuario
 
-    for inscripcion in inscripciones:
-        vacuna_no_aplicada = VacunasNoAplicadas(usuario = inscripcion.usuario, fecha = inscripcion.fecha, vacunatorio = inscripcion.vacunatorio, vacuna = inscripcion.vacuna, estado = 'Pospuesto')
-        vacuna_no_aplicada.save()
-        usuario = inscripcion.usuario
-        inscripcion.fecha = None
-        inscripcion.vacunatorio = usuario.vacunatorio_pref
-        inscripcion.save()
-        vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio= inscripcion.vacunatorio, vacuna=inscripcion.vacuna)
-        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
-        vacuna_vacunatorio.save()
+            html_message = loader.render_to_string('email_aviso_queda_a_la_espera.html',{'fecha': inscripcion.fecha, "usuario": inscripcion.usuario, "vacuna": inscripcion.vacuna})
+            try:    
+                send_mail('Turno cancelado: pase a la lista de espera.',"",EMAIL_HOST_USER,[inscripcion.usuario.email], html_message=html_message)
+            except:
+                pass
 
-    context["mensaje"]= 'El remanente de vacunas se actualizo correctamente'
-    request.session["context"] = context
-    ##fraaaaaaan correegi esto ananananashey
+            inscripcion.fecha = None
+            inscripcion.vacunatorio = usuario.vacunatorio_pref
+            inscripcion.save()
+            vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio= inscripcion.vacunatorio, vacuna=inscripcion.vacuna)
+            vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
+            vacuna_vacunatorio.save()
+
+        mensaje= 'El remanente de vacunas se actualizo correctamente'
+    else:
+        mensaje= 'No hay remanente para actualizar'
+    request.session["mensaje"] = mensaje
+
     return redirect(visualizar_stock_administrador)

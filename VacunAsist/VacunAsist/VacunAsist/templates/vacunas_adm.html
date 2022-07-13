@@ -56,10 +56,10 @@
  <div class="row">
    {% for vacuna in vacunas %}
    <div class="col-3 filterDiv {{vacuna.vacunatorio.nombre}}" style="margin-bottom: 5%; "  data-eventtype="{{vacuna.vacunatorio.nombre}}">
-    <p>lugar: {{vacuna.vacunatorio.nombre}}</p>
-     <p>Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
+    <p style="font-weight: 600;">lugar: {{vacuna.vacunatorio.nombre}}</p>
+     <p style="font-weight: 600;">Tipo vacuna: {{vacuna.vacuna.tipo}}</p>
      <input type="text" id="{{vacuna.vacuna.tipo}}{{vacuna.vacunatorio.nombre}}" hidden value="{{vacuna.stock_remanente}}">
-     <p>stock actual: <p></p>{{vacuna.stock_remanente}}</p>
+     <p style="font-weight: 600;">Stock actual: {{vacuna.stock_remanente}}</p>
      <input type="hidden" value="{{vacuna.vacunatorio.nombre}}"  id="lugar_t">
      <input type="hidden" value="{{vacuna.vacuna.tipo}}" id="tipo-d"/>
         <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}C" class="button2" data-toggle="modal" data-target="#modalLoginForm" style="padding: 7px 20px; font-size: 15px;" onclick="myFunction4(this)">Cargar vacuna</button>
@@ -67,30 +67,31 @@
         <button type="button" value="{{vacuna.vacuna.tipo}}" id="{{vacuna.vacunatorio.nombre}}E" class="button2" data-toggle="modal" data-target="#modalForm" style=" padding: 7px 15px; font-size: 15px; background-color: rgb(139, 0, 0); box-shadow:inset 0px 34px 0px -15px  rgb(180, 67, 67);border:1px solid rgb(110, 8, 8)"" onclick="myFunction4(this)">Eliminar vacuna</button>
         
    </div>
-   <div class="col-1 filterDiv {{vacuna.vacunatorio.nombre}}" style="background-color: transparent;" data-eventtype="{{vacuna.vacunatorio.nombre}}""></div>
+   <div class="col-1 filterDiv {{vacuna.vacunatorio.nombre}}" style="background-color: transparent;" data-eventtype="{{vacuna.vacunatorio.nombre}}"></div>
    {% endfor %}
     <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-       <p>Tipo de vacuna: gripe</p>
+        <p style="font-weight: 600;">Total de vacunas</p>
+       <p style="font-weight: 600;">Tipo de vacuna: gripe</p>
        
-       <p>Stock total: <p id="gripeTodos"> </p> </p>
+       <p style="font-weight: 600;">Stock total: <p id="gripeTodos"> </p> </p>
     </div>
     <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
     <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-        <p>Tipo de vacuna: Covid-19</p>
-        <p>Stock total: <p id="CovidTodos"></p></p>
+        <p style="font-weight: 600;">Total de vacunas</p>
+        <p style="font-weight: 600;">Tipo de vacuna: Covid-19</p>
+        <p style="font-weight: 600;">Stock total: <p id="CovidTodos"></p></p>
     </div>
     <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
     <div class="col-3 filterDiv Total" data-eventtype="Total">
-        <p>Total de vacunas</p>
-       <p>Tipo de vacuna: Fiebre_amarilla</p>
-        <p>Stock total: <p id="FATodos"></p></p>
+        <p style="font-weight: 600;">Total de vacunas</p>
+       <p style="font-weight: 600;">Tipo de vacuna: Fiebre_amarilla</p>
+        <p style="font-weight: 600;">Stock total: <p id="FATodos"></p></p>
     </div>
     <div class="col-1 filterDiv Total" style="background-color: transparent;" data-eventtype="Total"></div>
  </div>
 </div>
-<div style="text-align: center; margin-right: 5%;">
+<div style="text-align: center; margin-right: 5%; padding: 4%;">
+  <p>Stock sin actualizar: {{sobrante}}</p>
   <button class="button2" onclick="location.href='{% url 'actualizar_remanente' %}'">Actualizar remanente </button>
 </div>
 

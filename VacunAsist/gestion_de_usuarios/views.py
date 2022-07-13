@@ -301,7 +301,7 @@ def gestionar_usuarios_admin(request):
         context["rol"] = ""
     
     vacunadores = Usuario.objects.filter(es_vacunador=True)
-    administradores = Usuario.objects.filter(es_administrador=True)
+    administradores = Usuario.objects.filter(es_administrador=True).exclude(dni__exact=request.user.dni)
     context["vacunadores"] = vacunadores
     context["admins"] = administradores
     context["vacunatorios"] = Vacunatorio.objects.all()

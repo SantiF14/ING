@@ -6,7 +6,7 @@
 <div class="container-sm" style="float: left; padding-left: 5%; padding-top: 4%; ">
     <div class="" style="height: 100%; background-color: #fff;">
       <div class="container " style = "float: left;">
-        <div class="col-6"><p  style="background-color: white; float: left;"><strong>Turnos del día:</strong></p></div>
+        <div class="col-6"><p  style="background-color: white; float: left; font-size: 22pt;"><strong>Turnos del día:</strong></p></div>
         <form method="post" action="{% url 'BuscarDNI' %}">{% csrf_token %}
           <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button">Limpiar</button></div>
           <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button">Buscar DNI</button></div>

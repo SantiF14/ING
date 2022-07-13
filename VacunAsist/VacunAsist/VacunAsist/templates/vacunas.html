@@ -11,8 +11,8 @@
   <div class="row">
     {% for vacuna in vacunas %}
     <div class="col-3">
-      <p>{{vacuna.vacuna.tipo}}</p>
-      <p>stock disponible: {{vacuna.stock_actual}}</p>
+      <p style="font-size: 18pt; font-weight: 600;">{{vacuna.vacuna.tipo}}</p>
+      <p style="font-size: 14pt; font-weight: 400;">Stock disponible: {{vacuna.stock_remanente}}</p>
     </div>
     <div class="col-1" style="background-color: transparent;"></div>
     {% endfor %}

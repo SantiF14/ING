@@ -92,13 +92,16 @@
                   <div class="md-form mb-4">
             
                     <label data-error="wrong" data-success="right" for="defaultForm-pass">Nueva contraseña</label>
-                    <input id="dni" name="password" type="password" class="form-control validate" >
+                    <div class="pass-icon">
+                      <i class="bi bi-eye-slash-fill" style="cursor: pointer;" id="togglePassword"></i>
+                  </div>
+                    <input id="id_password" name="password" type="password" class="form-control validate" >
                   </div>
               
                     <div class="md-form mb-4">
                       
                       <label data-error="wrong" data-success="right" for="defaultForm-email">Repita contraseña</label>
-                      <input  id="tipo" name="password2" type="password" class="form-control validate" >
+                      <input  id="id_password2" name="password2" type="password" class="form-control validate" >
                       
                     </div>
                   </div>
@@ -133,5 +136,20 @@
     myModal.show();
 </script>
 {% endif %}
+<script>
+  const togglePassword = document.querySelector("#togglePassword");
+  const password = document.querySelector("#id_password");
+  const password2 = document.querySelector("#id_password2");
+
+  togglePassword.addEventListener("click", function () {
+      // toggle the type attribute
+      const type = password.getAttribute("type") === "password" ? "text" : "password";
+      password.setAttribute("type", type);
+      password2.setAttribute("type", type);
+      
+      // toggle the icon
+      this.classList.toggle("bi-eye")
+  });
+  </script>
 
 {% endblock %}
