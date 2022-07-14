@@ -52,7 +52,7 @@
           <button type="submit" id="cargarSinTurno" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 50%;">Confirmar</button>
         </div>
         <div class="modal-footer d-flex justify-content-center">
-          <button type="button" id="cargarSinTurno" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 50%;">Cancelar</button>
+          <button type="button" id="cargarSinTurno" data-dismiss="modal" class="button2 btn-default"  value = "{{ tipo_a_cargar }}"style="min-width: 50%;">Cancelar</button>
         </div>
       </div>
     </div>
@@ -89,7 +89,7 @@
 {% endif %}
 
 <form action="/posponer_turno/" method="POST" id="formularioBotones">{% csrf_token %}
-  <div style="margin-top: 10%;" class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  <div  class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">

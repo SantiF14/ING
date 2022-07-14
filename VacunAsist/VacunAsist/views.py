@@ -66,9 +66,10 @@ def mostrar_mis_turnos(request):
     if (context == {}):
         context["mensaje"] = request.session.get('mensaje',"")
         context["Confi"] = request.session.get('Confi',"")
+
     turnos = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
  
-    if not turnos:
+    if not turnos and context['mensaje'] == "":
         context["mensaje"]="Usted no tiene turnos asignados."
         
     request.session["context"] = {}
@@ -880,8 +881,15 @@ def recuperar_contrasenia(request):
 @login_required()
 def posponer_turno_fallido(request):
     user = request.user
-    context = dict.fromkeys(["mensaje"], "")
+    context = dict.fromkeys(["mensaje","Confi"], "")
+    fecha = (datetime.today() + relativedelta(days=7))
+    fecha = date(fecha.year, fecha.month, fecha.day)
     inscripcion = Inscripcion.objects.filter(usuario_id=user.dni,vacuna_id__tipo="Fiebre_amarilla").first()
+    print(inscripcion.fecha)
+    vacuna_vacunatorio = VacunaVacunatorio.objects.get(vacunatorio_id=inscripcion.vacunatorio, vacuna_id__tipo__exact= "Fiebre_amarilla")
+    if (inscripcion.fecha <= fecha):
+        vacuna_vacunatorio.stock_remanente = vacuna_vacunatorio.stock_remanente + 1
+        vacuna_vacunatorio.save()
     inscripcion.delete()
     context["mensaje"] = 'Su turno se cancelo exitosamente'
     request.session["context"] = context
