@@ -1,9 +1,10 @@
 from datetime import date
+from time import time
 from django.http import HttpResponse
 import numpy as np
 from django.shortcuts import render, redirect, HttpResponse
 from django.template import loader
-from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, Vacunador, VacunasNoAplicadas
+from gestion_de_usuarios.models import Inscripcion, VacunaAplicada, Vacuna, Vacunatorio, VacunaVacunatorio, Vacunador, VacunasNoAplicadas
 from gestion_de_usuarios.forms import FormularioDeRegistro, FormularioDeAutenticacion
 from django.contrib.auth import login, authenticate, logout
 from gestion_de_usuarios.models import Usuario
@@ -28,7 +29,65 @@ from dateutil.relativedelta import relativedelta
 
 User = get_user_model()
 
+def home(request):
 
+    if request.user.is_authenticated:
+        context = dict.fromkeys(["user","rol","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
+        user = request.user
+        if (user.rol_actual != "Ciudadano"):
+            return redirigir_por_rol(request)
+        context["user"] = user
+        context["mensaje"] = request.session.get('mensaje', "")
+        context["titulo"] = request.session.get('titulo', "")
+        request.session["mensaje"] = ""
+        request.session["titulo"] = ""
+
+        inscripciones = Inscripcion.objects.filter(usuario = user)
+        covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first()) #ARREGLAR
+        fiebre_amarilla = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
+        vacuna_fa = VacunaAplicada.objects.filter(usuario = user, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first(),con_nosotros = True)
+        gripe = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Gripe").first())
+        if(vacuna_fa):
+            context["vacuna_fa"] = "Si"
+        if (covid):
+            context["covid"] = "Si"
+        if (fiebre_amarilla):
+            context["fiebre_amarilla"] = "Si"
+        if (gripe):
+            context["gripe"] = "Si"
+
+    
+
+        return render(request,"home.html", context)
+
+    return redirect('Index')    
+
+
+@login_required
+def visualizar_stock_administrador(request):
+    user = request.user
+    if (user.rol_actual != "Administrador"):
+        return redirigir_por_rol(request)
+
+    context = dict.fromkeys(["vacunas","mensaje"], "")
+
+    context["sobrante"]=len(Inscripcion.objects.filter(fecha__lt=date.today()))
+    context["vacunas"]=VacunaVacunatorio.objects.all()
+    context["mensaje"]= request.session.get('mensaje', "")
+    request.session["mensaje"] = ""
+    #ver si contemplar esto
+
+    #cambiar return
+    return render(request, 'vacunas_adm.html', context)
+
+def redirigir_por_rol(request):
+    user = request.user
+    if (user.rol_actual == "Ciudadano"):
+        return redirect(home)
+    elif (user.rol_actual == "Vacunador"):
+        return redirect(ver_turnos_del_dia)
+    else:
+        return redirect(visualizar_stock_administrador)
 
 def get_redirect_if_exists(request):
     redirect = None
@@ -83,6 +142,8 @@ def cerrar_sesion(request):
 @login_required
 def ver_turnos_del_dia(request):
     user = request.user
+    if (user.rol_actual != "Vacunador"):
+        return redirigir_por_rol(request)
     context = request.session.get("context",{})
     if (context == {}):
         context["mensaje"] = request.session.get('mensaje',"")
@@ -293,7 +354,9 @@ def alta_administrador(request):
 
 @login_required
 def gestionar_usuarios_admin(request):
-
+    user = request.user
+    if (user.rol_actual != "Administrador"):
+        return redirigir_por_rol(request)
     context = request.session.get("context",{})
     request.session["context"] = {}
     if (context == {}):
@@ -301,7 +364,7 @@ def gestionar_usuarios_admin(request):
         context["rol"] = ""
     
     vacunadores = Usuario.objects.filter(es_vacunador=True)
-    administradores = Usuario.objects.filter(es_administrador=True).exclude(dni__exact=request.user.dni)
+    administradores = Usuario.objects.filter(es_administrador=True)
     context["vacunadores"] = vacunadores
     context["admins"] = administradores
     context["vacunatorios"] = Vacunatorio.objects.all()
@@ -309,12 +372,16 @@ def gestionar_usuarios_admin(request):
 
 @login_required
 def visualizar_estadisticas(request):
-    
+    user = request.user
+    if (user.rol_actual != "Administrador"):
+        return redirigir_por_rol(request)
     context = dict.fromkeys(["mensaje","grafico_poli","grafico_corr","grafico_hosp","grafico_total","grafico_vacuna","vacunatorios"],"")
     print(context["mensaje"])
     #Obtengo la fecha inicial y la fecha final de la pantalla
     fecha_inicial = request.GET.get("Fecha_ini")
     fecha_final = request.GET.get("Fecha_fin")
+    print(fecha_inicial)
+    print(fecha_final)
 
     #Cargo las vacunas aplicadas y no aplicadas en un df, corrijo valores y nombres de columnas
     vac_aplicadas = VacunaAplicada.objects.all().values()
@@ -331,15 +398,17 @@ def visualizar_estadisticas(request):
     #Si existe fecha inicial, comienzo las validaciones
     if (fecha_inicial):
         fecha_inicial = date.fromisoformat(fecha_inicial)
+        print(fecha_inicial)
         fecha_final = date.fromisoformat(fecha_final)
+        print(fecha_final)
         if (fecha_inicial < fecha_final) and (fecha_final<=date.today()):
 
             while (fecha_inicial.isocalendar().weekday != 1):
                 fecha_inicial = fecha_inicial + timedelta(days=-1)
             while (fecha_final.isocalendar().weekday != 1):
                 fecha_final = fecha_final + timedelta(days=1)
-
-            if ((fecha_final.isocalendar().week) - (fecha_inicial.isocalendar().week) < 3):
+            inicio_minimo = fecha_final - timedelta(weeks=3)
+            if ((fecha_final - fecha_inicial) < (fecha_final - inicio_minimo)):
                 context["mensaje"] = "Las fechas deben constituir por lo menos 4 semanas."
                 
             print(fecha_inicial)
@@ -616,13 +685,15 @@ def visualizar_estadisticas(request):
 
 @login_required
 def ver_perfil(request):
+    user = request.user
+    if (user.rol_actual != "Ciudadano"):
+        return redirigir_por_rol(request)
     context = request.session.get("context",{})
     request.session["context"] = {}
 
 
     if (context == {}):
         context["mensaje"] = ""
-    user = request.user
     context["DNI"] = user.dni
     context["nombre_apellido"] = user.nombre_apellido
     context["fecha_nacimiento"] = user.fecha_nacimiento

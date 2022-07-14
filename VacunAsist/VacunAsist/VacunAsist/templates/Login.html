@@ -56,8 +56,8 @@ Basado en:
                         <!--Basicamente esto dice que si hay errores, que los muestre-->
         
                         {% if login_form.non_field_errors %}
-                        <div style="color: rgb(105, 0, 0); text-align:left; list-style-type:none;">
-                            <p>{{ login_form.non_field_errors }}</p>
+                        <div style="color: rgb(105, 0, 0); text-align:left;"><br>
+                            {{ login_form.non_field_errors }}
                         </div>
                         {% endif %}
                         

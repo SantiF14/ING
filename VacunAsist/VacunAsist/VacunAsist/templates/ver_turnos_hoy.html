@@ -8,8 +8,8 @@
       <div class="container " style = "float: left;">
         <div class="col-6"><p  style="background-color: white; float: left; font-size: 22pt;"><strong>Turnos del día:</strong></p></div>
         <form method="post" action="{% url 'BuscarDNI' %}">{% csrf_token %}
-          <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button">Limpiar</button></div>
-          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;" onclick=myFunction3(this) type="button">Buscar DNI</button></div>
+          <div class="col-2"style="float:right"><button class="button2" name="limpiar_dni" id="limpiar_dni" style="border-color: transparent;" onclick=myFunctionBuscarDNITurno(this) type="button">Limpiar</button></div>
+          <div class="col-2" style="float:right"><button class="button2" name="buscar_dni" id="buscar_dni" style="border-color: transparent;" onclick=myFunctionBuscarDNITurno(this) type="button">Buscar DNI</button></div>
           <div class="col-4" style="float:right"><input style="border: 1px solid gray ;" type="text" name="Dni" id="myInput"  minlenght="7" maxlength="8" placeholder="Ingrese un DNI"></div>
         </form>
       </div>
@@ -281,7 +281,7 @@
 
 <script>
 
-  function myFunction3(eve) {
+  function myFunctionBuscarDNITurno(eve) {
     // Declare variables
     var input, filter, table, tr, td, i, txt, id, vacio;
     input = document.getElementById("myInput");

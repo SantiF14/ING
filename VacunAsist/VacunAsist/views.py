@@ -3,8 +3,9 @@ from http.client import REQUEST_ENTITY_TOO_LARGE
 from django.template import loader
 from django.shortcuts import render, redirect
 from pyrsistent import v
+from gestion_de_usuarios.forms import User
 from gestion_de_usuarios.views import iniciar_sesion
-from gestion_de_usuarios.views import gestionar_usuarios_admin, ver_perfil
+from gestion_de_usuarios.views import gestionar_usuarios_admin, ver_perfil, redirigir_por_rol, home, visualizar_stock_administrador
 from gestion_de_usuarios.models import VacunaAplicada
 from datetime import datetime, date
 from dateutil.relativedelta import *
@@ -13,8 +14,6 @@ from VacunAsist.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from gestion_de_usuarios.views import ver_turnos_del_dia
-from django.urls import reverse
-from urllib.parse import urlencode
 import re
 import requests
 import random, string
@@ -28,40 +27,13 @@ def index(request):
         return redirect(home)
     return render(request, 'index.html', {})
 
-def home(request):
 
-    if request.user.is_authenticated:
-        context = dict.fromkeys(["user","rol","covid","fiebre_amarilla","gripe","mensaje","titulo","vacuna_fa"], "No")
-        user = request.user
-        context["user"] = user
-        context["mensaje"] = request.session.get('mensaje', "")
-        context["titulo"] = request.session.get('titulo', "")
-        request.session["mensaje"] = ""
-        request.session["titulo"] = ""
-
-        inscripciones = Inscripcion.objects.filter(usuario = user)
-        covid = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "COVID-19").first()) #ARREGLAR
-        fiebre_amarilla = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first())
-        vacuna_fa = VacunaAplicada.objects.filter(usuario = user, vacuna = Vacuna.objects.filter(tipo = "Fiebre_amarilla").first(),con_nosotros = True)
-        gripe = inscripciones.filter(vacuna = Vacuna.objects.filter(tipo = "Gripe").first())
-        if(vacuna_fa):
-            context["vacuna_fa"] = "Si"
-        if (covid):
-            context["covid"] = "Si"
-        if (fiebre_amarilla):
-            context["fiebre_amarilla"] = "Si"
-        if (gripe):
-            context["gripe"] = "Si"
-
-    
-
-        return render(request,"home.html", context)
-
-    return redirect('Index')    
 
 @login_required
 def mostrar_mis_turnos(request):
     usuario = request.user
+    if (usuario.rol_actual != "Ciudadano"):
+        return redirigir_por_rol(request)
     context = request.session.get("context",{})
     if (context == {}):
         context["mensaje"] = request.session.get('mensaje',"")
@@ -80,6 +52,8 @@ def mostrar_mis_turnos(request):
 def mostrar_vacunas_aplicadas(request):
 
     usuario = request.user
+    if (usuario.rol_actual != "Ciudadano"):
+        return redirigir_por_rol(request)
     context=dict.fromkeys(["vacunas","tipos","mensaje","today"],"")
     vacunas = VacunaAplicada.objects.filter(usuario_id__dni__exact=usuario.dni)
     context["vacunas"]= vacunas
@@ -94,7 +68,7 @@ def mostrar_vacunas_aplicadas(request):
 
 @login_required
 def inscribir_campania_gripe (request):
- 
+    
     usuario = request.user
 
     inscripcion = Inscripcion.objects.filter(usuario_id__dni__exact=usuario.dni).filter(vacuna_id__tipo__exact="Gripe").filter(fecha__range=[datetime(1900, 3, 13), datetime(2200, 3, 13)])
@@ -454,46 +428,27 @@ def agregar_vacuna_al_historial(request):
     else:
         agregar_vacuna_fiebre_amarilla_historial(request)
 
-    #base_url = reverse('MisVacunas')  
-    #query_string =  urlencode({'mensaje': "La vacuna ha sido cargada exitosamente"}) 
-    #url = '{}?{}'.format(base_url, query_string) 
-    #return redirect(url) 
     request.session["mensaje"] = "La vacuna ha sido cargada exitosamente."
     return redirect(mostrar_vacunas_aplicadas)
-    #return redirect('/mostrar_vacunas_aplicadas/',mensaje="La vacuna ha sido cargada exitosamente.")
+    
 
 
 
 
 @login_required
 def visualizar_stock_vacunador(request):
-    #ver si al apretar un boton devuelve un tipo, no me acuerdo
-    context = dict.fromkeys(["vacunas"], "")
-    #context["mensaje"]=mensaje
-
     user = request.user
+    if (user.rol_actual != "Vacunador"):
+        return redirigir_por_rol(request)
+   
+    context = dict.fromkeys(["vacunas"], "")
+    
     vacuna_vacunatorio = VacunaVacunatorio.objects.filter(vacunatorio=user.vacunador.vacunatorio_de_trabajo)
     context["vacunas"]=vacuna_vacunatorio
     #ver si contemplar esto
 
     #cambiar return
     return render(request, 'vacunas.html', context)
-
-#REVISAR
-@login_required
-def visualizar_stock_administrador(request):
-
-
-    context = dict.fromkeys(["vacunas","mensaje"], "")
-
-    context["sobrante"]=len(Inscripcion.objects.filter(fecha__lt=date.today()))
-    context["vacunas"]=VacunaVacunatorio.objects.all()
-    context["mensaje"]= request.session.get('mensaje', "")
-    request.session["mensaje"] = ""
-    #ver si contemplar esto
-
-    #cambiar return
-    return render(request, 'vacunas_adm.html', context)
 
 
 
@@ -595,15 +550,6 @@ def boton_COVID(request):
     dni = request.POST.get("Dni")
     fecha_nacimiento = request.POST.get("Fecha_nacimiento")
     fecha_nacimiento = datetime.strptime(fecha_nacimiento,"%Y-%m-%d").date()
- #   usuario = Usuario.objects.filter(dni=dni).first()
-#
- #   if (usuario):
- #       #calculo la edad del usuario
- #       anios = calculate_age(usuario.fecha_nacimiento)
-#
- #       if (anios < 18):
- #           #cambiar return
- #           return nose(request, "La persona es menor de 18 años no puede aplicarse la vacuna")
      
     anios = calculate_age(fecha_nacimiento)
     
@@ -823,12 +769,13 @@ def baja_administrador(request):
     dni = request.POST.get("Dni")
 
     context = dict.fromkeys(["mensaje","rol"], "")
-
-    usuario=Usuario.objects.get(dni=dni)
-    usuario.es_administrador=False
-    usuario.save()
-
-    context["mensaje"] = 'El administrador ha sido dado de baja exitosamente'
+    if (dni == request.user.dni):
+        context["mensaje"] = "No puede darse de baja como administrador usted mismo"
+    else:
+        usuario=Usuario.objects.get(dni=dni)
+        usuario.es_administrador=False
+        usuario.save()
+        context["mensaje"] = 'El administrador ha sido dado de baja exitosamente'
     request.session["context"] = context
     return redirect(gestionar_usuarios_admin)
 
@@ -1025,17 +972,20 @@ def asignar_turno_manual(request):
     inscripcion = Inscripcion.objects.filter(vacuna_id__tipo= tipo, fecha = None, vacunatorio_id__nombre= nombre_vacunatorio)
 
 
-    if(len(inscripcion) >= cantidad):
-        hoy = datetime.today()
-        indice = 0
-        while (indice < cantidad):
-            inscripcion[indice].fecha = hoy + relativedelta(days=15)
-            inscripcion[indice].save()
-            indice = indice + 1
-        mensaje = 'Se han asignado los turnos correctamente'
-    else:
-        mensaje = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
-        
+    if (cantidad >= 0):
+        if(len(inscripcion) >= cantidad):
+            hoy = datetime.today()
+            indice = 0
+            while (indice < cantidad):
+                inscripcion[indice].fecha = hoy + relativedelta(days=15)
+                inscripcion[indice].save()
+                indice = indice + 1
+            mensaje = 'Se han asignado los turnos correctamente'
+        else:
+            mensaje = f'La cantidad ingresada supera a los {len(inscripcion)} usuarios pendiente a vacunarse'
+    else: 
+        mensaje = "No se puede ingresar una cantidad negativa. Ingrese un valor positivo"
+            
     request.session["mensaje"] = mensaje
 
     return redirect(visualizar_cantidad_turnos)
@@ -1075,26 +1025,8 @@ def visualizar_cantidad_turnos(request):
     return render(request,"cantidad_turnos_admin.html",context)
 
 
-
-@login_required
-def ver_cantidad_turnos(request):
-
-    context = request.session.get('context',{})
-    request.session["context"] = {}
-    hoy = datetime.today()
-    
-    if (context == {}):
-        context = dict.fromkeys(["turnos","mensaje"], "")
-        context["turnos"]= Inscripcion.objects.filter(fecha__range=[(hoy + relativedelta(days=-7)),hoy])
-    elif (context['mensaje'] == 'Las fechas ingresadas no son válidas'):
-        context["turnos"]= Inscripcion.objects.filter(fecha__range=[(hoy + relativedelta(days=-7)),hoy])
-    
-    ##fraaaaaaan correegi esto ananananashey
-    return render(request, 'index.html', context)
-
 @login_required
 def actualizar_remanente(request):
-
 
     mensaje = ""
     hoy = datetime.today()
